@@ -1,5 +1,5 @@
 import { storage } from '../utils/storage';
-import { StorageType } from '../../app/store/slices/settingsSlice';
+import { StorageType } from '../store/setting/slice';
 
 export interface StorageData {
   inventoryItems: any[];

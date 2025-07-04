@@ -36,7 +36,7 @@
     "fullDate": "完整日期",
     "sampleNumber": "示例数字",
     "currency": "货币",
-    "itemsCount": "{{count}} 个物品",
+    "itemsCount": "{count} 个物品",
     "increment": "增加",
     "reset": "重置"
   },
@@ -86,8 +86,8 @@
     "expiringToday": "今天过期",
     "expiringTomorrow": "明天过期",
     "expired": "已过期",
-    "daysLeft": "还剩 {{days}} 天",
-    "expiredDays": "过期 {{days}} 天",
+    "daysLeft": "还剩 {days} 天",
+    "expiredDays": "过期 {days} 天",
     "image": "图片",
     "unit": "单位",
     "categories": {
@@ -175,5 +175,12 @@
     "serverError": "服务器错误，请稍后重试。",
     "notFound": "页面未找到",
     "unauthorized": "未授权访问"
+  },
+  "chat": {
+    "title": "聊天",
+    "content": "这是您的聊天窗口！",
+    "placeholder": "输入消息...",
+    "providerPlaceholder": "选择AI提供商",
+    "modelPlaceholder": "选择AI模型"
   }
 } 

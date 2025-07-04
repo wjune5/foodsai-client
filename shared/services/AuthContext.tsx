@@ -181,7 +181,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = {
     user,
     loading,
-    isAuthenticated: isAuthenticated() || guestModeState.isGuestMode,
+    isAuthenticated: isAuthenticated(),
     isGuestMode: guestModeState.isGuestMode,
     guestModeState,
     login,

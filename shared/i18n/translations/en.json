@@ -36,7 +36,7 @@
     "fullDate": "Full Date",
     "sampleNumber": "Sample Number",
     "currency": "Currency",
-    "itemsCount": "{{count}} items",
+    "itemsCount": "{count} items",
     "increment": "Increment",
     "reset": "Reset"
   },
@@ -86,8 +86,8 @@
     "expiringToday": "Expiring Today",
     "expiringTomorrow": "Expiring Tomorrow",
     "expired": "Expired",
-    "daysLeft": "{{days}} days left",
-    "expiredDays": "Expired {{days}} days ago",
+    "daysLeft": "{days} days left",
+    "expiredDays": "Expired {days} days ago",
     "image": "Image",
     "unit": "Unit",
     "categories": {
@@ -175,5 +175,12 @@
     "serverError": "Server error. Please try again later.",
     "notFound": "Page not found",
     "unauthorized": "Unauthorized access"
+  },
+  "chat": {
+    "title": "Chat",
+    "content": "This is your chat window!",
+    "placeholder": "Type a message...",
+    "providerPlaceholder": "Select AI Provider",
+    "modelPlaceholder": "Select AI Model"
   }
 } 

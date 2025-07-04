@@ -1,3 +1,5 @@
+import { ChatRequestParams } from "@/shared/entities/chat";
+
 export const welcomes = {
     "en": ["Your fridge looks a little lonely… Add your first yummy item!",
     "Let's fill your fridge with deliciousness! Tap 'Add Item' to get started.",
@@ -23,3 +25,72 @@ export const welcomes = {
 
 export const categories = ['vegetable', 'dairy', 'meat', 'fruit', 'grain', 'other'];
 export const units = ['pcs', 'g', 'kg', 'ml', 'l', 'pack', 'box', 'other'];
+
+export const aiProviders = {
+    "OpenAI": {
+        "model": [{
+            name: "gpt-4o",
+            input_token_limit: 1048576,
+            output_token_limit: 65536
+        }, {
+            name: "gpt-4o-mini",
+            input_token_limit: 1048576,
+            output_token_limit: 65536
+        }, {
+            name: "gpt-3.5-turbo",
+            input_token_limit: 1048576,
+            output_token_limit: 65536
+        }],
+        "url": "https://api.openai.com/v1/chat/completions"
+    },
+    "Anthropic": {
+        "model": [{
+            name: "claude-3-5-sonnet-20240620",
+            input_token_limit: 1048576,
+            output_token_limit: 65536
+        }, {
+            name: "claude-3-5-sonnet-20240620-thinking",
+            input_token_limit: 1048576,
+            output_token_limit: 65536
+        }, {
+            name: "claude-3-5-sonnet-20240620-thinking-latest",
+            input_token_limit: 1048576,
+            output_token_limit: 65536
+        }],
+        "url": "https://api.anthropic.com/v1/messages"
+    },
+    "Google": {
+        "model": [{
+            name: "gemini-2.5-pro",
+            input_token_limit: 1048576,
+            output_token_limit: 65536
+        }, {
+            name: "gemini-2.5-flash",
+            input_token_limit: 1048576,
+            output_token_limit: 65536
+        }, {
+            name: "gemini-2.0-flash",
+            input_token_limit: 1048576,
+            output_token_limit: 658192
+        }, {
+            name: "gemini-2.0-flash-lite",
+            input_token_limit: 1048576,
+            output_token_limit: 8192
+        }],
+    }
+}
+
+export const defaultChatRequestParams: ChatRequestParams = {
+    model: [],
+    minExpirationDate: null,
+    maxExpirationDate: null,
+    minQuantity: null,
+    maxQuantity: null,
+    cookingTime: null,
+    ingredients: [],
+    nutrition: [],
+    allergies: [],
+    dietaryRestrictions: [],
+    cuisine: [],
+    mealType: [],
+  };

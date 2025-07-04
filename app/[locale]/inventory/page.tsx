@@ -8,7 +8,7 @@ import { RootState } from '../../store/store';
 import { InventoryItem, removeInventoryItem } from '../../store/slices/foodItemsSlice';
 import { format, isBefore, addDays } from 'date-fns';
 import { useTranslations, useLocale } from 'next-intl';
-import { ReduxProvider } from '@/app/providers/ReduxProvider';
+import { ReduxProvider } from '@/shared/providers/ReduxProvider';
 
 const InventoryPageContent: React.FC = memo(() => {
   const locale = useLocale();

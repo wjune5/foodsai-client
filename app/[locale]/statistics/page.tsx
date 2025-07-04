@@ -1,3 +1,5 @@
+'use client';
+
 import { BarChart3, Calendar, Utensils } from "lucide-react";
 import { useState } from "react";
 

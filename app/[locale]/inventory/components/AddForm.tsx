@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { v4 as uuidv4 } from 'uuid';
 import { categories, units } from '@/shared/constants/constants';
 
 type AddInventoryProps = {
@@ -18,11 +17,20 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd }) => {
         img: ''
     });
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
+        if (e.target.name === 'img' && e.target instanceof HTMLInputElement && e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setForm(prev => ({ ...prev, img: reader.result as string }));
+            };
+            reader.readAsDataURL(file);
+        } else {
+            setForm({ ...form, [e.target.name]: e.target.value });
+        }
     };
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onAdd({ ...form, id: uuidv4(), dateFrom: new Date().toISOString() });
+        onAdd({ ...form, dateFrom: new Date().toISOString() });
         setForm({ name: '', category: 'vegetable', quantity: 1, unit: 'pcs', expirationDate: '', img: '' });
     };
 
@@ -56,7 +64,16 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd }) => {
             </div>
             <div>
                 <label className="block mb-1 font-medium">{t('inventory.image')}</label>
-                <input name="img" value={form.img} onChange={handleChange} className="w-full border rounded px-3 py-2" placeholder="Image URL (optional)" />
+                <input
+                    name="img"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleChange}
+                    className="w-full border rounded px-3 py-2"
+                />
+                {form.img && (
+                    <img src={form.img} alt="Preview" className="mt-2 max-h-32 object-contain border rounded" />
+                )}
             </div>
             <button type="submit" className="btn-cute w-full mt-2">{t('inventory.addItem')}</button>
         </form>

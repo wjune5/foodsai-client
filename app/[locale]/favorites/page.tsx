@@ -7,7 +7,7 @@ import { Heart, Clock, ArrowLeft, Trash2 } from 'lucide-react';
 import { RootState } from '../../store/store';
 import { removeRecipe } from '../../store/slices/recipesSlice';
 import { Recipe } from '../../store/slices/recipesSlice';
-import { ReduxProvider } from '../../providers/ReduxProvider';
+import { ReduxProvider } from '../../../shared/providers/ReduxProvider';
 
 export default function Favorites() {
   const dispatch = useDispatch();

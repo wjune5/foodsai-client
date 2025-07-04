@@ -37,3 +37,5 @@ export const CONFIG = {
   },
   MESSAGE_LIMIT: 3,
 } as const;
+
+export const HUGGINGFACE_API_KEY = process.env.NEXT_PUBLIC_HUGGINGFACE_API_KEY;

@@ -2,19 +2,29 @@
 
 import { FC, memo, useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../../store/store';
-import { AppDispatch } from '../../store/store';
+import { store } from '@/shared/store/store';
+import { AppDispatch } from '@/shared/store/store';
 import Navigation from '@/shared/components/Navigation';
 import { storage } from '@/shared/utils/storage';
-import { ReduxProvider } from '@/app/providers/ReduxProvider';
+import { ReduxProvider } from '@/shared/providers/ReduxProvider';
 import { 
   setStorageType, 
   setCloudSubscription, 
   setAutoBackup, 
   setBackupFrequency,
   StorageType 
-} from '../../store/slices/settingsSlice';
+} from '../../../shared/store/setting/slice';
 import { storageService } from '@/shared/services/StorageService';
+import React from 'react';
+import { Inventory } from '@/shared/entities/inventory';
+import { guestModeService } from '@/shared/services/GuestModeService';
+import { PersistGate } from 'redux-persist/integration/react';
+import { persistor } from '@/shared/store/store';
+import { setAiApiKey, setAiModel, setAiProvider, setAiApiUrl } from '@/shared/store/ai/slice';
+import { useAuth } from '@/shared/services/AuthContext';
+import { aiProviders } from '@/shared/constants/constants';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectLabel, SelectGroup } from '@/shared/components/Select';
+import { useTranslations } from 'next-intl';
 
 const SettingsPageContainer: FC = memo(() => {
   const dispatch = useDispatch<AppDispatch>();
@@ -22,14 +32,26 @@ const SettingsPageContainer: FC = memo(() => {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [backupStatus, setBackupStatus] = useState<string | null>(null);
   const [upgradeStatus, setUpgradeStatus] = useState<string | null>(null);
-  
-  const inventoryItems = useSelector((state: RootState) => state.inventoryItems.items);
-  const recipes = useSelector((state: RootState) => state.recipes.recipes);
-  const settings = useSelector((state: RootState) => state.settings.settings);
+  const [inventorys, setInventorys] = useState<Inventory[]>([]);
+  const settings = useSelector((state: ReturnType<typeof store.getState>) => state.settings);
+  const { aiProvider, aiModel, aiApiKey, aiApiUrl } = useSelector((state: ReturnType<typeof store.getState>) => state.ai);
+  const { isGuestMode } = useAuth();
+  const t = useTranslations();
+
+  const getInventoryItems = async () => {
+    if (isGuestMode) {
+        const inventorys = await guestModeService.getInventoryItems();
+        setInventorys(inventorys);
+    }
+  }
+  // Load AI settings from localStorage on mount
+  useEffect(() => {
+    getInventoryItems();
+  }, []);
 
   const handleLocalBackup = () => {
     try {
-      storage.setLocalStorageWithTTL('foodsai_backup', { inventoryItems, recipes });
+      storage.setLocalStorageWithTTL('foodsai_backup', { inventorys });
       setBackupStatus('Backup to local storage complete!');
     } catch (e) {
       setBackupStatus('Failed to backup to local storage.');
@@ -39,17 +61,18 @@ const SettingsPageContainer: FC = memo(() => {
 
   const handleCloudBackup = async () => {
     try {
-      const success = await storageService.saveData({
-        inventoryItems,
-        recipes,
-        timestamp: Date.now(),
-      });
+      // TODO: implement cloud backup
+      // const success = await storageService.saveData({
+      //   inventorys,
+      //   recipes,
+      //   timestamp: Date.now(),
+      // });
       
-      if (success) {
-        setBackupStatus('Backup to cloud complete!');
-      } else {
-        setBackupStatus('Failed to backup to cloud.');
-      }
+      // if (success) {
+      //   setBackupStatus('Backup to cloud complete!');
+      // } else {
+      //   setBackupStatus('Failed to backup to cloud.');
+      // }
     } catch (e) {
       setBackupStatus('Failed to backup to cloud.');
     }
@@ -102,6 +125,7 @@ const SettingsPageContainer: FC = memo(() => {
       }
     }
   }, [dispatch]);
+
   return (
   <div className="min-h-screen bg-pink-50 pb-24">
     <Navigation />
@@ -179,6 +203,53 @@ const SettingsPageContainer: FC = memo(() => {
             <p className="text-sm text-green-800">{upgradeStatus}</p>
           </div>
         )}
+      </section>
+
+      {/* AI Provider Settings Section */}
+      <section className="bg-white rounded-2xl shadow p-6 mb-8">
+        <h2 className="text-xl font-semibold mb-4 text-pink-600">AI Provider Settings</h2>
+        <p className="mb-4 text-gray-500">Configure your AI chat provider, model, and API key for chat-based database operations.</p>
+        <form
+          onSubmit={e => {
+            e.preventDefault();
+            dispatch(setAiProvider(aiProvider));
+            dispatch(setAiModel(aiModel));
+            dispatch(setAiApiKey(aiApiKey));
+            dispatch(setAiApiUrl(aiApiUrl));
+          }}
+        >
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Provider&Model</label>
+            <Select>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder={t("chat.modelPlaceholder")} />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.keys(aiProviders).map(provider => (
+                  <SelectGroup key={provider}>
+                    <SelectLabel key={provider}>{provider}</SelectLabel>
+                    {aiProviders[provider as keyof typeof aiProviders]?.model?.map(model => (
+                      <SelectItem key={model.name} value={model.name}>{model.name}</SelectItem>
+                    ))}
+                  </SelectGroup>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">API Key</label>
+            <input
+              type="password"
+              className="w-full border rounded px-3 py-2"
+              value={aiApiKey}
+              onChange={e => setAiApiKey(e.target.value)}
+              required
+              autoComplete="off"
+              placeholder="Enter your API key"
+            />
+          </div>
+          <button type="submit" className="btn-cute px-6 py-2">Save AI Settings</button>
+        </form>
       </section>
 
       {/* Backup Section */}
@@ -290,7 +361,9 @@ export default function SettingsPage() {
 
   return (
     <ReduxProvider>
-      <SettingsPageContainer />
+      <PersistGate loading={null} persistor={persistor}>
+        <SettingsPageContainer />
+      </PersistGate>
     </ReduxProvider>
   );
 }

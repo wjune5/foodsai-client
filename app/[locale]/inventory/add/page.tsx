@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { ArrowLeft, X, Save, Plus, ChefHat } from 'lucide-react';
 import { addInventoryItem } from '../../../store/slices/foodItemsSlice';
 import { InventoryItem } from '../../../store/slices/foodItemsSlice';
-import { ReduxProvider } from '@/app/providers/ReduxProvider';
+import { ReduxProvider } from '@/shared/providers/ReduxProvider';
 
 export default function AddInventoryItem() {
   const dispatch = useDispatch();

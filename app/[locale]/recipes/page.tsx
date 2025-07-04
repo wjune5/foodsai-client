@@ -7,7 +7,7 @@ import { Utensils, Clock, Plus, Heart, ArrowLeft } from 'lucide-react';
 import { RootState } from '../../store/store';
 import { addRecipe, setCurrentRecipe } from '../../store/slices/recipesSlice';
 import { Recipe } from '../../store/slices/recipesSlice';
-import { ReduxProvider } from '../../providers/ReduxProvider';
+import { ReduxProvider } from '../../../shared/providers/ReduxProvider';
 
 export default function Recipes() {
   const dispatch = useDispatch();
