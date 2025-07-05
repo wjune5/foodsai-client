@@ -5,11 +5,19 @@ import { useAuth } from '@/shared/services/AuthContext';
 import { useGuestModeWarning } from '@/shared/hooks/useGuestModeWarning';
 import { GuestModeWarningService } from '@/shared/services/GuestModeWarningService';
 import { Toaster } from 'react-hot-toast';
+import { llmService } from '@/shared/services/LLMService';
 
 export default function GuestModeDemoPage() {
   const { isGuestMode, enterGuestMode, exitGuestMode } = useAuth();
   const { showGuestModeWarning } = useGuestModeWarning();
 
+  const testLLM = async () => {
+    const result = await llmService.getJsonResponse(
+      "I bought 1000 eggs, 3 bottles of milk, 10lb rice, and a chicken hamburger from safeway. and i cooked a kung pao chicken.", 
+      'I want to operate on db using json. Convert natural language to json.', 
+      '{action: "add|delete|update|query", table: "Inventory|Recipes", entity: "an object that needs to operate", quantity: "(Optional) The amount related to the item, typically used for Inventory operations", unit: "(Optional) The unit associated with the quantity, e.g. "kg", "pcs", "liters""}');
+    console.log(result);
+  }
   // Initialize warning service when component mounts
   useEffect(() => {
     if (isGuestMode) {
@@ -19,8 +27,10 @@ export default function GuestModeDemoPage() {
     }
   }, [isGuestMode]);
 
+
   const handleTestWarning = () => {
-    showGuestModeWarning();
+    // showGuestModeWarning();
+    testLLM();
   };
 
   const handleTestServiceWarning = () => {

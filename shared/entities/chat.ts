@@ -28,6 +28,13 @@ export interface ChatRequestParams {
   mealType: string[];
 }
 
+export interface ChatDbResponse {
+  action: string;
+  table: string;
+  columns: string[];
+  quantity: number;
+}
+
 export interface ChatHistory {
   messages: Message[];
   chatRequestParams: ChatRequestParams;
