@@ -38,4 +38,4 @@ export const CONFIG = {
   MESSAGE_LIMIT: 3,
 } as const;
 
-export const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
+export const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_GENAI_API_KEY;

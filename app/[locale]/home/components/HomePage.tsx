@@ -20,6 +20,8 @@ import AddInventoryForm from '@/app/[locale]/inventory/components/AddForm';
 import ChatWindow from '@/shared/components/ChatWindow';
 import Footer from '@/shared/components/Footer';
 import { guestModeService } from '@/shared/services/GuestModeService';
+import FoodCard from './FoodCard';
+import EditableTable from './EditableTable';
 
 type ChatMessage = { text: string; role: 'user' | 'bot' };
 
@@ -39,6 +41,43 @@ const HomePageContainer: FC = memo(() => {
     const [sortBy, setSortBy] = useState('name');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     const [isAddOpen, setIsAddOpen] = useState(false);
+    
+    // Table data state
+    const [tableData, setTableData] = useState([
+        {
+            action: "add",
+            table: "Inventory",
+            entity: "eggs",
+            quantity: 1000,
+            unit: "pcs"
+        },
+        {
+            action: "add",
+            table: "Inventory",
+            entity: "milk",
+            quantity: 3,
+            unit: "bottles"
+        },
+        {
+            action: "add",
+            table: "Inventory",
+            entity: "rice",
+            quantity: 10,
+            unit: "lb"
+        },
+        {
+            action: "add",
+            table: "Inventory",
+            entity: "chicken hamburger",
+            quantity: 1,
+            unit: "pcs"
+        },
+        {
+            action: "add",
+            table: "Recipes",
+            entity: "kung pao chicken"
+        }
+    ]);
 
     const chatRef = useRef<HTMLDivElement>(null);
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -100,20 +139,6 @@ const HomePageContainer: FC = memo(() => {
         }
     };
 
-    const getExpirationStatus = (expirationDate?: string) => {
-        if (!expirationDate) return { status: 'no-date', color: 'text-gray-500', bgColor: 'bg-gray-100' };
-        const today = new Date();
-        const expDate = new Date(expirationDate);
-        const threeDaysFromNow = addDays(today, 3);
-        if (isBefore(expDate, today)) {
-            return { status: 'expired', color: 'text-red-600', bgColor: 'bg-red-100' };
-        } else if (isBefore(expDate, threeDaysFromNow)) {
-            return { status: 'expiring-soon', color: 'text-yellow-600', bgColor: 'bg-yellow-100' };
-        } else {
-            return { status: 'good', color: 'text-green-600', bgColor: 'bg-green-100' };
-        }
-    };
-
     const getInventoryItems = async () => {
         if (isAuthenticated) {
             // TODO: get inventory items from cloud
@@ -129,7 +154,7 @@ const HomePageContainer: FC = memo(() => {
     //     getInventoryItems();
     // }, [inventorys]);
     return (
-        <div className="min-h-[calc(100vh-66px)] bg-pink-50 pb-24">
+        <div className="min-h-[calc(100vh-66px)] bg-pink-50 pb-12">
             <Navigation />
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Integrated Category Picker & Search */}
@@ -218,61 +243,15 @@ const HomePageContainer: FC = memo(() => {
                                                         {t(`inventory.categories.${cat}`)}
                                                     </div>
                                                     <div className="flex flex-wrap gap-4">
-                                                        {itemsInCategory.map((item: Inventory) => {
-                                                            const expirationStatus = getExpirationStatus(item.expirationDate);
-                                                            let daysLeft = '';
-                                                            let daysNum: number | null = null;
-                                                            let dotColor = 'bg-green-400';
-                                                            if (item.expirationDate) {
-                                                                const today = new Date();
-                                                                const expDate = new Date(item.expirationDate);
-                                                                const diff = Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-                                                                if (diff < 0) {
-                                                                    daysLeft = '!';
-                                                                    dotColor = 'bg-red-500';
-                                                                } else if (diff <= 3) {
-                                                                    daysLeft = diff.toString();
-                                                                    dotColor = 'bg-yellow-400';
-                                                                    daysNum = diff;
-                                                                } else {
-                                                                    daysLeft = diff.toString();
-                                                                    dotColor = 'bg-green-400';
-                                                                    daysNum = diff;
-                                                                }
-                                                            } else {
-                                                                daysLeft = '';
-                                                                dotColor = 'bg-gray-400';
-                                                            }
-                                                            return (
-                                                                <div
-                                                                    key={item.id}
-                                                                    className={`flex items-center gap-3 px-2 py-1 rounded-full shadow bg-white min-w-[80px] max-w-xs relative hover:bg-pink-100 transition-all duration-200 cursor-pointer`}
-                                                                    onClick={() => {
-                                                                        // Add item to recipe generation selection
-                                                                        // This could open a modal or add to a selected items array
-                                                                        console.log('Selected item for recipe:', item.name);
-                                                                    }}
-                                                                    title={`Select ${item.name} for recipe generation`}
-                                                                >
-                                                                    <img
-                                                                        src={item.img || 'https://waapple.org/wp-content/uploads/2021/06/Variety_Cosmic-Crisp-transparent-658x677.png'}
-                                                                        alt={item.name}
-                                                                        className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
-                                                                    />
-                                                                    <div className="flex-1 min-w-0">
-                                                                        <div className="font-semibold truncate">{item.name}</div>
-                                                                    </div>
-                                                                    <div className={`flex items-center justify-center ml-2 rounded-full text-white font-bold text-sm h-6 w-6 ${dotColor}`}
-                                                                        title={daysNum == null 
-                                                                            ? t('inventory.noDate') 
-                                                                            : daysNum <= 0 
-                                                                              ? t('inventory.expired') 
-                                                                              : t('inventory.daysLeft', { days: daysNum })}>
-                                                                        {daysLeft}
-                                                                    </div>
-                                                                </div>
-                                                            );
-                                                        })}
+                                                        {itemsInCategory.map((item: Inventory) => (
+                                                            <FoodCard
+                                                                key={item.id}
+                                                                item={item}
+                                                                onClick={(selectedItem) => {
+                                                                    console.log('Selected item for recipe:', selectedItem.name);
+                                                                }}
+                                                            />
+                                                        ))}
                                                     </div>
                                                 </div>
                                             );
@@ -280,61 +259,15 @@ const HomePageContainer: FC = memo(() => {
                                     </div>
                                 ) : (
                                     <div className="flex flex-wrap gap-4 p-4">
-                                        {filteredItems.map((item: Inventory) => {
-                                            const expirationStatus = getExpirationStatus(item.expirationDate);
-                                            let daysLeft = '';
-                                            let daysNum: number | null = null;
-                                            let dotColor = 'bg-green-400';
-                                            if (item.expirationDate) {
-                                                const today = new Date();
-                                                const expDate = new Date(item.expirationDate);
-                                                const diff = Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-                                                if (diff < 0) {
-                                                    daysLeft = '!';
-                                                    dotColor = 'bg-red-500';
-                                                } else if (diff <= 3) {
-                                                    daysLeft = diff.toString();
-                                                    dotColor = 'bg-yellow-400';
-                                                    daysNum = diff;
-                                                } else {
-                                                    daysLeft = diff.toString();
-                                                    dotColor = 'bg-green-400';
-                                                    daysNum = diff;
-                                                }
-                                            } else {
-                                                daysLeft = '';
-                                                dotColor = 'bg-gray-400';
-                                            }
-                                            return (
-                                                <div
-                                                    key={item.id}
-                                                    className={`flex items-center gap-3 px-2 py-1 rounded-full shadow bg-white min-w-[80px] max-w-xs relative hover:bg-pink-100 transition-all duration-200 cursor-pointer`}
-                                                    onClick={() => {
-                                                        // Add item to recipe generation selection
-                                                        // This could open a modal or add to a selected items array
-                                                        console.log('Selected item for recipe:', item.name);
-                                                    }}
-                                                    title={`Select ${item.name} for recipe generation`}
-                                                >
-                                                    <img
-                                                        src={item.img || 'https://waapple.org/wp-content/uploads/2021/06/Variety_Cosmic-Crisp-transparent-658x677.png'}
-                                                        alt={item.name}
-                                                        className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
-                                                    />
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="font-semibold truncate">{item.name}</div>
-                                                    </div>
-                                                    <div className={`flex items-center justify-center ml-2 rounded-full text-white font-bold text-sm h-6 w-6 ${dotColor}`}
-                                                        title={daysNum == null 
-                                                                            ? t('inventory.noDate') 
-                                                                            : daysNum <= 0 
-                                                                              ? t('inventory.expired') 
-                                                                              : t('inventory.daysLeft', { days: daysNum })}>
-                                                        {daysLeft}
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
+                                        {filteredItems.map((item: Inventory) => (
+                                            <FoodCard
+                                                key={item.id}
+                                                item={item}
+                                                onClick={(selectedItem) => {
+                                                    console.log('Selected item for recipe:', selectedItem.name);
+                                                }}
+                                            />
+                                        ))}
                                     </div>
                                 )
                             )}
@@ -349,6 +282,14 @@ const HomePageContainer: FC = memo(() => {
                             />
                         </div>
                     )}
+                </div>
+                
+                {/* Editable Table Section */}
+                <div className="mt-8">
+                    <EditableTable 
+                        data={tableData}
+                        onDataChange={(newData) => setTableData(newData as any)}
+                    />
                 </div>
             </main>
             {/* Floating Chat Button */}
