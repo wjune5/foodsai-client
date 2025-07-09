@@ -2,8 +2,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/shared/services/AuthContext';
-import { useTranslations } from 'next-intl';
-import { User, Mail, Calendar, Edit, Save, X, Camera, LogOut, UserCircle } from 'lucide-react';
+import { User, Mail, Calendar, Edit, Save, Camera, LogOut, UserCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../../../shared/components/Dialog';
 import toast from 'react-hot-toast';
 
@@ -12,8 +11,7 @@ interface UserProfileProps {
 }
 
 export const UserProfile: React.FC<UserProfileProps> = ({ className = '' }) => {
-  const { user, isAuthenticated, isGuestMode, logout, exitGuestMode } = useAuth();
-  const t = useTranslations();
+  const { user, isGuestMode, logout, exitGuestMode } = useAuth();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({

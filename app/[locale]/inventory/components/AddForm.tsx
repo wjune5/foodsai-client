@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { categories, units } from '@/shared/constants/constants';
+import Image from 'next/image';
+import { InventoryCreate } from '../types/interfaces'
 
 type AddInventoryProps = {
-    onAdd: (item: any) => void;
+    onAdd: (item: InventoryCreate) => void;
 };
 
 const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd }) => {
@@ -72,7 +74,14 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd }) => {
                     className="w-full border rounded px-3 py-2"
                 />
                 {form.img && (
-                    <img src={form.img} alt="Preview" className="mt-2 max-h-32 object-contain border rounded" />
+                    <Image 
+                        src={form.img} 
+                        alt="Preview" 
+                        width={128}
+                        height={128}
+                        unoptimized
+                        className="mt-2 max-h-32 object-contain border rounded" 
+                    />
                 )}
             </div>
             <button type="submit" className="btn-cute w-full mt-2">{t('inventory.addItem')}</button>

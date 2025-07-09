@@ -15,10 +15,26 @@ import ChatWindow from '@/shared/components/ChatWindow';
 import Footer from '@/shared/components/Footer';
 import { guestModeService } from '@/shared/services/GuestModeService';
 import FoodCard from '../../inventory/components/FoodCard';
+import { InventoryCreate } from '@/app/[locale]/inventory/types/interfaces';
 
 type ChatMessage = { text: string; role: 'user' | 'bot' };
 
-const HomePageContainer: FC = memo(() => {
+const convertInventoryCreateToInventory = (item: InventoryCreate): Omit<Inventory, 'id' | 'createTime' | 'updateTime'> => {
+    return {
+        name: item.name,
+        img: item.img || '',
+        expirationDate: item.expirationDate || '',
+        quantity: item.quantity,
+        originalQuantity: item.quantity,
+        unit: item.unit,
+        category: item.category,
+        dateFrom: item.dateFrom || new Date().toISOString(),
+        createdBy: 'guest',
+        updatedBy: 'guest'
+    };
+};
+
+const HomePageContainer: FC = memo(function HomePageContainer() {
     const { isGuestMode, enterGuestMode, isAuthenticated } = useAuth();
     const [inventorys, setInventorys] = useState<Inventory[]>([]);
     const t = useTranslations();
@@ -268,7 +284,8 @@ const HomePageContainer: FC = memo(() => {
                     </DialogHeader>
                     <div className="px-6">
                         <AddInventoryForm onAdd={item => {
-                            guestModeService.addInventoryItem(item);
+                            const convertedItem = convertInventoryCreateToInventory(item);
+                            guestModeService.addInventoryItem(convertedItem);
                             setIsAddOpen(false);
                             getInventoryItems();
                         }} />

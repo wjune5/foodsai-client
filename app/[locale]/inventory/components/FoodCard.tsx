@@ -1,5 +1,4 @@
 import React from 'react';
-import { addDays, isBefore } from 'date-fns';
 import { useTranslations } from 'next-intl';
 import { Inventory } from '@/shared/entities/inventory';
 import { Trash2 } from 'lucide-react';
@@ -12,20 +11,6 @@ interface FoodCardProps {
 
 const FoodCard: React.FC<FoodCardProps> = ({ item, onClick, onDelete }) => {
   const t = useTranslations();
-
-  const getExpirationStatus = (expirationDate?: string) => {
-    if (!expirationDate) return { status: 'no-date', color: 'text-gray-500', bgColor: 'bg-gray-100' };
-    const today = new Date();
-    const expDate = new Date(expirationDate);
-    const threeDaysFromNow = addDays(today, 3);
-    if (isBefore(expDate, today)) {
-      return { status: 'expired', color: 'text-red-600', bgColor: 'bg-red-100' };
-    } else if (isBefore(expDate, threeDaysFromNow)) {
-      return { status: 'expiring-soon', color: 'text-yellow-600', bgColor: 'bg-yellow-100' };
-    } else {
-      return { status: 'good', color: 'text-green-600', bgColor: 'bg-green-100' };
-    }
-  };
 
   const calculateDaysLeft = (expirationDate?: string) => {
     if (!expirationDate) return { daysLeft: '', daysNum: null, dotColor: 'bg-gray-400' };
