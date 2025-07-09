@@ -5,7 +5,7 @@ import { GuestUser, UserSettings } from '../entities/user';
 // Define the database class
 export class GuestDatabase extends Dexie {
   users!: Table<GuestUser>;
-  inventoryItems!: Table<Inventory>;
+  inventory!: Table<Inventory>;
   recipes!: Table<Recipe>;
   settings!: Table<UserSettings>;
 
@@ -14,7 +14,7 @@ export class GuestDatabase extends Dexie {
     
     this.version(1).stores({
       users: '++id, username, email',
-      inventoryItems: '++id, name, category, expirationDate, dateFrom',
+      inventory: '++id, name, quantity, unit, location, category, expirationDate, dateFrom',
       recipes: '++id, name, tags',
       settings: '++id'
     });
@@ -46,9 +46,9 @@ export class GuestDatabase extends Dexie {
 
   async deleteUser(userId: string): Promise<void> {
     // Delete all user data
-    await this.transaction('rw', [this.users, this.inventoryItems, this.recipes, this.settings], async () => {
+    await this.transaction('rw', [this.users, this.inventory, this.recipes, this.settings], async () => {
       await this.users.delete(userId);
-      await this.inventoryItems.clear(); // Clear all inventory items
+      await this.inventory.clear(); // Clear all inventory items
       await this.recipes.clear(); // Clear all recipes
       await this.settings.clear(); // Clear all settings
     });
@@ -63,38 +63,38 @@ export class GuestDatabase extends Dexie {
       updateTime: new Date()
     };
     
-    await this.inventoryItems.add(inventoryItem);
+    await this.inventory.add(inventoryItem);
     return inventoryItem;
   }
 
   async getInventoryItems(): Promise<Inventory[]> {
-    return await this.inventoryItems.toArray();
+    return await this.inventory.toArray();
   }
 
   async getInventoryItem(id: string): Promise<Inventory | undefined> {
-    return await this.inventoryItems.get(id);
+    return await this.inventory.get(id);
   }
 
   async updateInventoryItem(id: string, updates: Partial<Inventory>): Promise<void> {
-    await this.inventoryItems.update(id, {
+    await this.inventory.update(id, {
       ...updates,
       updateTime: new Date()
     });
   }
 
   async deleteInventoryItem(id: string): Promise<void> {
-    await this.inventoryItems.delete(id);
+    await this.inventory.delete(id);
   }
 
-  async getInventoryItemsByCategory(category: string): Promise<Inventory[]> {
-    return await this.inventoryItems.where('category').equals(category).toArray();
+  async getinventoryByCategory(category: string): Promise<Inventory[]> {
+    return await this.inventory.where('category').equals(category).toArray();
   }
 
   async getExpiringItems(days: number = 3): Promise<Inventory[]> {
     const now = new Date();
     const futureDate = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
     
-    return await this.inventoryItems
+    return await this.inventory
       .where('expirationDate')
       .between(now.toISOString(), futureDate.toISOString())
       .toArray();
@@ -197,10 +197,10 @@ export class GuestDatabase extends Dexie {
     recipes?: Recipe[];
     settings?: UserSettings;
   }): Promise<void> {
-    await this.transaction('rw', [this.users, this.inventoryItems, this.recipes, this.settings], async () => {
+    await this.transaction('rw', [this.users, this.inventory, this.recipes, this.settings], async () => {
       // Clear existing data
       await this.users.clear();
-      await this.inventoryItems.clear();
+      await this.inventory.clear();
       await this.recipes.clear();
       await this.settings.clear();
 
@@ -209,7 +209,7 @@ export class GuestDatabase extends Dexie {
         await this.users.add(data.user);
       }
       if (data.inventoryItems) {
-        await this.inventoryItems.bulkAdd(data.inventoryItems);
+        await this.inventory.bulkAdd(data.inventoryItems);
       }
       if (data.recipes) {
         await this.recipes.bulkAdd(data.recipes);
@@ -222,9 +222,9 @@ export class GuestDatabase extends Dexie {
 
   // Database utilities
   async clearAllData(): Promise<void> {
-    await this.transaction('rw', [this.users, this.inventoryItems, this.recipes, this.settings], async () => {
+    await this.transaction('rw', [this.users, this.inventory, this.recipes, this.settings], async () => {
       await this.users.clear();
-      await this.inventoryItems.clear();
+      await this.inventory.clear();
       await this.recipes.clear();
       await this.settings.clear();
     });
@@ -232,7 +232,7 @@ export class GuestDatabase extends Dexie {
 
   async getDatabaseSize(): Promise<number> {
     const userCount = await this.users.count();
-    const inventoryCount = await this.inventoryItems.count();
+    const inventoryCount = await this.inventory.count();
     const recipeCount = await this.recipes.count();
     const settingsCount = await this.settings.count();
     
