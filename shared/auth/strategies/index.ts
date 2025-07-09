@@ -1,7 +1,8 @@
 import React from 'react';
-import { AuthStrategy, UserInfo } from '../interfaces';
+import { AuthStrategy } from '../interfaces';
 import { EmailStrategy } from './email';
 import { GoogleStrategy } from './google';
+import { UserInfo } from '../../entities/user';
 
 const strategies: Record<string, AuthStrategy> = {
   [EmailStrategy.id]: EmailStrategy,

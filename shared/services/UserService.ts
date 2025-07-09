@@ -1,4 +1,4 @@
-import { UserInfo } from "../auth/interfaces";
+import { UserInfo } from "../entities/user";
 import { getCookie, getCookieConsent } from "../utils/cookie";
 import { getLocalStorage, setLocalStorageWithTTL } from "../utils/storage";
 import { API_ENDPOINTS } from "../constants/api";

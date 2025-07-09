@@ -1,4 +1,4 @@
-import { GOOGLE_GENAI_API_KEY } from "@/shared/constants/config";
+
 import { store } from "@/shared/store/store";
 // Types for AI service
 export interface AIGenerationRequest {

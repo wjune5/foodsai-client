@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/shared/services/AuthContext';
 import { GuestModeWarningService } from '@/shared/services/GuestModeWarningService';
 import { User, AlertTriangle, X } from 'lucide-react';
-import toast from 'react-hot-toast';
 
 interface GuestModeIndicatorProps {
   className?: string;
@@ -14,11 +13,9 @@ interface GuestModeIndicatorProps {
 
 export const GuestModeIndicator: React.FC<GuestModeIndicatorProps> = ({
   className = '',
-  showBanner = true,
-  showToast = true
+  showBanner = true
 }) => {
   const { isGuestMode } = useAuth();
-  const [showWarning, setShowWarning] = useState(false);
 
   // Initialize guest mode warning service
   useEffect(() => {
@@ -53,12 +50,6 @@ export const GuestModeIndicator: React.FC<GuestModeIndicatorProps> = ({
                 Guest Mode: Your data is stored locally on this device
               </span>
             </div>
-            <button
-              onClick={() => setShowWarning(false)}
-              className="p-1 hover:bg-white/20 rounded transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
           </div>
         </div>
       )}
