@@ -20,7 +20,7 @@ import AddInventoryForm from '@/app/[locale]/inventory/components/AddForm';
 import ChatWindow from '@/shared/components/ChatWindow';
 import Footer from '@/shared/components/Footer';
 import { guestModeService } from '@/shared/services/GuestModeService';
-import FoodCard from './FoodCard';
+import FoodCard from '../../inventory/components/FoodCard';
 import EditableTable from './EditableTable';
 
 type ChatMessage = { text: string; role: 'user' | 'bot' };
