@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import LanguageSwitcher from './LanguageSwitcher';
 import { useAuth } from '@/shared/services/AuthContext';
+import { UserProfile } from '@/app/[locale]/auth/components/UserProfile';
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -28,10 +29,10 @@ export default function Navigation() {
   const navigation = [
     { name: t('navigation.inventory'), href: '/', icon: Home },
     // { name: t('navigation.inventory'), href: '/inventory', icon: BarChart3 },
-    { name: t('navigation.recipes'), href: '/recipes', icon: Utensils },
+    // { name: t('navigation.recipes'), href: '/recipes', icon: Utensils },
     { name: t('navigation.favorites'), href: '/favorites', icon: Heart },
     { name: t('navigation.settings'), href: '/settings', icon: Settings },
-    { name: t('navigation.guestMode'), href: '/guest-mode-demo', icon: UserCircle },
+    // { name: t('navigation.guestMode'), href: '/guest-mode-demo', icon: UserCircle },
   ];
 
   const toggleMenu = () => {
@@ -141,6 +142,11 @@ export default function Navigation() {
               
               {/* Language Switcher */}
               <LanguageSwitcher className="ml-2" />
+              
+              {/* User Profile */}
+              <div className="ml-2">
+                <UserProfile />
+              </div>
             </div>
           </div>
         </div>
@@ -178,6 +184,11 @@ export default function Navigation() {
               {/* Language Switcher for Mobile */}
               <div className="pt-2 border-t border-white/10">
                 <LanguageSwitcher />
+              </div>
+              
+              {/* User Profile for Mobile */}
+              <div className="pt-2 border-t border-white/10">
+                <UserProfile />
               </div>
             </div>
           </div>

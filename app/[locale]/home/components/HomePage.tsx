@@ -1,19 +1,13 @@
 'use client';
 
 import { FC, useEffect, useRef, useState, memo } from 'react';
-import { useSearchParams } from 'next/navigation';
 import Navigation from '@/shared/components/Navigation';
 import { useAuth } from '@/shared/services/AuthContext';
-import toast, { Toaster } from 'react-hot-toast';
-import { useRouter } from 'next/navigation';
+import { Toaster } from 'react-hot-toast';
 import { Inventory } from '@/shared/entities/inventory';
-import { useTranslations, useLocale } from 'next-intl';
-import useLocalizedPath from '@/shared/hooks/useLocalizedPath';
-import { welcomes } from '@/shared/constants/constants';
+import { useTranslations } from 'next-intl';
 import { ReduxProvider } from '@/shared/providers/ReduxProvider';
-import { useSelector, useDispatch } from 'react-redux';
-import { format, isBefore, addDays } from 'date-fns';
-import { Plus as LucidePlus, Edit, Trash2, ChefHat, MessageCircle, Search, Sparkles, XIcon } from 'lucide-react';
+import { Plus as LucidePlus, ChefHat, MessageCircle, Search, XIcon } from 'lucide-react';
 import { categories } from '@/shared/constants/constants';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/Dialog';
 import AddInventoryForm from '@/app/[locale]/inventory/components/AddForm';
@@ -21,63 +15,20 @@ import ChatWindow from '@/shared/components/ChatWindow';
 import Footer from '@/shared/components/Footer';
 import { guestModeService } from '@/shared/services/GuestModeService';
 import FoodCard from '../../inventory/components/FoodCard';
-import EditableTable from './EditableTable';
 
 type ChatMessage = { text: string; role: 'user' | 'bot' };
 
 const HomePageContainer: FC = memo(() => {
-    const searchParams = useSearchParams();
-    const router = useRouter();
-    const { completeAuth, isGuestMode, enterGuestMode, isAuthenticated } = useAuth();
+    const { isGuestMode, enterGuestMode, isAuthenticated } = useAuth();
     const [inventorys, setInventorys] = useState<Inventory[]>([]);
     const t = useTranslations();
-    const dispatch = useDispatch();
-    const localize = useLocalizedPath();
-    const [welcomeMessage, setWelcomeMessage] = useState('');
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('all');
-    const [sortBy, setSortBy] = useState('name');
-    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+    const [sortBy] = useState('name');
+    const [sortOrder] = useState<'asc' | 'desc'>('asc');
     const [isAddOpen, setIsAddOpen] = useState(false);
-    
-    // Table data state
-    const [tableData, setTableData] = useState([
-        {
-            action: "add",
-            table: "Inventory",
-            entity: "eggs",
-            quantity: 1000,
-            unit: "pcs"
-        },
-        {
-            action: "add",
-            table: "Inventory",
-            entity: "milk",
-            quantity: 3,
-            unit: "bottles"
-        },
-        {
-            action: "add",
-            table: "Inventory",
-            entity: "rice",
-            quantity: 10,
-            unit: "lb"
-        },
-        {
-            action: "add",
-            table: "Inventory",
-            entity: "chicken hamburger",
-            quantity: 1,
-            unit: "pcs"
-        },
-        {
-            action: "add",
-            table: "Recipes",
-            entity: "kung pao chicken"
-        }
-    ]);
 
     const chatRef = useRef<HTMLDivElement>(null);
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -92,6 +43,7 @@ const HomePageContainer: FC = memo(() => {
     };
 
     useEffect(() => {
+        
         if (!isAuthenticated && !isGuestMode) {
             enterGuestMode();
         }
@@ -150,9 +102,7 @@ const HomePageContainer: FC = memo(() => {
             setInventorys(items);
         }
     };
-    // useEffect(() => {
-    //     getInventoryItems();
-    // }, [inventorys]);
+
     return (
         <div className="min-h-[calc(100vh-66px)] bg-pink-50 pb-12">
             <Navigation />
@@ -250,6 +200,7 @@ const HomePageContainer: FC = memo(() => {
                                                                 onClick={(selectedItem) => {
                                                                     console.log('Selected item for recipe:', selectedItem.name);
                                                                 }}
+                                                                onDelete={handleDelete}
                                                             />
                                                         ))}
                                                     </div>
@@ -266,6 +217,7 @@ const HomePageContainer: FC = memo(() => {
                                                 onClick={(selectedItem) => {
                                                     console.log('Selected item for recipe:', selectedItem.name);
                                                 }}
+                                                onDelete={handleDelete}
                                             />
                                         ))}
                                     </div>
@@ -282,14 +234,6 @@ const HomePageContainer: FC = memo(() => {
                             />
                         </div>
                     )}
-                </div>
-                
-                {/* Editable Table Section */}
-                <div className="mt-8">
-                    <EditableTable 
-                        data={tableData}
-                        onDataChange={(newData) => setTableData(newData as any)}
-                    />
                 </div>
             </main>
             {/* Floating Chat Button */}
