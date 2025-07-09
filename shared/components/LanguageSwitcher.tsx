@@ -28,7 +28,7 @@ export default function LanguageSwitcher({ className = '' }: LanguageSwitcherPro
     <div className={`relative ${className}`}>
       <button
         onClick={toggleDropdown}
-        className="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-200"
+        className="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-500 hover:text-pink-300 hover:bg-white/10 transition-all duration-200"
         aria-label={t('settings.language')}
       >
         <Globe className="w-4 h-4" />
@@ -53,8 +53,8 @@ export default function LanguageSwitcher({ className = '' }: LanguageSwitcherPro
                   href={`/${lang}`}
                   className={`block w-full text-left px-4 py-2 text-sm transition-colors duration-200 ${
                     locale === lang
-                      ? 'bg-white/20 text-white'
-                      : 'text-gray-300 hover:text-white hover:bg-white/10'
+                      ? 'bg-white/20 text-pink-500'
+                      : 'text-gray-500 hover:text-pink-300 hover:bg-white/10'
                   }`}
                   onClick={() => setIsOpen(false)}
                 >

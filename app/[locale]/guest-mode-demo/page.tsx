@@ -5,11 +5,28 @@ import { useAuth } from '@/shared/services/AuthContext';
 import { useGuestModeWarning } from '@/shared/hooks/useGuestModeWarning';
 import { GuestModeWarningService } from '@/shared/services/GuestModeWarningService';
 import { Toaster } from 'react-hot-toast';
+import { llmService } from '@/shared/services/LLMService';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/shared/components/Table"
 
 export default function GuestModeDemoPage() {
   const { isGuestMode, enterGuestMode, exitGuestMode } = useAuth();
   const { showGuestModeWarning } = useGuestModeWarning();
 
+  const testLLM = async () => {
+    const result = await llmService.getJsonResponse(
+      "I bought 1000 eggs, 3 bottles of milk, 10lb rice, and a chicken hamburger from safeway. and i cooked a kung pao chicken.", 
+      'I want to operate on db using json. Convert natural language to json.', 
+      '{action: "add|delete|update|query", table: "Inventory|Recipes", entity: "an object that needs to operate", quantity: "(Optional) The amount related to the item, typically used for Inventory operations", unit: "(Optional) The unit associated with the quantity, e.g. "kg", "pcs", "liters"", expirationDate: "(Optional) The expiration date of the item, e.g. "2025-01-01"}');
+    console.log(result);
+  }
   // Initialize warning service when component mounts
   useEffect(() => {
     if (isGuestMode) {
@@ -19,8 +36,10 @@ export default function GuestModeDemoPage() {
     }
   }, [isGuestMode]);
 
+
   const handleTestWarning = () => {
-    showGuestModeWarning();
+    // showGuestModeWarning();
+    testLLM();
   };
 
   const handleTestServiceWarning = () => {
@@ -61,6 +80,25 @@ export default function GuestModeDemoPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
+        <Table>
+          <TableCaption>A list of your recent invoices.</TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[100px]">Invoice</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Method</TableHead>
+              <TableHead className="text-right">Amount</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell className="font-medium">INV001</TableCell>
+              <TableCell>Paid</TableCell>
+              <TableCell>Credit Card</TableCell>
+              <TableCell className="text-right">$250.00</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
         <h1 className="text-3xl font-bold mb-8">Guest Mode Warning System Demo</h1>
         
         {/* Current Status */}

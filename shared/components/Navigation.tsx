@@ -124,12 +124,12 @@ export default function Navigation() {
                     href={localize(item.href)}
                     className={`group relative inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
                       isActive
-                        ? 'bg-white/20 text-white shadow-lg'
-                        : 'text-gray-300 hover:text-white hover:bg-white/10'
+                        ? 'bg-white/20 text-pink-500 shadow-lg'
+                        : 'text-gray-500 hover:text-pink-300 hover:bg-white/10'
                     }`}
                   >
                     <item.icon className={`w-4 h-4 mr-2 transition-transform duration-200 group-hover:scale-110 ${
-                      isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'
+                      isActive ? 'text-pink-500' : 'text-gray-600 group-hover:text-pink-300'
                     }`} />
                     {item.name}
                     {isActive && (
