@@ -2,13 +2,15 @@ import React from 'react';
 import { addDays, isBefore } from 'date-fns';
 import { useTranslations } from 'next-intl';
 import { Inventory } from '@/shared/entities/inventory';
+import { Trash2 } from 'lucide-react';
 
 interface FoodCardProps {
   item: Inventory;
   onClick?: (item: Inventory) => void;
+  onDelete?: (id: string) => void;
 }
 
-const FoodCard: React.FC<FoodCardProps> = ({ item, onClick }) => {
+const FoodCard: React.FC<FoodCardProps> = ({ item, onClick, onDelete }) => {
   const t = useTranslations();
 
   const getExpirationStatus = (expirationDate?: string) => {
@@ -49,9 +51,16 @@ const FoodCard: React.FC<FoodCardProps> = ({ item, onClick }) => {
     }
   };
 
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering the onClick
+    if (onDelete) {
+      onDelete(item.id);
+    }
+  };
+
   return (
     <div
-      className={`flex items-center gap-3 px-2 py-1 rounded-full shadow bg-white min-w-[80px] max-w-xs relative hover:bg-pink-100 transition-all duration-200 cursor-pointer`}
+      className={`flex items-center gap-3 px-2 py-1 rounded-full shadow bg-white min-w-[80px] max-w-xs relative hover:bg-pink-100 transition-all duration-200 cursor-pointer group`}
       onClick={handleClick}
       title={`Select ${item.name} for recipe generation`}
     >
@@ -73,6 +82,17 @@ const FoodCard: React.FC<FoodCardProps> = ({ item, onClick }) => {
       >
         {daysLeft}
       </div>
+      
+      {/* Delete Button */}
+      {onDelete && (
+        <button
+          onClick={handleDelete}
+          className="absolute -top-1 -right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600 shadow-lg"
+          title={`Delete ${item.name}`}
+        >
+          <Trash2 className="w-3 h-3" />
+        </button>
+      )}
     </div>
   );
 };
