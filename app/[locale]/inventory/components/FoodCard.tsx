@@ -1,75 +1,80 @@
 import React from 'react';
-import { differenceInDays } from 'date-fns';
-import { Clock, AlertTriangle } from 'lucide-react';
+import { addDays, isBefore } from 'date-fns';
+import { useTranslations } from 'next-intl';
+import { Inventory } from '@/shared/entities/inventory';
 
-type FoodCardProps = {
-  imageUrl: string;
-  name: string;
-  expirationDate: string; // in ISO format or any string
-};
+interface FoodCardProps {
+  item: Inventory;
+  onClick?: (item: Inventory) => void;
+}
 
-const FoodCard: React.FC<FoodCardProps> = ({ imageUrl, name, expirationDate }) => {
-  const daysLeft = differenceInDays(new Date(expirationDate), new Date());
-  
-  const getStatusColor = (days: number) => {
-    if (days < 0) return 'bg-red-500 text-white';
-    if (days <= 2) return 'bg-orange-500 text-white';
-    if (days <= 7) return 'bg-yellow-500 text-white';
-    return 'bg-green-500 text-white';
+const FoodCard: React.FC<FoodCardProps> = ({ item, onClick }) => {
+  const t = useTranslations();
+
+  const getExpirationStatus = (expirationDate?: string) => {
+    if (!expirationDate) return { status: 'no-date', color: 'text-gray-500', bgColor: 'bg-gray-100' };
+    const today = new Date();
+    const expDate = new Date(expirationDate);
+    const threeDaysFromNow = addDays(today, 3);
+    if (isBefore(expDate, today)) {
+      return { status: 'expired', color: 'text-red-600', bgColor: 'bg-red-100' };
+    } else if (isBefore(expDate, threeDaysFromNow)) {
+      return { status: 'expiring-soon', color: 'text-yellow-600', bgColor: 'bg-yellow-100' };
+    } else {
+      return { status: 'good', color: 'text-green-600', bgColor: 'bg-green-100' };
+    }
   };
 
-  const getStatusIcon = (days: number) => {
-    if (days < 0) return <AlertTriangle className="w-4 h-4" />;
-    if (days <= 7) return <Clock className="w-4 h-4" />;
-    return <Clock className="w-4 h-4" />;
+  const calculateDaysLeft = (expirationDate?: string) => {
+    if (!expirationDate) return { daysLeft: '', daysNum: null, dotColor: 'bg-gray-400' };
+    
+    const today = new Date();
+    const expDate = new Date(expirationDate);
+    const diff = Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (diff < 0) {
+      return { daysLeft: '!', daysNum: null, dotColor: 'bg-red-500' };
+    } else if (diff <= 3) {
+      return { daysLeft: diff.toString(), daysNum: diff, dotColor: 'bg-yellow-400' };
+    } else {
+      return { daysLeft: diff.toString(), daysNum: diff, dotColor: 'bg-green-400' };
+    }
   };
 
-  const getStatusText = (days: number) => {
-    if (days < 0) return 'Expired';
-    if (days === 0) return 'Expires today';
-    if (days === 1) return 'Expires tomorrow';
-    return `${days} days left`;
+  const { daysLeft, daysNum, dotColor } = calculateDaysLeft(item.expirationDate);
+
+  const handleClick = () => {
+    if (onClick) {
+      onClick(item);
+    }
   };
 
   return (
-    <div className="card-cute group relative overflow-hidden cursor-pointer transform hover:scale-105 transition-all duration-300">
-      {/* Background gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-pink-100/50 to-purple-100/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      
-      <div className="relative p-4 flex items-center space-x-4">
-        {/* Food Image */}
-        <div className="relative">
-          <img
-            src={imageUrl}
-            alt={name}
-            className="w-16 h-16 rounded-2xl object-cover shadow-lg border-2 border-white/50 group-hover:border-pink-300 transition-all duration-300"
-          />
-          {/* Status badge */}
-          <div className={`absolute -top-2 -right-2 w-6 h-6 rounded-full ${getStatusColor(daysLeft)} flex items-center justify-center shadow-lg`}>
-            {getStatusIcon(daysLeft)}
-          </div>
-        </div>
-
-        {/* Food Info */}
-        <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-gray-800 group-hover:text-gray-900 transition-colors duration-200 truncate">
-            {name}
-          </h3>
-          <p className={`text-sm font-medium ${getStatusColor(daysLeft).replace('bg-', 'text-').replace(' text-white', '')} transition-colors duration-200`}>
-            {getStatusText(daysLeft)}
-          </p>
-        </div>
-
-        {/* Days indicator */}
-        <div className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(daysLeft)} shadow-md`}>
-          {daysLeft < 0 ? '!' : `${daysLeft}d`}
-        </div>
+    <div
+      className={`flex items-center gap-3 px-2 py-1 rounded-full shadow bg-white min-w-[80px] max-w-xs relative hover:bg-pink-100 transition-all duration-200 cursor-pointer`}
+      onClick={handleClick}
+      title={`Select ${item.name} for recipe generation`}
+    >
+      <img
+        src={item.img || 'https://waapple.org/wp-content/uploads/2021/06/Variety_Cosmic-Crisp-transparent-658x677.png'}
+        alt={item.name}
+        className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
+      />
+      <div className="flex-1 min-w-0">
+        <div className="font-semibold truncate">{item.name}</div>
       </div>
-
-      {/* Hover effect border */}
-      <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-pink-300/50 transition-all duration-300" />
+      <div 
+        className={`flex items-center justify-center ml-2 rounded-full text-white font-bold text-sm h-6 w-6 ${dotColor}`}
+        title={daysNum == null 
+          ? t('inventory.noDate') 
+          : daysNum <= 0 
+            ? t('inventory.expired') 
+            : t('inventory.daysLeft', { days: daysNum })}
+      >
+        {daysLeft}
+      </div>
     </div>
   );
 };
 
-export default FoodCard;
+export default FoodCard; 
