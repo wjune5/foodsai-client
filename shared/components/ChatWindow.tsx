@@ -49,7 +49,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onClose, messages, onSend }) =>
             className="text-gray-500 hover:text-pink-500 text-lg"
             title={collapsed ? 'Expand' : 'Collapse'}
           >
-            {collapsed ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
+            {collapsed ? <Maximize className="w-4 h-4" /> : <Minimize className="w-4 h-4" />}
           </button>
           <button onClick={onClose} className="text-gray-500 hover:text-pink-500 text-lg">
             <X className="w-4 h-4" />

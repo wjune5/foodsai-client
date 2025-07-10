@@ -54,7 +54,7 @@ export default async function LocaleLayout({children, params}: Props) {
       >
         <NextIntlClientProvider>
           <AuthProvider>
-            <Navigation />  
+            {/* <Navigation /> */}
             <div className="pt-16">
               {children}
             </div>
