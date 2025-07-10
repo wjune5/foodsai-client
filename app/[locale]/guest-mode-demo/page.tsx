@@ -14,8 +14,15 @@ export default function GuestModeDemoPage() {
   const testLLM = async () => {
     const result = await llmService.getJsonResponse(
       "I bought 1000 eggs, 3 bottles of milk, 10lb rice, and a chicken hamburger from safeway. and i cooked a kung pao chicken.", 
-      'I want to operate on db using json. Convert natural language to json.', 
-      '{action: "add|delete|update|query", table: "Inventory|Recipes", entity: "an object that needs to operate", quantity: "(Optional) The amount related to the item, typically used for Inventory operations", unit: "(Optional) The unit associated with the quantity, e.g. "kg", "pcs", "liters""}');
+      "Convert the following natural language into a JSON object to operate on a database.Rules:"+
+      "- Each detected item (ingredient, food, or recipe) should result in a separate JSON object.  "+
+      "- Use `'add'` as the default action unless otherwise stated.  "+
+      "- Set `table` to `'Inventory'` for physical items or cooked dishes, and `'Recipes'` if a recipe is being described.  "+
+      "- Extract `quantity` and `unit` where applicable.  "+
+      "- For each item, include `expiration_date`.  "+
+      "- If the user does not specify it, predict a reasonable value based on item type (e.g., raw egg, cooked dish, packaged product).  "+ 
+      "- For cooked foods (e.g., 'kung pao chicken'), assume typical fridge storage and estimate a short shelf life like '3 days'.", 
+      '{action: "add|delete|update|query", table: "Inventory|Recipes", entity: "an object that needs to operate", quantity: "(Optional) The amount related to the item, typically used for Inventory operations", unit: "(Optional) The unit associated with the quantity, e.g. kg, pcs, liters", expiration_date (optional): The items expiration period, e.g., 3 days. If not provided, predict the number of days based on item type and context}');
     console.log(result);
   }
   // Initialize warning service when component mounts

@@ -93,7 +93,7 @@ export class GuestModeService {
   }
 
   // Guest inventory operations
-  async addInventoryItem(item: Omit<Inventory, 'id' | 'createTime' | 'updateTime'>): Promise<Inventory> {
+  async addInventoryItem(item: Omit<Inventory, 'id' | 'createTime' | 'updateTime' | 'originalQuantity'>): Promise<Inventory> {
     return await guestDB.addInventoryItem(item);
   }
 

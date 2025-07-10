@@ -55,12 +55,13 @@ export class GuestDatabase extends Dexie {
   }
 
   // Inventory management
-  async addInventoryItem(item: Omit<Inventory, 'id' | 'createTime' | 'updateTime'>): Promise<Inventory> {
+  async addInventoryItem(item: Omit<Inventory, 'id' | 'createTime' | 'updateTime' | 'originalQuantity'>): Promise<Inventory> {
     const inventoryItem: Inventory = {
       ...item,
       id: crypto.randomUUID(),
       createTime: new Date(),
-      updateTime: new Date()
+      updateTime: new Date(),
+      originalQuantity: item.quantity
     };
     
     await this.inventoryItems.add(inventoryItem);

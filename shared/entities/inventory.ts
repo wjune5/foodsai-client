@@ -7,7 +7,7 @@ export interface Inventory {
     originalQuantity: number;
     unit: string;
     category: string;
-    dateFrom: string;
+    dateFrom: Date;
     createdBy: string;
     updatedBy: string;
     createTime: Date;
