@@ -188,12 +188,17 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                 </div>
                             </div>
                             {filteredItems.length === 0 ? (
-                                <div className="p-12 text-center">
-                                    <ChefHat className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                                <div className="p-12 text-center flex flex-col items-center">
+                                    <ChefHat className="w-16 h-16 text-gray-400 mb-4" />
                                     <h3 className="text-xl font-semibold text-gray-700 mb-2">{t('inventory.noItems')}</h3>
                                     <p className="text-gray-500 mb-6">{t('inventory.tryAdjustingFilters')}</p>
-                                    <button onClick={() => setIsAddOpen(true)} className="btn-cute flex-col items-center">
-                                        <LucidePlus className="w-6 h-6" />
+                                    <button
+                                        onClick={() => setIsAddOpen(true)}
+                                        className="btn-cute flex-col items-center"
+                                    >
+                                        <span className="flex justify-center w-full">
+                                            <LucidePlus className="w-6 h-6" />
+                                        </span>
                                         {t('inventory.addFirstItem')}
                                     </button>
                                 </div>

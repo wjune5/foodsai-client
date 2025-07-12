@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { Heart, Sparkles } from 'lucide-react';
 
 export default function Footer() {
   const legalLinks = [
@@ -12,13 +11,6 @@ export default function Footer() {
     <footer className="glass border-t border-white/20 md:mt-16">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="text-center">
-          <div className="flex justify-center items-center space-x-2 mb-4">
-            <Sparkles className="w-4 h-4 text-pink-400" />
-            <span className="text-sm font-medium text-pink-500">Made with</span>
-            <Heart className="w-4 h-4 text-red-400 animate-pulse" />
-            <span className="text-sm font-medium text-pink-500">by AI</span>
-          </div>
-          
           <div className="flex justify-center space-x-6 mb-6">
             {legalLinks.map((link) => (
               <Link

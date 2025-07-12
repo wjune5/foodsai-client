@@ -40,7 +40,7 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ classN
   };
 
   const handleSettingsClick = () => {
-    router.push(localize('/settings'));
+    router.push(localize('/setting'));
   };
 
   const handleLogout = () => {
