@@ -1,154 +1,142 @@
 'use client';
 
+import React from 'react';
 import { usePathname } from 'next/navigation';
 import useLocalizedPath from '@/shared/hooks/useLocalizedPath';
-import { Home, Heart, Menu, X, Sparkles, Settings, User } from 'lucide-react';
+import { Home, Heart, Menu, Sparkles, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useAuth } from '@/shared/services/AuthContext';
-import { UserProfileDropdown } from '@/app/[locale]/auth/components/UserProfileDropdown';
+import { ProfileDropdown } from './ProfileDropdown';
 import LanguageSwitcher from './LanguageSwitcher';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './Dialog';
+import { Separator } from './Separator';
+import { cn } from '@/lib/utils';
+import { Button } from './Button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from './DropdownMenu';
+
+interface TopNavProps extends React.HTMLAttributes<HTMLElement> {
+  links: {
+    title: string
+    href: string
+    isActive: boolean
+    disabled?: boolean
+  }[]
+}
+
+function TopNav({ className, links, ...props }: TopNavProps) {
+  return (
+    <>
+      <div className='md:hidden'>
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
+            <Button size='icon' variant='outline'>
+              <Menu className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side='bottom' align='start'>
+            {links.map(({ title, href, isActive, disabled }) => (
+              <DropdownMenuItem key={`${title}-${href}`} asChild>
+                <Link
+                  href={href}
+                  className={!isActive ? 'text-muted-foreground' : ''}
+                >
+                  {title}
+                </Link>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      <nav
+        className={cn(
+          'hidden items-center space-x-4 md:flex lg:space-x-6',
+          className
+        )}
+        {...props}
+      >
+        {links.map(({ title, href, isActive, disabled }) => (
+          <Link
+            key={`${title}-${href}`}
+            href={href}
+            className={cn(
+              'hover:text-primary text-sm font-medium transition-colors',
+              isActive ? '' : 'text-muted-foreground'
+            )}
+          >
+            {title}
+          </Link>
+        ))}
+      </nav>
+    </>
+  )
+}
 
 export default function Navigation() {
   const pathname = usePathname();
   const localize = useLocalizedPath();
   const t = useTranslations();
-  const { user, isGuestMode } = useAuth();
+  const { isGuestMode } = useAuth();
+  const [offset, setOffset] = React.useState(0);
 
   const navigation = [
     { name: t('navigation.inventory'), href: '/', icon: Home },
     { name: t('navigation.favorites'), href: '/favorites', icon: Heart }
   ];
 
+  const navLinks = navigation.map(item => ({
+    title: item.name,
+    href: localize(item.href),
+    isActive: pathname === item.href,
+  }));
+
+  React.useEffect(() => {
+    const onScroll = () => {
+      setOffset(document.body.scrollTop || document.documentElement.scrollTop)
+    }
+
+    document.addEventListener('scroll', onScroll, { passive: true })
+    return () => document.removeEventListener('scroll', onScroll)
+  }, [])
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass shadow-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          
-          {/* Left: Hamburger Menu (Mobile) + Logo */}
-          <div className="flex items-center space-x-4">
-            {/* Mobile Navigation Dialog */}
-            <Dialog>
-              <DialogTrigger asChild>
-                <button
-                  className="inline-flex items-center justify-center p-2 rounded-full text-gray-600 hover:text-white hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-200 md:hidden"
-                  aria-label="Open menu"
-                >
-                  <Menu className="block h-6 w-6" />
-                </button>
-              </DialogTrigger>
-              
-              <DialogContent className="fixed inset-y-0 left-0 h-full max-w-xs w-64 translate-x-0 translate-y-0 rounded-none border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left">
-                <DialogHeader className="px-4 py-2 border-b border-gray-200">
-                  <DialogTitle className="flex items-center space-x-2">
-                    <Sparkles className="w-6 h-6 text-pink-500" />
-                    <span className="text-lg font-bold text-gray-800">Menu</span>
-                  </DialogTitle>
-                </DialogHeader>
-                
-                {/* Navigation Items */}
-                <div className="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
-                  {navigation.map((item) => {
-                    const isActive = pathname === item.href;
-                    return (
-                      <DialogTrigger key={item.name} asChild>
-                        <Link
-                          href={localize(item.href)}
-                          className={`group flex items-center px-4 py-3 text-base font-medium rounded-xl transition-all duration-300 ${
-                            isActive
-                              ? 'bg-pink-50 text-pink-600 border border-pink-200'
-                              : 'text-gray-700 hover:text-pink-600 hover:bg-pink-50'
-                          }`}
-                        >
-                          <item.icon 
-                            className={`mr-3 h-5 w-5 transition-transform duration-200 group-hover:scale-110 ${
-                              isActive ? 'text-pink-600' : 'text-gray-500 group-hover:text-pink-600'
-                            }`} 
-                          />
-                          {item.name}
-                        </Link>
-                      </DialogTrigger>
-                    );
-                  })}
-                </div>
-
-                {/* Footer with Language Switcher */}
-                <div className="p-4 border-t border-gray-200">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">Language</span>
-                    <LanguageSwitcher />
-                  </div>
-                  {isGuestMode && (
-                    <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                      <div className="flex items-center space-x-2">
-                        <User className="w-4 h-4 text-yellow-600" />
-                        <span className="text-sm font-medium text-yellow-800">Guest Mode</span>
-                      </div>
-                      <p className="text-xs text-yellow-700 mt-1">
-                        Data stored locally
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </DialogContent>
-            </Dialog>
-
-            {/* Logo */}
-            <div className="flex items-center">
-              <Link href={localize('/')} className="flex items-center space-x-2 group">
-                <div className="icon-cute pulse">
-                  <Sparkles className="w-5 h-5" />
-                </div>
-                <span className="text-xl font-bold gradient-text">Smart Fridge</span>
-              </Link>
-              {isGuestMode && (
-                <div className="hidden md:flex items-center ml-4 space-x-2 px-3 py-1 bg-yellow-100 border border-yellow-300 rounded-full" title='💡 Your data is stored locally on this device. Consider creating an account to sync your data across devices.'>
-                  <User className="w-4 h-4 text-yellow-600" />
-                  <span className="text-sm font-medium text-yellow-800">Guest Mode</span>
-                </div>
-              )}
-            </div>
+    <header
+      className={cn(
+        'bg-background flex h-16 items-center gap-3 p-4 sm:gap-4 fixed top-0 left-0 right-0 z-50 border-b',
+        offset > 10 ? 'shadow-sm' : 'shadow-none'
+      )}
+    >
+      {/* Logo */}
+      <div className="flex items-center">
+        <Link href={localize('/')} className="flex items-center space-x-2 group">
+          <div className="icon-cute pulse">
+            <Sparkles className="w-5 h-5" />
           </div>
-
-          {/* Right: Navigation Items + Avatar */}
-          <div className="flex items-center space-x-2">
-            {/* Desktop Navigation Items */}
-            <div className="hidden md:flex md:items-center md:space-x-2">
-              {navigation.slice(0, 2).map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.name}
-                    href={localize(item.href)}
-                    className={`group relative inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                      isActive
-                        ? 'bg-white/20 text-pink-500 shadow-lg'
-                        : 'text-gray-500 hover:text-pink-300 hover:bg-white/10'
-                    }`}
-                  >
-                    <item.icon className={`w-4 h-4 mr-2 transition-transform duration-200 group-hover:scale-110 ${
-                      isActive ? 'text-pink-500' : 'text-gray-600 group-hover:text-pink-300'
-                    }`} />
-                    {item.name}
-                    {isActive && (
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-pink-500/20 to-purple-500/20 animate-pulse" />
-                    )}
-                  </Link>
-                );
-              })}
-              
-              {/* Language Switcher */}
-              <LanguageSwitcher className="ml-2" />
-            </div>
-
-            {/* Avatar (Both Mobile and Desktop) */}
-            <div className="flex items-center">
-              <UserProfileDropdown />
-            </div>
+          <span className="text-xl font-bold gradient-text">Smart Fridge</span>
+        </Link>
+        {isGuestMode && (
+          <div className="hidden md:flex items-center ml-4 space-x-2 px-3 py-1 bg-yellow-100 border border-yellow-300 rounded-full" title='💡 Your data is stored locally on this device. Consider creating an account to sync your data across devices.'>
+            <User className="w-4 h-4 text-yellow-600" />
+            <span className="text-sm font-medium text-yellow-800">Guest Mode</span>
           </div>
-        </div>
+        )}
       </div>
-    </nav>
+
+      <Separator orientation="vertical" className="h-6" />
+
+      {/* Navigation */}
+      <TopNav links={navLinks} />
+
+      {/* Right side items */}
+      <div className="ml-auto flex items-center space-x-2">
+        <LanguageSwitcher />
+        <ProfileDropdown />
+      </div>
+    </header>
   );
 } 
