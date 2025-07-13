@@ -7,6 +7,9 @@ import {getTranslations, setRequestLocale} from 'next-intl/server';
 import { notFound } from "next/navigation";
 import { routing } from "@/shared/i18n/routing";
 import { ReactNode } from "react";
+import { SidebarProvider } from "@/shared/components/ui/sidebar";
+import { AppSidebar } from "@/shared/components/AppSidebar";
+import { cn } from "@/lib/utils";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -54,10 +57,15 @@ export default async function LocaleLayout({children, params}: Props) {
       >
         <NextIntlClientProvider>
           <AuthProvider>
-            {/* <Navigation /> */}
-            <div className="pt-16">
-              {children}
-            </div>
+            <SidebarProvider defaultOpen={false}>
+              <AppSidebar />
+              <div className="w-full">
+                <Navigation />
+                <div className="pt-16">
+                  {children}
+                </div>
+              </div>
+            </SidebarProvider>
           </AuthProvider>
         </NextIntlClientProvider>
       </body>

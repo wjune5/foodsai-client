@@ -102,18 +102,18 @@ export default function SettingsPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2 flex items-center gap-2">
             <Settings className="w-8 h-8 text-pink-500" />
-            Settings
+            {t('settings.title')}
           </h1>
-          <p className="text-gray-600">Manage your app preferences and data</p>
+          <p className="text-gray-600">{t('settings.description')}</p>
         </div>
 
         <div className="grid gap-6">
           {/* Language Settings */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Language & Region</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">{t('settings.language')}</h2>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600">Choose your preferred language</p>
+                <p className="text-gray-600">{t('settings.chooseLanguage')}</p>
               </div>
               <LanguageSwitcher />
             </div>
@@ -124,15 +124,15 @@ export default function SettingsPage() {
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
                 <Database className="w-5 h-5 text-purple-500" />
-                Database Management
+                {t('settings.databaseManagement')}
               </h2>
               
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-gray-50 rounded-lg">
                   <div className="flex-1">
-                    <p className="font-medium text-gray-800">Database Size</p>
+                    <p className="font-medium text-gray-800">{t('settings.databaseSize')}</p>
                     <p className="text-gray-600 text-sm">
-                      {dbSize !== null ? `${dbSize} records` : 'Click to refresh'}
+                      {dbSize !== null ? `${dbSize} records` : t('settings.clickToRefresh')}
                     </p>
                   </div>
                   <button
@@ -146,8 +146,8 @@ export default function SettingsPage() {
 
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-blue-50 rounded-lg">
                   <div className="flex-1">
-                    <p className="font-medium text-gray-800">Export Data</p>
-                    <p className="text-gray-600 text-sm">Download your data as JSON backup</p>
+                    <p className="font-medium text-gray-800">{t('settings.exportData')}</p>
+                    <p className="text-gray-600 text-sm">{t('settings.exportDataDescription')}</p>
                   </div>
                   <button
                     onClick={exportData}
@@ -161,8 +161,8 @@ export default function SettingsPage() {
 
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-green-50 rounded-lg">
                   <div className="flex-1">
-                    <p className="font-medium text-gray-800">Import Data</p>
-                    <p className="text-gray-600 text-sm">Restore data from JSON backup</p>
+                    <p className="font-medium text-gray-800">{t('settings.importData')}</p>
+                    <p className="text-gray-600 text-sm">{t('settings.importDataDescription')}</p>
                   </div>
                   <label className="cursor-pointer">
                     <input
@@ -181,47 +181,61 @@ export default function SettingsPage() {
 
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-red-50 rounded-lg">
                   <div className="flex-1">
-                    <p className="font-medium text-gray-800">Clear Database</p>
-                    <p className="text-gray-600 text-sm">Permanently delete all your data</p>
+                    <p className="font-medium text-gray-800">{t('settings.clearDatabase')}</p>
+                    <p className="text-gray-600 text-sm">{t('settings.clearDatabaseDescription')}</p>
                   </div>
                   <Dialog>
                     <DialogTrigger asChild>
                       <button className="flex items-center justify-center px-4 py-2 text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors whitespace-nowrap">
                         <Trash2 className="w-4 h-4 mr-2" />
-                        Clear All
+                        {t('settings.clearAll')}
                       </button>
                     </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2">
-                          <AlertTriangle className="w-5 h-5 text-red-500" />
-                          Clear Database
+                    <DialogContent className="p-6">
+                      <DialogHeader className="mb-6">
+                        <DialogTitle className="flex items-center gap-2 text-xl">
+                          <AlertTriangle className="w-6 h-6 text-red-500" />
+                          {t('settings.clearDatabase')}
                         </DialogTitle>
                       </DialogHeader>
-                      <div className="space-y-4">
-                        <p className="text-gray-600">
-                          Are you sure you want to clear all data? This action cannot be undone.
+                      <div className="space-y-6">
+                        <p className="text-gray-600 text-base leading-relaxed">
+                          {t('settings.clearDataWarning')}
                         </p>
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                          <p className="text-yellow-800 text-sm">
-                            ⚠️ This will permanently delete:
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-5">
+                          <p className="text-yellow-800 text-sm mb-3">
+                            ⚠️ {t('settings.clearDataWarningDescription')}
                           </p>
-                          <ul className="mt-2 text-yellow-700 text-sm space-y-1">
-                            <li>• All inventory items</li>
-                            <li>• All recipes</li>
-                            <li>• All user settings</li>
-                            <li>• All user data</li>
+                          <ul className="text-yellow-700 text-sm space-y-2">
+                            <li className="flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 bg-yellow-600 rounded-full"></span>
+                              {t('settings.allInventoryItems')}
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 bg-yellow-600 rounded-full"></span>
+                              {t('settings.allRecipes')}
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 bg-yellow-600 rounded-full"></span>
+                              {t('settings.allUserSettings')}
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 bg-yellow-600 rounded-full"></span>
+                              {t('settings.allUserData')}
+                            </li>
                           </ul>
                         </div>
-                        <div className="flex gap-3 justify-end">
+                        <div className="flex gap-4 justify-end pt-4">
                           <DialogTrigger asChild>
-                            <button className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+                            <button className="flex items-center justify-center px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                              Cancel
+                            </button>
                           </DialogTrigger>
                           <DialogTrigger asChild>
                             <button
                               onClick={clearDatabase}
                               disabled={isClearing}
-                              className="flex items-center justify-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50 whitespace-nowrap"
+                              className="flex items-center justify-center px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50 whitespace-nowrap font-medium"
                             >
                               <Trash2 className="w-4 h-4 mr-2" />
                               {isClearing ? 'Clearing...' : 'Clear All Data'}
@@ -244,10 +258,10 @@ export default function SettingsPage() {
                 <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
                     <AlertTriangle className="w-5 h-5 text-yellow-600" />
-                    <p className="font-medium text-yellow-800">Guest Mode</p>
+                    <p className="font-medium text-yellow-800">{t('settings.guestMode')}</p>
                   </div>
                   <p className="text-yellow-700 text-sm mb-3">
-                    You're currently using guest mode. Your data is stored locally.
+                    {t('settings.guestModeDescription')}
                   </p>
                   <button
                     onClick={exitGuestMode}

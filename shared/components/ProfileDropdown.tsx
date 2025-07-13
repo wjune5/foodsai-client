@@ -19,7 +19,7 @@ import {
 } from './DropdownMenu';
 
 export function ProfileDropdown() {
-    const { user, isGuestMode, logout, exitGuestMode } = useAuth();
+    const { user, isGuestMode, isAuthenticated, logout, exitGuestMode } = useAuth();
     const router = useRouter();
     const localize = useLocalizedPath();
     const t = useTranslations();
@@ -70,7 +70,7 @@ export function ProfileDropdown() {
                         <div className="flex flex-col space-y-1">
                             <p className="text-sm leading-none font-medium">Guest User</p>
                             <p className="text-muted-foreground text-xs leading-none">
-                                Guest Mode
+                                {t('settings.guestMode')}
                             </p>
                         </div>
                     </DropdownMenuLabel>
@@ -79,20 +79,20 @@ export function ProfileDropdown() {
                         <DropdownMenuItem asChild>
                             <button onClick={handleProfileClick} className="w-full text-left">
                                 <User className="mr-2 h-4 w-4" />
-                                Profile
+                                {t('user.profile')}
                             </button>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                             <button onClick={handleSettingsClick} className="w-full text-left">
                                 <Settings className="mr-2 h-4 w-4" />
-                                Settings
+                                {t('settings.title')}
                             </button>
                         </DropdownMenuItem>
                     </DropdownMenuGroup>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
                         <LogOut className="mr-2 h-4 w-4" />
-                        Exit Guest Mode
+                        {t('user.logout')}
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
@@ -135,7 +135,7 @@ export function ProfileDropdown() {
                     <DropdownMenuItem asChild>
                         <button onClick={handleProfileClick} className="w-full text-left">
                             <User className="mr-2 h-4 w-4" />
-                            Profile
+                            {t('user.profile')}
                         </button>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -145,11 +145,16 @@ export function ProfileDropdown() {
                         </button>
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    {t('auth.signOut')}
-                </DropdownMenuItem>
+                
+                {isAuthenticated && (
+                    <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleLogout}>
+                            <LogOut className="mr-2 h-4 w-4" />
+                            {t('auth.signOut')}
+                        </DropdownMenuItem>
+                    </>
+                )}
             </DropdownMenuContent>
         </DropdownMenu>
     );

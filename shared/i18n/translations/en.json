@@ -50,8 +50,7 @@
     "settings": "Settings",
     "statistics": "Statistics",
     "openMenu": "Open main menu",
-    "hometitle": "Butlo",
-    "guestMode": "Guest Mode"
+    "hometitle": "Butlo"
   },
   "home": {
     "title": "Smart Fridge Organizer 🍎",
@@ -129,6 +128,7 @@
   },
   "settings": {
     "title": "Settings",
+    "description": "Manage your app preferences and data",
     "language": "Language",
     "theme": "Theme",
     "light": "Light",
@@ -139,7 +139,28 @@
     "recipeSuggestions": "Recipe Suggestions",
     "account": "Account",
     "profile": "Profile",
-    "logout": "Logout"
+    "logout": "Logout",
+    "clearAll": "Clear All",
+    "clearDatabase": "Clear Database",
+    "clearAllData": "Clear All Data",
+    "clearDataDescription": "This will permanently delete all your data",
+    "clearDataWarning": "Are you sure you want to clear all data? This action cannot be undone.",
+    "clearDataWarningDescription": "This will permanently delete all your data",
+    "guestModeDescription": "You're currently using guest mode. Your data is stored locally.",
+    "guestMode": "Guest Mode",
+    "importData": "Import Data",
+    "importDataDescription": "Restore data from backup",
+    "exportData": "Export Data",
+    "exportDataDescription": "Download your data as backup",
+    "clearDatabaseDescription": "Permanently delete all your data",
+    "databaseSize": "Database Size",
+    "clickToRefresh": "Click to refresh",
+    "chooseLanguage": "Choose your preferred language",
+    "databaseManagement": "Database Management",
+    "allInventoryItems": "All inventory items",
+    "allRecipes": "All recipes",
+    "allUserSettings": "All user settings",
+    "allUserData": "All user data"
   },
   "statistics": {
     "title": "Statistics",
@@ -183,5 +204,10 @@
     "placeholder": "Type a message...",
     "providerPlaceholder": "Select AI Provider",
     "modelPlaceholder": "Select AI Model"
+  },
+  "user": {
+    "title": "User",
+    "profile": "Profile",
+    "logout": "Logout"
   }
 } 

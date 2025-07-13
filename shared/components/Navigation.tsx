@@ -12,6 +12,7 @@ import LanguageSwitcher from './LanguageSwitcher';
 import { Separator } from './Separator';
 import { cn } from '@/lib/utils';
 import { Button } from './Button';
+import { SidebarTrigger } from './ui/sidebar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,30 +30,7 @@ interface TopNavProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 function TopNav({ className, links, ...props }: TopNavProps) {
-  return (
-    <>
-      <div className='md:hidden'>
-        <DropdownMenu modal={false}>
-          <DropdownMenuTrigger asChild>
-            <Button size='icon' variant='outline'>
-              <Menu className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent side='bottom' align='start'>
-            {links.map(({ title, href, isActive, disabled }) => (
-              <DropdownMenuItem key={`${title}-${href}`} asChild>
-                <Link
-                  href={href}
-                  className={!isActive ? 'text-muted-foreground' : ''}
-                >
-                  {title}
-                </Link>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
+  return ( 
       <nav
         className={cn(
           'hidden items-center space-x-4 md:flex lg:space-x-6',
@@ -73,7 +51,6 @@ function TopNav({ className, links, ...props }: TopNavProps) {
           </Link>
         ))}
       </nav>
-    </>
   )
 }
 
@@ -111,6 +88,12 @@ export default function Navigation() {
         offset > 10 ? 'shadow-sm' : 'shadow-none'
       )}
     >
+      {/* Sidebar Trigger */}
+      <SidebarTrigger variant='outline' className='scale-125 sm:scale-100' />
+
+      {/* Separator - only on mobile */}
+      <Separator orientation="vertical" className="h-6 sm:hidden" />
+
       {/* Logo */}
       <div className="flex items-center">
         <Link href={localize('/')} className="flex items-center space-x-2 group">
@@ -127,14 +110,12 @@ export default function Navigation() {
         )}
       </div>
 
-      <Separator orientation="vertical" className="h-6" />
-
-      {/* Navigation */}
-      <TopNav links={navLinks} />
-
       {/* Right side items */}
       <div className="ml-auto flex items-center space-x-2">
-        <LanguageSwitcher />
+        {/* Desktop Navigation */}
+        <TopNav links={navLinks} />
+        
+        {/* <LanguageSwitcher /> */}
         <ProfileDropdown />
       </div>
     </header>

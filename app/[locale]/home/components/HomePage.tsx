@@ -149,11 +149,12 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                     <div className="flex-1 min-w-0">
                         <div className="card-cute overflow-hidden min-h-[72vh]">
                             <div className="px-6 pt-4">
-                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                                    <div className="flex items-center gap-9">
-                                        <h3 className="text-xl font-semibold text-gray-800">
-                                            {t('inventory.items')} ({filteredItems.length})
-                                        </h3>
+                                <div className="flex items-center justify-between gap-4">
+                                    <h3 className="text-xl font-semibold text-gray-800">
+                                        {t('inventory.items')} ({filteredItems.length})
+                                    </h3>
+
+                                    <div className="flex items-center gap-3">
                                         {/* Search Icon & Input */}
                                         <div className="relative flex items-center">
                                             <button
@@ -172,17 +173,12 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                                 style={{ minWidth: isSearchOpen ? '8rem' : 0 }}
                                             />
                                         </div>
-                                    </div>
-
-                                    <div className="flex items-center gap-3">
-                                        {filteredItems.length > 0 ? (
+                                        
+                                        {/* Add Button */}
+                                        {filteredItems.length > 0 && (
                                             <button onClick={() => setIsAddOpen(true)} className="btn-cute flex items-center">
                                                 <LucidePlus className="w-4 h-4" />
                                             </button>
-                                        ) : (
-                                            <span className="text-sm text-gray-600 font-medium">
-                                                {t('inventory.smartOrganization')}
-                                            </span>
                                         )}
                                     </div>
                                 </div>
