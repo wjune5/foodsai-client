@@ -12,7 +12,7 @@ import Navigation from '@/shared/components/Navigation';
 
 export default function SettingsPage() {
   const t = useTranslations();
-  const { isGuestMode, exitGuestMode } = useAuth();
+  const { isGuestMode, isAuthenticated, exitGuestMode } = useAuth();
   const [isClearing, setIsClearing] = useState(false);
   const [dbSize, setDbSize] = useState<number | null>(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -270,7 +270,7 @@ export default function SettingsPage() {
                     Exit Guest Mode
                   </button>
                 </div>
-              ) : (
+              ) : (isAuthenticated && (
                 <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-5 h-5 text-green-600" />
@@ -280,7 +280,7 @@ export default function SettingsPage() {
                     Your data is synchronized across devices.
                   </p>
                 </div>
-              )}
+              ))}
             </div>
           </div>
 

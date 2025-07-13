@@ -7,6 +7,7 @@ import { Home, Heart, Settings, User, Sparkles } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import useLocalizedPath from '@/shared/hooks/useLocalizedPath'
 import { useAuth } from '@/shared/services/AuthContext'
+import LanguageSwitcher from '@/shared/components/LanguageSwitcher'
 import {
   Sidebar,
   SidebarContent,
@@ -16,6 +17,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
+  SidebarTrigger,
 } from '@/shared/components/ui/sidebar'
 import { cn } from '@/lib/utils'
 
@@ -34,11 +36,14 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible='offcanvas' variant='floating'>
       <SidebarHeader>
-        <div className="flex items-center space-x-2 px-2">
-          <div className="icon-cute pulse">
-            <Sparkles className="w-5 h-5" />
+        <div className="flex items-center justify-between px-2">
+          <div className="flex items-center space-x-2">
+            <div className="icon-cute pulse">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <span className="text-lg font-bold gradient-text">Smart Fridge</span>
           </div>
-          <span className="text-lg font-bold gradient-text">Smart Fridge</span>
+          <SidebarTrigger className="md:hidden" />
         </div>
         {isGuestMode && (
           <div className="flex items-center justify-center space-x-2 px-2 py-1 bg-yellow-100 border border-yellow-300 rounded-md w-fit mx-auto" title='💡 Your data is stored locally on this device. Consider creating an account to sync your data across devices.'>
@@ -74,6 +79,7 @@ export function AppSidebar() {
       </SidebarContent>
       
       <SidebarFooter>
+        <LanguageSwitcher className="mb-3" />
         <SidebarSeparator />
         <div className="px-2 py-2 text-xs text-muted-foreground">
           <p>Smart Fridge v1.0</p>

@@ -107,6 +107,11 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
         }
     };
 
+    const handleEdit = (updatedItem: Inventory) => {
+        guestModeService.updateInventoryItem(updatedItem.id, updatedItem);
+        getInventoryItems();
+    };
+
     const getInventoryItems = async () => {
         if (isAuthenticated) {
             // TODO: get inventory items from cloud
@@ -218,6 +223,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                                                     console.log('Selected item for recipe:', selectedItem.name);
                                                                 }}
                                                                 onDelete={handleDelete}
+                                                                onEdit={handleEdit}
                                                             />
                                                         ))}
                                                     </div>
@@ -235,6 +241,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                                     console.log('Selected item for recipe:', selectedItem.name);
                                                 }}
                                                 onDelete={handleDelete}
+                                                onEdit={handleEdit}
                                             />
                                         ))}
                                     </div>

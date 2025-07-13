@@ -1,19 +1,23 @@
 import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Inventory } from '@/shared/entities/inventory';
-import { Trash2, Dot, AlertTriangle, Calendar, Package, Info } from 'lucide-react';
+import { Trash2, Dot, AlertTriangle, Calendar, Package, Info, Pencil, XIcon } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/Dialog';
+import AddInventoryForm from './AddForm';
+import { DialogClose } from '@/shared/components/Dialog';
 
 interface FoodCardProps {
   item: Inventory;
   onClick?: (item: Inventory) => void;
   onDelete?: (id: string) => void;
+  onEdit?: (item: Inventory) => void;
 }
 
-const FoodCard: React.FC<FoodCardProps> = ({ item, onClick, onDelete }) => {
+const FoodCard: React.FC<FoodCardProps> = ({ item, onClick, onDelete, onEdit }) => {
   const t = useTranslations();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   const calculateDaysLeft = (expirationDate?: string) => {
     if (!expirationDate) return { daysLeft: '', daysNum: null, dotColor: 'bg-gray-400', status: 'no-date' };
@@ -50,6 +54,13 @@ const FoodCard: React.FC<FoodCardProps> = ({ item, onClick, onDelete }) => {
       onDelete(item.id);
     }
     setShowDeleteDialog(false);
+  };
+
+  const handleEdit = (updatedItem: Inventory) => {
+    if (onEdit) {
+      onEdit(updatedItem);
+    }
+    setShowEditDialog(false);
   };
 
   return (
@@ -128,10 +139,15 @@ const FoodCard: React.FC<FoodCardProps> = ({ item, onClick, onDelete }) => {
       <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
         <DialogContent className="p-6">
           <DialogHeader className="mb-6">
-            <DialogTitle className="flex items-center gap-2 text-xl">
-              <Info className="w-6 h-6 text-blue-500" />
-              Item Details
-            </DialogTitle>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="flex items-center gap-2 text-xl">
+                <Info className="w-6 h-6 text-blue-500" />
+                Item Details
+              </DialogTitle>
+              <DialogClose className="rounded-xs opacity-70 transition-opacity hover:opacity-100 p-1">
+                <XIcon className="w-4 h-4" />
+              </DialogClose>
+            </div>
           </DialogHeader>
           <div className="space-y-6">
             {/* Item Image and Basic Info */}
@@ -149,7 +165,7 @@ const FoodCard: React.FC<FoodCardProps> = ({ item, onClick, onDelete }) => {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Calendar className="w-4 h-4" />
-                  <span>Category: {item.category}</span>
+                  <span>{item.category}</span>
                 </div>
               </div>
             </div>
@@ -201,13 +217,19 @@ const FoodCard: React.FC<FoodCardProps> = ({ item, onClick, onDelete }) => {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-3 justify-end pt-4">
-              <button
-                onClick={() => setShowDetailsDialog(false)}
-                className="flex items-center justify-center px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-              >
-                Close
-              </button>
+            <div className="flex gap-3 justify-center">
+              {onEdit && (
+                <button
+                  onClick={() => {
+                    setShowDetailsDialog(false);
+                    setShowEditDialog(true);
+                  }}
+                  className="flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
+                >
+                  <Pencil className="w-4 h-4 mr-2" />
+                  Edit
+                </button>
+              )}
               {onDelete && (
                 <button
                   onClick={() => {
@@ -217,10 +239,37 @@ const FoodCard: React.FC<FoodCardProps> = ({ item, onClick, onDelete }) => {
                   className="flex items-center justify-center px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
-                  Delete Item
+                  Delete
                 </button>
               )}
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Dialog using AddForm */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto pb-6">
+          <DialogHeader className="sticky w-full top-0 bg-white z-10 pb-4 px-6 pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <DialogTitle className="flex items-center gap-2 text-xl">
+                  <Pencil className="w-6 h-6 text-blue-500" />
+                  Edit Item
+                </DialogTitle>
+              </div>
+              <DialogClose className="rounded-xs opacity-70 transition-opacity hover:opacity-100 p-1">
+                <XIcon className="w-4 h-4" />
+              </DialogClose>
+            </div>
+          </DialogHeader>
+          <div className="px-6">
+            <AddInventoryForm 
+              mode="edit"
+              initialData={item}
+              onEdit={handleEdit}
+              onAdd={() => {}} // Required prop but not used in edit mode
+            />
           </div>
         </DialogContent>
       </Dialog>

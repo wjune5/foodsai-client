@@ -4,9 +4,11 @@ import React, { useState } from 'react';
 import { useAuth } from '@/shared/services/AuthContext';
 import { User, Mail, Calendar, Edit, Save, Camera, LogOut, UserCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useTranslations } from 'next-intl';
 
 export const ProfilePageContent: React.FC = () => {
-  const { user, isGuestMode, logout, exitGuestMode } = useAuth();
+  const t = useTranslations();
+  const { user, isGuestMode, isAuthenticated, logout, exitGuestMode } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
     username: user?.username || '',
@@ -64,34 +66,6 @@ export const ProfilePageContent: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      {/* Profile Picture */}
-      <div className="text-center">
-        <div className="relative inline-block">
-          {user.avatar ? (
-            <img
-              src={user.avatar}
-              alt={user.nickname || user.username}
-              className="w-24 h-24 rounded-full object-cover border-4 border-pink-100 shadow-lg"
-            />
-          ) : (
-            <div className="w-24 h-24 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full flex items-center justify-center text-white text-3xl font-bold border-4 border-pink-100 shadow-lg">
-              {getInitials(user.nickname ?? user.username ?? '')}
-            </div>
-          )}
-          <button className="absolute bottom-0 right-0 p-2 bg-pink-500 text-white rounded-full hover:bg-pink-600 transition-colors shadow-lg">
-            <Camera className="w-4 h-4" />
-          </button>
-        </div>
-        
-        {/* Guest Mode Badge */}
-        {isGuestMode && (
-          <div className="mt-4 inline-flex items-center px-3 py-1 bg-yellow-100 border border-yellow-300 rounded-full">
-            <UserCircle className="w-4 h-4 text-yellow-600 mr-2" />
-            <span className="text-sm font-medium text-yellow-800">Guest Mode</span>
-          </div>
-        )}
-      </div>
-
       {/* Profile Information */}
       <div className="space-y-6">
         <div>
@@ -182,29 +156,30 @@ export const ProfilePageContent: React.FC = () => {
           {isEditing ? (
             <>
               <Save className="w-4 h-4 mr-2" />
-              Save Changes
+              {t('common.save')}
             </>
           ) : (
             <>
               <Edit className="w-4 h-4 mr-2" />
-              Edit Profile
+              {t('common.edit')}
             </>
           )}
         </button>
-
+        {isAuthenticated && (
         <button
           onClick={handleLogout}
           className="flex-1 flex items-center justify-center px-6 py-3 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors"
         >
           <LogOut className="w-4 h-4 mr-2" />
-          {isGuestMode ? 'Exit Guest' : 'Logout'}
-        </button>
+              {t('common.logout')}
+            </button>
+        )}
       </div>
 
       {/* Guest Mode Notice */}
       {isGuestMode && (
-        <div className="p-6 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <div className="flex items-start space-x-4">
+        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="flex items-start">
             <UserCircle className="w-6 h-6 text-yellow-600 mt-1" />
             <div>
               <h4 className="text-lg font-medium text-yellow-800 mb-2">

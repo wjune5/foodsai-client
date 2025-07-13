@@ -1,14 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { categories, units } from '@/shared/constants/constants';
 import Image from 'next/image';
 import { InventoryCreate } from '../types/interfaces'
+import { Inventory } from '@/shared/entities/inventory';
 
 type AddInventoryProps = {
     onAdd: (item: InventoryCreate) => void;
+    onEdit?: (item: Inventory) => void;
+    initialData?: Inventory;
+    mode?: 'add' | 'edit';
 };
 
-const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd }) => {
+const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialData, mode = 'add' }) => {
     const t = useTranslations();
     const [form, setForm] = useState({
         name: '',
@@ -18,6 +22,21 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd }) => {
         expirationDate: '',
         img: ''
     });
+
+    // Initialize form with initial data when editing
+    useEffect(() => {
+        if (initialData && mode === 'edit') {
+            setForm({
+                name: initialData.name,
+                category: initialData.category,
+                quantity: initialData.quantity,
+                unit: initialData.unit,
+                expirationDate: initialData.expirationDate || '',
+                img: initialData.img || ''
+            });
+        }
+    }, [initialData, mode]);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         if (e.target.name === 'img' && e.target instanceof HTMLInputElement && e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
@@ -30,10 +49,15 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd }) => {
             setForm({ ...form, [e.target.name]: e.target.value });
         }
     };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onAdd({ ...form, dateFrom: new Date().toISOString() });
-        setForm({ name: '', category: 'vegetable', quantity: 1, unit: 'pcs', expirationDate: '', img: '' });
+        if (mode === 'edit' && onEdit && initialData) {
+            onEdit({ ...initialData, ...form });
+        } else {
+            onAdd({ ...form, dateFrom: new Date().toISOString() });
+            setForm({ name: '', category: 'vegetable', quantity: 1, unit: 'pcs', expirationDate: '', img: '' });
+        }
     };
 
     return (
@@ -84,7 +108,9 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd }) => {
                     />
                 )}
             </div>
-            <button type="submit" className="btn-cute w-full mt-2">{t('inventory.addItem')}</button>
+            <button type="submit" className="btn-cute w-full mt-2">
+                {mode === 'edit' ? t('common.save') : t('inventory.addItem')}
+            </button>
         </form>
 
     );
