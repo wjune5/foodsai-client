@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Heart, Settings, User, Sparkles } from 'lucide-react'
+import { Home, Heart, Settings, User, Sparkles, Tag } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import useLocalizedPath from '@/shared/hooks/useLocalizedPath'
 import { useAuth } from '@/shared/services/AuthContext'
@@ -18,6 +18,10 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
   SidebarTrigger,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
+  useSidebar,
 } from '@/shared/components/ui/sidebar'
 import { cn } from '@/lib/utils'
 
@@ -26,9 +30,20 @@ export function AppSidebar() {
   const localize = useLocalizedPath()
   const t = useTranslations()
   const { isGuestMode } = useAuth()
+  const { setOpenMobile, isMobile } = useSidebar()
 
-  const navigation = [
+  const handleLinkClick = () => {
+    if (isMobile) {
+      setOpenMobile(false)
+    }
+  }
+
+  const managementNavigation = [
     { name: t('navigation.inventory'), href: '/', icon: Home },
+    { name: t('navigation.categories'), href: '/categories', icon: Tag },
+  ]
+
+  const otherNavigation = [
     { name: t('navigation.favorites'), href: '/favorites', icon: Heart },
     { name: t('navigation.settings'), href: '/setting', icon: Settings },
   ]
@@ -54,28 +69,62 @@ export function AppSidebar() {
       </SidebarHeader>
       
       <SidebarContent>
-        <SidebarMenu>
-          {navigation.map((item) => {
-            const isActive = pathname === item.href
-            return (
-              <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={isActive}
-                  className={cn(
-                    'w-full',
-                    isActive ? 'bg-sidebar-accent text-sidebar-accent-foreground' : ''
-                  )}
-                >
-                  <Link href={localize(item.href)}>
-                    <item.icon className="w-4 h-4" />
-                    <span>{item.name}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            )
-          })}
-        </SidebarMenu>
+        {/* Management Group */}
+        <SidebarGroup>
+          <SidebarGroupLabel>{t('navigation.management')}</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {managementNavigation.map((item) => {
+                const isActive = pathname === item.href
+                return (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive}
+                      className={cn(
+                        'w-full',
+                        isActive ? 'bg-sidebar-accent text-sidebar-accent-foreground' : ''
+                      )}
+                    >
+                      <Link href={localize(item.href)} onClick={handleLinkClick}>
+                        <item.icon className="w-4 h-4" />
+                        <span>{item.name}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Other Navigation */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {otherNavigation.map((item) => {
+                const isActive = pathname === item.href
+                return (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive}
+                      className={cn(
+                        'w-full',
+                        isActive ? 'bg-sidebar-accent text-sidebar-accent-foreground' : ''
+                      )}
+                    >
+                      <Link href={localize(item.href)} onClick={handleLinkClick}>
+                        <item.icon className="w-4 h-4" />
+                        <span>{item.name}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
       
       <SidebarFooter>

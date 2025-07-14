@@ -16,6 +16,7 @@
     "sort": "排序",
     "close": "关闭",
     "back": "返回",
+    "backToInventory": "返回库存",
     "next": "下一步",
     "previous": "上一步",
     "submit": "提交",
@@ -43,12 +44,14 @@
   "navigation": {
     "dashboard": "仪表板",
     "inventory": "库存",
+    "categories": "分类",
     "recipes": "食谱",
     "favorites": "收藏",
     "profile": "个人资料",
     "support": "支持",
     "settings": "设置",
     "statistics": "统计",
+    "management": "管理",
     "openMenu": "打开主菜单",
     "hometitle": "Butlo",
     "guestMode": "访客模式"
@@ -91,6 +94,9 @@
     "expiredDays": "过期 {days} 天",
     "image": "图片",
     "unit": "单位",
+    "price": "价格",
+    "position": "位置",
+    "positionPlaceholder": "例如：顶层架子，冰箱门",
     "categories": {
       "all": "所有",
       "dairy": "乳制品",
@@ -105,6 +111,29 @@
       "snacks": "零食",
       "condiments": "调味品",
       "other": "其他"
+    }
+  },
+  "categories": {
+    "title": "分类管理",
+    "description": "通过创建和管理自定义分类来组织您的食物",
+    "manageCategories": "管理分类",
+    "manageDescription": "添加、编辑和组织您的食物分类",
+    "displayName": "显示名称",
+    "displayNamePlaceholder": "例如：新鲜蔬菜",
+    "internalName": "内部名称",
+    "internalNamePlaceholder": "例如：vegetables",
+    "internalNameHelp": "内部使用，仅限小写字母、数字和下划线",
+    "color": "颜色",
+    "preview": "预览",
+    "default": "默认",
+    "itemCount": "{count} 项",
+    "deleteConfirmation": "您确定要删除分类 \"{name}\" 吗？",
+    "deleteWarning": "此分类包含 {count} 项。它们将被移动到\"其他\"分类。",
+    "errors": {
+      "nameRequired": "内部名称是必需的",
+      "nameInvalid": "内部名称只能包含小写字母、数字和下划线",
+      "displayNameRequired": "显示名称是必需的",
+      "colorRequired": "颜色是必需的"
     }
   },
   "recipes": {

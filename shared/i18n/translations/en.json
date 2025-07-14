@@ -16,6 +16,7 @@
     "sort": "Sort",
     "close": "Close",
     "back": "Back",
+    "backToInventory": "Back to Inventory",
     "next": "Next",
     "previous": "Previous",
     "submit": "Submit",
@@ -43,12 +44,14 @@
   "navigation": {
     "dashboard": "Dashboard",
     "inventory": "Inventory",
+    "categories": "Categories",
     "recipes": "Recipes",
     "favorites": "Favorites",
     "profile": "Profile",
     "support": "Support",
     "settings": "Settings",
     "statistics": "Statistics",
+    "management": "Management",
     "openMenu": "Open main menu",
     "hometitle": "Butlo"
   },
@@ -90,6 +93,9 @@
     "expiredDays": "Expired {days} days ago",
     "image": "Image",
     "unit": "Unit",
+    "price": "Price",
+    "position": "Position",
+    "positionPlaceholder": "e.g., Top shelf, Fridge door",
     "categories": {
       "all": "All",
       "dairy": "Dairy",
@@ -104,6 +110,29 @@
       "snacks": "Snacks",
       "condiments": "Condiments",
       "other": "Other"
+    }
+  },
+  "categories": {
+    "title": "Categories",
+    "description": "Organize your food items by creating and managing custom categories",
+    "manageCategories": "Manage Categories",
+    "manageDescription": "Add, edit, and organize your food categories",
+    "displayName": "Display Name",
+    "displayNamePlaceholder": "e.g., Fresh Vegetables",
+    "internalName": "Internal Name",
+    "internalNamePlaceholder": "e.g., vegetables",
+    "internalNameHelp": "Used internally, lowercase letters, numbers and underscores only",
+    "color": "Color",
+    "preview": "Preview",
+    "default": "Default",
+    "itemCount": "{count} items",
+    "deleteConfirmation": "Are you sure you want to delete the category \"{name}\"?",
+    "deleteWarning": "This category contains {count} items. They will be moved to 'Other' category.",
+    "errors": {
+      "nameRequired": "Internal name is required",
+      "nameInvalid": "Internal name can only contain lowercase letters, numbers and underscores",
+      "displayNameRequired": "Display name is required",
+      "colorRequired": "Color is required"
     }
   },
   "recipes": {

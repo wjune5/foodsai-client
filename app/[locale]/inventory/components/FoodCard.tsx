@@ -5,6 +5,8 @@ import { Trash2, Dot, AlertTriangle, Calendar, Package, Info, Pencil, XIcon } fr
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/Dialog';
 import AddInventoryForm from './AddForm';
 import { DialogClose } from '@/shared/components/Dialog';
+import { useRouter } from 'next/navigation';
+import useLocalizedPath from '@/shared/hooks/useLocalizedPath';
 
 interface FoodCardProps {
   item: Inventory;
@@ -15,6 +17,8 @@ interface FoodCardProps {
 
 const FoodCard: React.FC<FoodCardProps> = ({ item, onClick, onDelete, onEdit }) => {
   const t = useTranslations();
+  const router = useRouter();
+  const localize = useLocalizedPath();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -38,7 +42,8 @@ const FoodCard: React.FC<FoodCardProps> = ({ item, onClick, onDelete, onEdit }) 
   const { daysLeft, daysNum, dotColor, status } = calculateDaysLeft(item.expirationDate);
 
   const handleClick = () => {
-    setShowDetailsDialog(true);
+    // Navigate to the details page instead of showing modal
+    router.push(localize(`/inventory/${item.id}`));
     if (onClick) {
       onClick(item);
     }

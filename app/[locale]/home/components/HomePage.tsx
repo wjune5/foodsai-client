@@ -27,6 +27,8 @@ const convertInventoryCreateToInventory = (item: InventoryCreate): Omit<Inventor
         quantity: item.quantity,
         originalQuantity: item.quantity,
         unit: item.unit,
+        price: item.price,
+        position: item.position,
         category: item.category,
         dateFrom: item.dateFrom || new Date().toISOString(),
         createdBy: 'guest',
@@ -276,7 +278,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                 <MessageCircle className="w-5 h-5 mr-2" />
             </button>}
             <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-                <DialogContent className="max-h-[85vh] overflow-y-auto pb-6" showCloseButton={false}>
+                <DialogContent className="max-w-md overflow-y-auto pb-6" showCloseButton={false}>
                     <DialogHeader className="sticky w-full top-0 bg-white z-10 pb-4 px-6 pt-6">
                         <div className="flex items-center justify-between">
                             <div>

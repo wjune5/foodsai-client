@@ -6,6 +6,8 @@ export interface Inventory {
     quantity: number;
     originalQuantity: number;
     unit: string;
+    price: number;
+    position: string;
     category: string;
     dateFrom: string;
     createdBy: string;

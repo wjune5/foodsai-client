@@ -20,7 +20,9 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
         quantity: 1,
         unit: 'pcs',
         expirationDate: '',
-        img: ''
+        img: '',
+        price: 0,
+        position: ''
     });
 
     // Initialize form with initial data when editing
@@ -32,7 +34,9 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                 quantity: initialData.quantity,
                 unit: initialData.unit,
                 expirationDate: initialData.expirationDate || '',
-                img: initialData.img || ''
+                img: initialData.img || '',
+                price: initialData.price || 0,
+                position: initialData.position || ''
             });
         }
     }, [initialData, mode]);
@@ -56,7 +60,7 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
             onEdit({ ...initialData, ...form });
         } else {
             onAdd({ ...form, dateFrom: new Date().toISOString() });
-            setForm({ name: '', category: 'vegetable', quantity: 1, unit: 'pcs', expirationDate: '', img: '' });
+            setForm({ name: '', category: 'vegetable', quantity: 1, unit: 'pcs', expirationDate: '', img: '', price: 0, position: '' });
         }
     };
 
@@ -87,6 +91,32 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
             <div>
                 <label className="block mb-1 font-medium">{t('inventory.expiryDate')}</label>
                 <input name="expirationDate" type="date" value={form.expirationDate} onChange={handleChange} className="w-full border rounded px-3 py-2" />
+            </div>
+            <div className="flex gap-2">
+                <div className="flex-1">
+                    <label className="block mb-1 font-medium">{t('inventory.price')}</label>
+                    <input 
+                        name="price" 
+                        type="number" 
+                        min="0" 
+                        step="0.01" 
+                        value={form.price} 
+                        onChange={handleChange} 
+                        className="w-full border rounded px-3 py-2" 
+                        placeholder="0.00"
+                    />
+                </div>
+                <div className="flex-1">
+                    <label className="block mb-1 font-medium">{t('inventory.position')}</label>
+                    <input 
+                        name="position" 
+                        type="text" 
+                        value={form.position} 
+                        onChange={handleChange} 
+                        className="w-full border rounded px-3 py-2" 
+                        placeholder={t('inventory.positionPlaceholder')}
+                    />
+                </div>
             </div>
             <div>
                 <label className="block mb-1 font-medium">{t('inventory.image')}</label>
