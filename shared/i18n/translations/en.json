@@ -96,6 +96,13 @@
     "price": "Price",
     "position": "Position",
     "positionPlaceholder": "e.g., Top shelf, Fridge door",
+    "systemIcons": "System Icons",
+    "uploadImage": "Upload Image",
+    "chooseIcon": "Choose from our collection of food icons",
+    "uploadCustom": "Upload your own image (max 5MB)",
+    "showMore": "Show More",
+    "showLess": "Show Less",
+    "allIcons": "All Icons",
     "categories": {
       "all": "All",
       "dairy": "Dairy",
@@ -232,7 +239,16 @@
     "content": "This is your chat window!",
     "placeholder": "Type a message...",
     "providerPlaceholder": "Select AI Provider",
-    "modelPlaceholder": "Select AI Model"
+    "modelPlaceholder": "Select AI Model",
+    "uploadImage": "Upload image",
+    "uploading": "Uploading...",
+    "uploadError": "Failed to upload image",
+    "uploadSuccess": "Image uploaded successfully",
+    "imageFilesOnly": "Please select an image file",
+    "fileSizeLimit": "File size must be less than 5MB",
+    "svgSizeLimit": "SVG files must be less than 1MB",
+    "invalidSvg": "Invalid SVG file format",
+    "svgUploaded": "SVG image uploaded successfully"
   },
   "user": {
     "title": "User",

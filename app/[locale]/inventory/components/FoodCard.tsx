@@ -7,6 +7,9 @@ import AddInventoryForm from './AddForm';
 import { DialogClose } from '@/shared/components/Dialog';
 import { useRouter } from 'next/navigation';
 import useLocalizedPath from '@/shared/hooks/useLocalizedPath';
+import { calculateDaysLeft } from '@/shared/utils/date_util';
+import { getIconByKey, DEFAULT_CATEGORY_ICONS, FoodIconKey } from '@/shared/constants/food-icons';
+import ChatImage from '@/shared/components/ChatImage';
 
 interface FoodCardProps {
   item: Inventory;
@@ -23,23 +26,7 @@ const FoodCard: React.FC<FoodCardProps> = ({ item, onClick, onDelete, onEdit }) 
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
 
-  const calculateDaysLeft = (expirationDate?: string) => {
-    if (!expirationDate) return { daysLeft: '', daysNum: null, dotColor: 'bg-gray-400', status: 'no-date' };
-    
-    const today = new Date();
-    const expDate = new Date(expirationDate);
-    const diff = Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    
-    if (diff < 0) {
-      return { daysLeft: 'Expired', daysNum: diff, dotColor: 'bg-red-500', status: 'expired' };
-    } else if (diff <= 3) {
-      return { daysLeft: `${diff}d`, daysNum: diff, dotColor: 'bg-yellow-400', status: 'warning' };
-    } else {
-      return { daysLeft: `${diff}d`, daysNum: diff, dotColor: 'bg-green-400', status: 'good' };
-    }
-  };
-
-  const { daysLeft, daysNum, dotColor, status } = calculateDaysLeft(item.expirationDate);
+  const { daysLeft, dotColor, status } = calculateDaysLeft(item.expirationDate);
 
   const handleClick = () => {
     // Navigate to the details page instead of showing modal
@@ -68,18 +55,61 @@ const FoodCard: React.FC<FoodCardProps> = ({ item, onClick, onDelete, onEdit }) 
     setShowEditDialog(false);
   };
 
+  // Render image or icon
+  const renderItemImage = () => {
+    if (item.img) {
+      if (item.img.startsWith('icon:')) {
+        // System icon
+        const iconKey = item.img.replace('icon:', '') as FoodIconKey;
+        const iconData = getIconByKey(iconKey);
+        if (iconData) {
+          const IconComponent = iconData.icon;
+          return (
+            <div className="w-10 h-10 rounded-full bg-pink-100 border border-pink-200 flex items-center justify-center">
+              <IconComponent className="w-5 h-5 text-pink-600" />
+            </div>
+          );
+        }
+      } else {
+        // Custom uploaded image
+        return (
+          <ChatImage
+            src={item.img}
+            alt={item.name}
+            className="w-10 h-10 rounded-full object-cover border border-gray-200"
+          />
+        );
+      }
+    }
+
+    // Fallback to default category icon
+    const defaultIconKey = DEFAULT_CATEGORY_ICONS[item.category] || DEFAULT_CATEGORY_ICONS.other;
+    const iconData = getIconByKey(defaultIconKey);
+    if (iconData) {
+      const IconComponent = iconData.icon;
+      return (
+        <div className="w-10 h-10 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center">
+          <IconComponent className="w-5 h-5 text-gray-600" />
+        </div>
+      );
+    }
+
+    // Final fallback - empty placeholder
+    return (
+      <div className="w-10 h-10 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center">
+        <Package className="w-5 h-5 text-gray-400" />
+      </div>
+    );
+  };
+
   return (
     <div
       className="inline-flex items-center gap-2 px-3 py-2 bg-white rounded-full shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200 cursor-pointer group max-w-xs relative"
       onClick={handleClick}
       title={`Select ${item.name} for recipe generation`}
     >
-      {/* Full Height Image */}
-      <img
-        src={item.img || 'https://waapple.org/wp-content/uploads/2021/06/Variety_Cosmic-Crisp-transparent-658x677.png'}
-        alt={item.name}
-        className="w-8 h-8 rounded-full object-cover border border-gray-200"
-      />
+      {/* Image or Icon */}
+      {renderItemImage()}
       
       {/* Name */}
       <span className="font-medium text-sm text-gray-800 truncate flex-1">

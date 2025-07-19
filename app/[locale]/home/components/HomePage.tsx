@@ -17,7 +17,7 @@ import { guestModeService } from '@/shared/services/GuestModeService';
 import FoodCard from '../../inventory/components/FoodCard';
 import { InventoryCreate } from '@/app/[locale]/inventory/types/interfaces';
 
-type ChatMessage = { text: string; role: 'user' | 'bot' };
+type ChatMessage = { text?: string; imageUrl?: string; role: 'user' | 'bot' };
 
 const convertInventoryCreateToInventory = (item: InventoryCreate): Omit<Inventory, 'id' | 'createTime' | 'updateTime'> => {
     return {
@@ -58,6 +58,14 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                 setChatMessages(prev => [...prev, { text: `Echo: ${msg}`, role: 'bot' }]);
             }, 500);
         }
+    };
+
+    const handleSendImage = (imageUrl: string) => {
+        setChatMessages(prev => [...prev, { imageUrl, role: 'user' }]);
+        // Demo: auto-bot reply after 0.5s
+        setTimeout(() => {
+            setChatMessages(prev => [...prev, { text: `I can see your image! That looks interesting.`, role: 'bot' }]);
+        }, 500);
     };
 
     useEffect(() => {
@@ -257,6 +265,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                 onClose={() => setIsChatOpen(false)}
                                 messages={chatMessages}
                                 onSend={handleSendMessage}
+                                onSendImage={handleSendImage}
                             />
                         </div>
                     )}
@@ -278,7 +287,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                 <MessageCircle className="w-5 h-5 mr-2" />
             </button>}
             <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-                <DialogContent className="max-w-md overflow-y-auto pb-6" showCloseButton={false}>
+                <DialogContent className="max-w-md max-h-[70vh] overflow-y-auto pb-6" showCloseButton={false}>
                     <DialogHeader className="sticky w-full top-0 bg-white z-10 pb-4 px-6 pt-6">
                         <div className="flex items-center justify-between">
                             <div>

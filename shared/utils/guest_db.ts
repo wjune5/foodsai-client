@@ -1,5 +1,5 @@
 import Dexie, { Table } from 'dexie';
-import { Inventory, Recipe } from '../entities/inventory';
+import { Inventory, InventoryImage, Recipe } from '../entities/inventory';
 import { GuestUser, UserSettings } from '../entities/user';
 
 // Define the database class
@@ -8,15 +8,35 @@ export class GuestDatabase extends Dexie {
   inventoryItems!: Table<Inventory>;
   recipes!: Table<Recipe>;
   settings!: Table<UserSettings>;
+  images!: Table<InventoryImage>;
 
   constructor() {
     super('ButloGuestDB');
     
     this.version(1).stores({
       users: '++id, username, email',
-      inventoryItems: '++id, name, category, expirationDate, dateFrom',
+      inventoryItems: '++id, name, category, expirationDate, dateFrom, img',
       recipes: '++id, name, tags',
       settings: '++id'
+    });
+
+    // Version 2: Add images table
+    this.version(2).stores({
+      users: '++id, username, email',
+      inventoryItems: '++id, name, category, expirationDate, dateFrom, img',
+      recipes: '++id, name, tags',
+      settings: '++id',
+      images: '++id, fileName, mimeType, size, data, createdBy, createdTime'
+    });
+
+    // Version 3: Add custom icons table
+    this.version(3).stores({
+      users: '++id, username, email',
+      inventoryItems: '++id, name, category, expirationDate, dateFrom, img',
+      recipes: '++id, name, tags',
+      settings: '++id',
+      images: '++id, fileName, mimeType, size, data, createdBy, createdTime',
+      customIcons: '++id, name, category, createdBy, createdTime, isActive'
     });
   }
 
@@ -220,13 +240,62 @@ export class GuestDatabase extends Dexie {
     });
   }
 
+  // Image management methods
+  async saveImage(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const base64Data = reader.result as string;
+          const imageId = crypto.randomUUID();
+          
+          const guestImage: InventoryImage = {
+            id: imageId,
+            fileName: file.name,
+            mimeType: file.type,
+            size: file.size,
+            data: base64Data,
+            createdBy: 'guest',
+            createdTime: new Date()
+          };
+
+          await this.images.add(guestImage);
+          // Return a local URL that can be used to retrieve the image
+          resolve(`/guest-image/${imageId}`);
+        } catch (error) {
+          reject(error);
+        }
+      };
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async getImage(imageId: string): Promise<InventoryImage | undefined> {
+    return await this.images.get(imageId);
+  }
+
+  async getImageDataUrl(imageId: string): Promise<string | null> {
+    const image = await this.getImage(imageId);
+    return image ? image.data : null;
+  }
+
+  async deleteImage(imageId: string): Promise<void> {
+    await this.images.delete(imageId);
+  }
+
+  async getAllImages(): Promise<InventoryImage[]> {
+    return await this.images.orderBy('createdTime').reverse().toArray();
+  }
+
   // Database utilities
   async clearAllData(): Promise<void> {
-    await this.transaction('rw', [this.users, this.inventoryItems, this.recipes, this.settings], async () => {
+    await this.transaction('rw', [this.users, this.inventoryItems, this.recipes, this.settings, this.images], async () => {
       await this.users.clear();
       await this.inventoryItems.clear();
       await this.recipes.clear();
       await this.settings.clear();
+      await this.images.clear();
     });
   }
 

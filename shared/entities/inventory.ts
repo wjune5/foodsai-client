@@ -16,6 +16,27 @@ export interface Inventory {
     updateTime: Date;
 }
 
+export interface InventoryImage {
+    id: string;
+    fileName: string;
+    mimeType: string;
+    size: number;
+    data: string;
+    createdBy: string;
+    createdTime: Date;
+}
+
+// Define custom icon interface for user-uploaded SVG icons
+export interface CustomIcon {
+  id: string;
+  name: string;
+  category: string;
+  svgContent: string; // Sanitized SVG content
+  createdBy: string;
+  createdTime: Date;
+  isActive: boolean;
+}
+
 export interface Recipe {
     id: string;
     name: string;
@@ -30,3 +51,4 @@ export interface Recipe {
     createTime: Date;
     updateTime: Date;
 }
+

@@ -3,8 +3,8 @@ export interface InventoryCreate {
   name: string;
   quantity: number;
   unit: string;
-  price: number;
-  position: string;
+  price?: number;
+  position?: string;
   category: string;
   expirationDate?: string;
   dateFrom?: string;

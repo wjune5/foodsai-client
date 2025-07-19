@@ -97,6 +97,13 @@
     "price": "价格",
     "position": "位置",
     "positionPlaceholder": "例如：顶层架子，冰箱门",
+    "systemIcons": "系统图标",
+    "uploadImage": "上传图片",
+    "chooseIcon": "从我们的食物图标库中选择",
+    "uploadCustom": "上传您自己的图片（最大5MB）",
+    "showMore": "显示更多",
+    "showLess": "显示更少",
+    "allIcons": "所有图标",
     "categories": {
       "all": "所有",
       "dairy": "乳制品",
@@ -233,6 +240,15 @@
     "content": "这是您的聊天窗口！",
     "placeholder": "输入消息...",
     "providerPlaceholder": "选择AI提供商",
-    "modelPlaceholder": "选择AI模型"
+    "modelPlaceholder": "选择AI模型",
+    "uploadImage": "上传图片",
+    "uploading": "上传中...",
+    "uploadError": "图片上传失败",
+    "uploadSuccess": "图片上传成功",
+    "imageFilesOnly": "请选择图片文件",
+    "fileSizeLimit": "文件大小必须小于5MB",
+    "svgSizeLimit": "SVG文件大小必须小于1MB",
+    "invalidSvg": "无效的SVG文件格式",
+    "svgUploaded": "SVG图片上传成功"
   }
 } 

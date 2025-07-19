@@ -135,6 +135,23 @@ export class GuestModeService {
     await guestDB.updateSettings(updates);
   }
 
+  // Guest image operations
+  async uploadImage(file: File): Promise<string> {
+    return await guestDB.saveImage(file);
+  }
+
+  async getImageDataUrl(imageId: string): Promise<string | null> {
+    return await guestDB.getImageDataUrl(imageId);
+  }
+
+  async deleteImage(imageId: string): Promise<void> {
+    await guestDB.deleteImage(imageId);
+  }
+
+  async getAllImages(): Promise<any[]> {
+    return await guestDB.getAllImages();
+  }
+
   // Data migration from guest to authenticated user
   async migrateToAuthenticatedUser(authenticatedUser: UserInfo): Promise<void> {
     try {

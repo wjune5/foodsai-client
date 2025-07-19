@@ -25,4 +25,7 @@ export const API_ENDPOINTS = {
   RECIPE_DELETE: `${API_BASE_URL}/recipe-delete`,
   RECIPE_GET: `${API_BASE_URL}/recipe-get`,
   RECIPE_LIST: `${API_BASE_URL}/recipe-list`,
+  
+  // File upload
+  UPLOAD: '/api/upload',
 };

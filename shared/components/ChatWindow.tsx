@@ -1,29 +1,58 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Maximize, Minimize, X } from 'lucide-react';
+import { Maximize, Minimize, X, Paperclip, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import ChatImage from './ChatImage';
+import { useImageUpload } from '../hooks/useImageUpload';
+import { Input } from './ui/input';
 
 interface ChatMessage {
-  text: string;
+  text?: string;
+  imageUrl?: string;
   role: 'user' | 'bot';
 }
 interface ChatWindowProps {
   onClose: () => void;
   messages: ChatMessage[];
   onSend: (msg: string) => void;
+  onSendImage: (imageUrl: string) => void;
 }
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ onClose, messages, onSend }) => {
+const ChatWindow: React.FC<ChatWindowProps> = ({ onClose, messages, onSend, onSendImage }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [input, setInput] = useState('');
   const t = useTranslations();
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { uploadImage, isUploading } = useImageUpload();
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       onSend(input);
       setInput('');
     }
+  };
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const result = await uploadImage(file);
+    
+    if (result.success && result.imageUrl) {
+      onSendImage(result.imageUrl);
+    } else {
+      alert(result.error || t('chat.uploadError'));
+    }
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleImageUploadClick = () => {
+    fileInputRef.current?.click();
   };
 
   useEffect(() => {
@@ -85,7 +114,24 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onClose, messages, onSend }) =>
                     : 'bg-gray-100 text-gray-800 rounded-bl-none'
                   } max-w-[70%] break-words`}
               >
-                {msg.text}
+                {msg.text && <div>{msg.text}</div>}
+                {msg.imageUrl && (
+                  <div className="mt-2">
+                    <ChatImage 
+                      src={msg.imageUrl} 
+                      alt="Uploaded image" 
+                      className="max-w-full h-auto rounded-lg cursor-pointer"
+                      style={{ maxHeight: '200px' }}
+                      onClick={() => {
+                        // For guest images, we can't open in new tab easily
+                        // For cloud images, we can
+                        if (!msg.imageUrl?.startsWith('/guest-image/')) {
+                          window.open(msg.imageUrl, '_blank');
+                        }
+                      }}
+                    />
+                  </div>
+                )}
               </div>
               {msg.role === 'user' && (
                 <div className="flex items-end ml-2">
@@ -98,15 +144,41 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onClose, messages, onSend }) =>
         <div ref={messagesEndRef} />
       </div>
       <div className="p-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] bg-gray-50 absolute bottom-0 left-0 right-0 w-full">
-        <input
-          ref={inputRef}
-          type="text"
-          className="w-full border rounded px-2 py-1"
-          placeholder={t('chat.placeholder')}
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={handleInputKeyDown}
-        />
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleImageUploadClick}
+            disabled={isUploading}
+            className={`p-2 rounded-full transition-colors ${
+              isUploading 
+                ? 'bg-gray-300 cursor-not-allowed' 
+                : 'bg-pink-100 hover:bg-pink-200 text-pink-600'
+            }`}
+            title={t('chat.uploadImage')}
+          >
+            {isUploading ? (
+              <Upload className="w-4 h-4 animate-spin" />
+            ) : (
+              <Paperclip className="w-4 h-4" />
+            )}
+          </button>
+          <Input 
+            ref={inputRef}
+            type="text"
+            className="flex-1 border rounded px-2 py-1"
+            placeholder={t('chat.placeholder')}
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={handleInputKeyDown}
+            disabled={isUploading}
+          />
+          <Input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+        </div>
       </div>
     </div>
   );
