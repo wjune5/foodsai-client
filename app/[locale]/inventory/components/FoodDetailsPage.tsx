@@ -145,7 +145,7 @@ const FoodDetailsPage: React.FC<FoodDetailsPageProps> = ({ item, onEdit, onDelet
           <div className="flex justify-between items-center py-2 border-b border-gray-100">
             <span className="text-gray-600">Added Date</span>
             <span className="font-medium text-gray-800">
-              {new Date(item.dateFrom).toLocaleDateString()}
+              {new Date(item.dateFrom || '').toLocaleDateString()}
             </span>
           </div>
           {item.expirationDate && (
