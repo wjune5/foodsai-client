@@ -232,7 +232,7 @@ const FoodCard: React.FC<FoodCardProps> = ({ item, onClick, onDelete, onEdit }) 
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">Added Date</span>
                 <span className="text-sm font-medium text-gray-800">
-                  {new Date(item.dateFrom).toLocaleDateString()}
+                  {item.dateFrom ? new Date(item.dateFrom).toLocaleDateString() : 'N/A'}
                 </span>
               </div>
               {item.expirationDate && (
