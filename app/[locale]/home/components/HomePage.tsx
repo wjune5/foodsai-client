@@ -7,46 +7,31 @@ import { Toaster } from 'react-hot-toast';
 import { Inventory } from '@/shared/entities/inventory';
 import { useTranslations } from 'next-intl';
 import { ReduxProvider } from '@/shared/providers/ReduxProvider';
-import { Plus as LucidePlus, ChefHat, MessageCircle, Search, XIcon } from 'lucide-react';
+import { Plus as LucidePlus, ChefHat, MessageCircle, Search } from 'lucide-react';
 import { categories } from '@/shared/constants/constants';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/Dialog';
-import AddInventoryForm from '@/app/[locale]/inventory/components/AddForm';
 import ChatWindow from '@/shared/components/ChatWindow';
 import Footer from '@/shared/components/Footer';
 import { guestModeService } from '@/shared/services/GuestModeService';
 import FoodCard from '../../inventory/components/FoodCard';
-import { InventoryCreate } from '@/app/[locale]/inventory/types/interfaces';
+import { useRouter } from 'next/navigation';
+import useLocalizedPath from '@/shared/hooks/useLocalizedPath';
 
 type ChatMessage = { text?: string; imageUrl?: string; role: 'user' | 'bot' };
 
-const convertInventoryCreateToInventory = (item: InventoryCreate): Omit<Inventory, 'id' | 'createTime' | 'updateTime'> => {
-    return {
-        name: item.name,
-        img: item.img || '',
-        expirationDate: item.expirationDate || '',
-        quantity: item.quantity,
-        originalQuantity: item.quantity,
-        unit: item.unit,
-        price: item.price || 0,
-        position: item.position || '',
-        category: item.category,
-        dateFrom: item.dateFrom || new Date().toISOString(),
-        createdBy: 'guest',
-        updatedBy: 'guest'
-    };
-};
+
 
 const HomePageContainer: FC = memo(function HomePageContainer() {
     const { isGuestMode, enterGuestMode, isAuthenticated } = useAuth();
     const [inventorys, setInventorys] = useState<Inventory[]>([]);
     const t = useTranslations();
+    const router = useRouter();
+    const localize = useLocalizedPath();
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('all');
     const [sortBy] = useState('name');
     const [sortOrder] = useState<'asc' | 'desc'>('asc');
-    const [isAddOpen, setIsAddOpen] = useState(false);
 
     const chatRef = useRef<HTMLDivElement>(null);
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -102,7 +87,10 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                     else comparison = new Date(a.expirationDate).getTime() - new Date(b.expirationDate).getTime();
                     break;
                 case 'dateFrom':
-                    comparison = new Date(a.dateFrom).getTime() - new Date(b.dateFrom).getTime();
+                    if (!a.dateFrom && !b.dateFrom) comparison = 0;
+                    else if (!a.dateFrom) comparison = 1;
+                    else if (!b.dateFrom) comparison = -1;
+                    else comparison = new Date(a.dateFrom).getTime() - new Date(b.dateFrom).getTime();
                     break;
                 default:
                     comparison = 0;
@@ -191,7 +179,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                         
                                         {/* Add Button */}
                                         {filteredItems.length > 0 && (
-                                            <button onClick={() => setIsAddOpen(true)} className="btn-cute flex items-center">
+                                            <button onClick={() => router.push(localize('/inventory/add'))} className="btn-cute flex items-center">
                                                 <LucidePlus className="w-4 h-4" />
                                             </button>
                                         )}
@@ -204,7 +192,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                     <h3 className="text-xl font-semibold text-gray-700 mb-2">{t('inventory.noItems')}</h3>
                                     <p className="text-gray-500 mb-6">{t('inventory.tryAdjustingFilters')}</p>
                                     <button
-                                        onClick={() => setIsAddOpen(true)}
+                                        onClick={() => router.push(localize('/inventory/add'))}
                                         className="btn-cute flex-col items-center"
                                     >
                                         <span className="flex justify-center w-full">
@@ -286,31 +274,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
             >
                 <MessageCircle className="w-5 h-5 mr-2" />
             </button>}
-            <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-                <DialogContent className="max-w-md max-h-[70vh] overflow-y-auto pb-6" showCloseButton={false}>
-                    <DialogHeader className="sticky w-full top-0 bg-white z-10 pb-4 px-6 pt-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <DialogTitle>Add New Item</DialogTitle>
-                            </div>
-                            <button
-                                onClick={() => setIsAddOpen(false)}
-                                className="rounded-xs opacity-70 transition-opacity hover:opacity-100 p-1"
-                            >
-                                <XIcon className="w-4 h-4" />
-                            </button>
-                        </div>
-                    </DialogHeader>
-                    <div className="px-6">
-                        <AddInventoryForm onAdd={item => {
-                            const convertedItem = convertInventoryCreateToInventory(item);
-                            guestModeService.addInventoryItem(convertedItem);
-                            setIsAddOpen(false);
-                            getInventoryItems();
-                        }} />
-                    </div>
-                </DialogContent>
-            </Dialog>
+
             <Toaster position="top-right" />
         </div>
     );

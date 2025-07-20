@@ -1,15 +1,15 @@
 export interface Inventory {
     id: string;
     name: string;
-    img: string;
-    expirationDate: string;
+    img?: string;
+    expirationDate?: string;
     quantity: number;
     originalQuantity: number;
     unit: string;
-    price: number;
-    position: string;
+    price?: number;
+    position?: string;
     category: string;
-    dateFrom: string;
+    dateFrom?: string;
     createdBy: string;
     updatedBy: string;
     createTime: Date;

@@ -6,7 +6,7 @@ export const calculateDaysLeft = (expirationDate?: string) => {
     const diff = Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
     if (diff < 0) {
-        return { daysLeft: `${-diff}d`, daysNum: diff, dotColor: 'bg-black-500', status: 'expired' };
+        return { daysLeft: `${-diff}d`, daysNum: diff, dotColor: 'bg-gray-500', status: 'expired' };
     } else if (diff <= 3) {
         return { daysLeft: `${diff}d`, daysNum: diff, dotColor: 'bg-red-400', status: 'warning' };
     } else if (diff <= 5) {

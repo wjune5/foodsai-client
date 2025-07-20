@@ -21,6 +21,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/components/ui/tabs';
 import EditableTable from '@/shared/components/editable_table';
 import { z } from 'zod';
+import { Stepper } from '@/shared/components/stepper';
+import { useSys } from '@/shared/hooks/useSys';
 
 type ImageSelectionMode = 'icon' | 'upload';
 type InputMode = 'photo' | 'manual';
@@ -48,9 +50,10 @@ type FormData = z.infer<typeof FormSchema>;
 const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialData, mode = 'add' }) => {
     const t = useTranslations();
     const { uploadImage, isUploading } = useImageUpload();
+    const isMobile = useSys();
 
     const [inputMode, setInputMode] = useState<InputMode>('photo');
-    const [imageMode, setImageMode] = useState<ImageSelectionMode>('icon');
+    const [imageMode, setImageMode] = useState<ImageSelectionMode>('upload'); // Start with upload for photo mode
     const [selectedIconKey, setSelectedIconKey] = useState<FoodIconKey>('carrot');
     const [recognizedItems, setRecognizedItems] = useState<Array<{
         action: string;
@@ -70,7 +73,7 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
             quantity: 1,
             unit: 'pcs',
             expirationDate: '',
-            img: `icon:${DEFAULT_CATEGORY_ICONS.vegetable}`,
+            img: '', // Start with empty image for photo mode
             price: 0,
             position: '',
         }
@@ -132,6 +135,13 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
             });
             setImageMode('upload');
             setRecognizedItems([]); // Clear recognized items
+        } else if (mode === 'manual') {
+            // Set default icon for manual mode if no image is set
+            const currentImg = form.getValues('img');
+            if (!currentImg) {
+                form.setValue('img', `icon:${DEFAULT_CATEGORY_ICONS.vegetable}`);
+                setImageMode('icon');
+            }
         }
     };
 
@@ -261,9 +271,9 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
         const currentImg = form.watch('img');
         
         return (
-            <div className="space-y-6 h-full">
+            <div className="space-y-6">
                 {/* Photo Upload Section */}
-                <div className="text-center">
+                <div className="text-center flex-shrink-0">
                     <div className="flex flex-col items-center gap-4">
                         {currentImg ? (
                             <ChatImage
@@ -281,19 +291,27 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                         )}
                         
                         <div className="flex gap-3">
-                            <label className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors cursor-pointer">
-                                <Camera className="w-4 h-4" />
-                                <span className="text-sm font-medium">{t('inventory.takePhoto')}</span>
-                                <Input 
-                                    type="file" 
-                                    accept="image/*"
-                                    capture="environment"
-                                    onChange={handleImageUpload}
-                                    disabled={isUploading}
-                                    className="hidden"
-                                />
-                            </label>
-                            <label className="flex items-center gap-2 px-4 py-2 bg-white text-pink-600 border border-pink-300 rounded-lg hover:bg-pink-50 transition-colors cursor-pointer">
+                            {/* Camera button - only show on mobile devices */}
+                            {isMobile && (
+                                <label className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors cursor-pointer">
+                                    <Camera className="w-4 h-4" />
+                                    <span className="text-sm font-medium">{t('inventory.takePhoto')}</span>
+                                    <Input 
+                                        type="file" 
+                                        accept="image/*"
+                                        capture="environment"
+                                        onChange={handleImageUpload}
+                                        disabled={isUploading}
+                                        className="hidden"
+                                    />
+                                </label>
+                            )}
+                            {/* Upload button - primary on desktop, secondary on mobile */}
+                            <label className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors cursor-pointer ${
+                                isMobile 
+                                    ? 'bg-white text-pink-600 border border-pink-300 hover:bg-pink-50' 
+                                    : 'bg-pink-500 text-white hover:bg-pink-600'
+                            }`}>
                                 <Upload className="w-4 h-4" />
                                 <span className="text-sm font-medium">{t('inventory.uploadFromGallery')}</span>
                                 <Input 
@@ -313,18 +331,19 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                 </div>
 
                 {/* Recognized Items Table */}
-                {currentImg && (<div className="space-y-4 pt-4 border-t border-pink-100">
-                    <div className="text-center">
-                        <p className="text-gray-600 text-sm">
-                            {t('inventory.reviewRecognizedItems')}
-                        </p>
+                {currentImg && (
+                    <div className="space-y-4 pt-4 border-t border-pink-100">
+                        <div className="text-center">
+                            <p className="text-gray-600 text-sm">
+                                {t('inventory.reviewRecognizedItems')}
+                            </p>
+                        </div>
+                        <EditableTable 
+                            data={recognizedItems}
+                            onDataChange={setRecognizedItems}
+                            showActionColumn={false}
+                        />               
                     </div>
-                    <EditableTable 
-                        data={recognizedItems}
-                        onDataChange={setRecognizedItems}
-                        showActionColumn={false}
-                    />                   
-                </div>
                 )}
             </div>
         );
@@ -499,11 +518,10 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                         <FormItem className="flex-1">
                             <FormLabel>{t('inventory.quantity')}</FormLabel>
                             <FormControl>
-                                <Input 
-                                    type="number" 
-                                    min="1" 
-                                    {...field}
-                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                <Stepper
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    min={1}
                                 />
                             </FormControl>
                             <FormMessage />
@@ -593,7 +611,8 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
                 {/* Input Mode Selection - Only show for add mode */}
                 {mode === 'add' ? (
                     <Tabs value={inputMode} onValueChange={handleInputModeChange} className="w-full">
@@ -608,40 +627,37 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                             </TabsTrigger>
                         </TabsList>
                         
-                        <TabsContent value="photo" className="mt-6 min-h-[500px]">
+                        <TabsContent value="photo" className="mt-6 space-y-6">
                             {renderPhotoMode()}
                         </TabsContent>
                         
-                        <TabsContent value="manual" className="mt-6 min-h-[500px]">
+                        <TabsContent value="manual" className="mt-6 space-y-6">
                             {renderManualMode()}
                         </TabsContent>
-                        
                         <button 
-                            type="submit" 
-                            disabled={isUploading || (inputMode === 'photo' && recognizedItems.length === 0)}
-                            className="btn-cute w-full mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
+                                type="submit" 
+                                disabled={isUploading || (inputMode === 'photo' && recognizedItems.length === 0)}
+                                className={`btn-cute w-full disabled:opacity-50 disabled:cursor-not-allowed ${inputMode === 'photo' && !form.watch('img') ? 'hidden' : ''}`}
+                            >
                             {isUploading 
                                 ? t('chat.uploading') 
-                                : inputMode === 'photo' 
-                                    ? `${t('inventory.addSelectedItems')} (${recognizedItems.length})`
-                                    : t('inventory.addItem')
+                                : t('inventory.addItem')
                             }
                         </button>
                     </Tabs>
                 ) : (
-                    <>
+                    <div className="space-y-6">
                         {/* Edit mode - always manual */}
                         {renderManualMode()}
                         
                         <button 
                             type="submit" 
                             disabled={isUploading}
-                            className="btn-cute w-full mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="btn-cute w-full disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isUploading ? t('chat.uploading') : t('common.save')}
                         </button>
-                    </>
+                    </div>
                 )}
             </form>
         </Form>

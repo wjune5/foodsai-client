@@ -3,7 +3,6 @@ import { Edit2, Save, X, Plus, Trash2 } from 'lucide-react';
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -12,6 +11,8 @@ import {
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { useTranslations } from 'next-intl';
+import { units } from '@/shared/constants/constants';
+import { Stepper } from './stepper';
 
 interface TableRow {
   action: string;
@@ -79,17 +80,16 @@ const EditableTable: React.FC<EditableTableProps> = ({ data, onDataChange, showA
   };
 
   return (
-    <div className="w-full overflow-hidden">
+    <div className="w-full overflow-hidden border rounded-lg">
       <div className="overflow-x-auto">
-        <Table>
-          <TableCaption>A list of editable data entries.</TableCaption>
+        <Table className="min-w-[600px]">
           <TableHeader>
             <TableRow>
               {showActionColumn && <TableHead className="min-w-[80px]">Action</TableHead>}
               <TableHead className="min-w-[120px]">Object</TableHead>
-              <TableHead className="min-w-[50px]">Unit</TableHead>
+              <TableHead className="min-w-[40px]">Unit</TableHead>
               <TableHead className="min-w-[50px]">Quantity</TableHead>
-              <TableHead className="min-w-[100px]">Expiration Date</TableHead>
+              <TableHead className="min-w-[60px]">Expiration Date</TableHead>
               <TableHead className="min-w-[80px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -128,32 +128,36 @@ const EditableTable: React.FC<EditableTableProps> = ({ data, onDataChange, showA
                     <div className="font-medium truncate">{row.entity}</div>
                   )}
                 </TableCell>
-                <TableCell className="min-w-[50px]">
+                <TableCell className="min-w-[40px]">
                   {editingRow === index ? (
-                    <Input
-                      type="text"
-                      value={editData?.unit || ''}
-                      onChange={(e) => updateEditData('unit', e.target.value)}
-                      className="w-full h-8 px-2 border border-gray-300 rounded focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-sm"
-                    />
+                    <Select value={editData?.unit || ''} onValueChange={(value) => updateEditData('unit', value)}>
+                      <SelectTrigger className="w-full h-8 px-2 border border-gray-300 rounded focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-sm">
+                        <SelectValue placeholder="Unit" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {units.map(unit => (
+                          <SelectItem key={unit} value={unit}>{unit}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   ) : (
                     <div className="truncate">{row.unit || '-'}</div>
                   )}
                 </TableCell>
                 <TableCell className="min-w-[50px]">
                   {editingRow === index ? (
-                    <Input
-                      type="number"
-                      value={editData?.quantity || ''}
-                      onChange={(e) => updateEditData('quantity', parseInt(e.target.value) || 0)}
-                      className="w-full h-8 px-2 border border-gray-300 rounded focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-sm"
+                    <Stepper
+                      value={editData?.quantity || 0}
+                      onChange={(value) => updateEditData('quantity', value)}
+                      min={1}
+                      className="w-full h-8"
                     />
                   ) : (
                     <div>{row.quantity || '-'}</div>
                   )}
                 </TableCell>
                
-                <TableCell className="min-w-[100px]">
+                <TableCell className="min-w-[60px]">
                   {editingRow === index ? (
                     <Input
                       type="date"
