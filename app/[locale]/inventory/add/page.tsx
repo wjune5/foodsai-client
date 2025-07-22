@@ -8,7 +8,7 @@ import { InventoryCreate } from '../types/interfaces';
 import { useAuth } from '@/shared/context/AuthContext';
 import { guestModeService } from '@/shared/services/GuestModeService';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { Inventory } from '@/shared/entities/inventory';
 
 export default function AddInventoryPage() {
@@ -83,21 +83,23 @@ export default function AddInventoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-pink-50">
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div className="bg-white rounded-2xl shadow-xl border border-pink-100 overflow-hidden">
-          <div className="p-6 md:p-8">
-            {/* The Form Component */}
-            <AddInventoryForm
-              onAdd={handleAddItem}
-              onEdit={handleEditItem}
-              mode={id ? 'edit' : 'add'}
-              initialData={initialData || undefined}
-            />
+    <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+      <div className="min-h-screen bg-pink-50">
+        {/* Main Content */}
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="bg-white rounded-2xl shadow-xl border border-pink-100 overflow-hidden">
+            <div className="p-6 md:p-8">
+              {/* The Form Component */}
+              <AddInventoryForm
+                onAdd={handleAddItem}
+                onEdit={handleEditItem}
+                mode={id ? 'edit' : 'add'}
+                initialData={initialData || undefined}
+              />
+            </div>
           </div>
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </Suspense>
   );
 } 

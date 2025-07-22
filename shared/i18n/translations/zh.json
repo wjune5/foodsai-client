@@ -269,5 +269,10 @@
     "svgSizeLimit": "SVG文件大小必须小于1MB",
     "invalidSvg": "无效的SVG文件格式",
     "svgUploaded": "SVG图片上传成功"
+  },
+  "user": {
+    "title": "用户",
+    "profile": "个人资料",
+    "logout": "退出登录"
   }
 } 
