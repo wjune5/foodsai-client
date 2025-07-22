@@ -11,7 +11,7 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
 import { Inventory } from '@/shared/entities/inventory';
 
-export default function AddInventoryPage() {
+function AddInventoryPageInner() {
   const router = useRouter();
   const t = useTranslations();
   const localize = useLocalizedPath();
@@ -83,23 +83,30 @@ export default function AddInventoryPage() {
   }
 
   return (
-    <Suspense fallback={<div>{t('loading')}</div>}>
-      <div className="min-h-screen bg-pink-50">
-        {/* Main Content */}
-        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="bg-white rounded-2xl shadow-xl border border-pink-100 overflow-hidden">
-            <div className="p-6 md:p-8">
-              {/* The Form Component */}
-              <AddInventoryForm
-                onAdd={handleAddItem}
-                onEdit={handleEditItem}
-                mode={id ? 'edit' : 'add'}
-                initialData={initialData || undefined}
-              />
-            </div>
+    <div className="min-h-screen bg-pink-50">
+      {/* Main Content */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="bg-white rounded-2xl shadow-xl border border-pink-100 overflow-hidden">
+          <div className="p-6 md:p-8">
+            {/* The Form Component */}
+            <AddInventoryForm
+              onAdd={handleAddItem}
+              onEdit={handleEditItem}
+              mode={id ? 'edit' : 'add'}
+              initialData={initialData || undefined}
+            />
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+export default function AddInventoryPage() {
+  const t = useTranslations();
+  return (
+    <Suspense fallback={<div>{t('loading')}</div>}>
+      <AddInventoryPageInner />
     </Suspense>
   );
 } 
