@@ -15,7 +15,7 @@ export default function AddInventoryPage() {
   const router = useRouter();
   const t = useTranslations();
   const localize = useLocalizedPath();
-  const { isAuthenticated, isGuestMode } = useAuth();
+  const { isGuestMode } = useAuth();
   const searchParams = useSearchParams();
   const id = searchParams.get('id');
   const [initialData, setInitialData] = useState<Inventory | null>(null);
@@ -83,7 +83,7 @@ export default function AddInventoryPage() {
   }
 
   return (
-    <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+    <Suspense fallback={<div>{t('loading')}</div>}>
       <div className="min-h-screen bg-pink-50">
         {/* Main Content */}
         <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
