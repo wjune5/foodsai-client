@@ -2,19 +2,37 @@
 
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
 import useLocalizedPath from '@/shared/hooks/useLocalizedPath';
 import AddInventoryForm from '../components/AddForm';
 import { InventoryCreate } from '../types/interfaces';
-import { useAuth } from '@/shared/services/AuthContext';
+import { useAuth } from '@/shared/context/AuthContext';
 import { guestModeService } from '@/shared/services/GuestModeService';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { Inventory } from '@/shared/entities/inventory';
 
 export default function AddInventoryPage() {
   const router = useRouter();
   const t = useTranslations();
   const localize = useLocalizedPath();
   const { isAuthenticated, isGuestMode } = useAuth();
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id');
+  const [initialData, setInitialData] = useState<Inventory | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchItem = async () => {
+      if (id && isGuestMode) {
+        setLoading(true);
+        const found = await guestModeService.getInventoryItem(id);
+        setInitialData(found || null);
+        setLoading(false);
+      }
+      // TODO: Add cloud API fetch for authenticated users
+    };
+    fetchItem();
+  }, [id, isGuestMode]);
 
   const handleAddItem = async (item: InventoryCreate) => {
     try {
@@ -35,19 +53,34 @@ export default function AddInventoryPage() {
           },
           body: JSON.stringify(item),
         });
-
         if (!response.ok) {
           throw new Error('Failed to add item');
         }
       }
-
       // Navigate back to inventory list
-      router.push(localize('/inventory'));
+      router.push(localize('/'));
     } catch (error) {
       console.error('Error adding item:', error);
       // TODO: Show error toast/notification
     }
   };
+
+  const handleEditItem = async (item: Inventory) => {
+    try {
+      if (isGuestMode) {
+        await guestModeService.updateInventoryItem(item.id, item);
+      } else {
+        // TODO: Handle authenticated user API call for update
+      }
+      router.push(localize('/inventory'));
+    } catch (error) {
+      console.error('Error editing item:', error);
+    }
+  };
+
+  if (id && loading) {
+    return <div className="p-8 text-center">Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-pink-50">
@@ -58,7 +91,9 @@ export default function AddInventoryPage() {
             {/* The Form Component */}
             <AddInventoryForm
               onAdd={handleAddItem}
-              mode="add"
+              onEdit={handleEditItem}
+              mode={id ? 'edit' : 'add'}
+              initialData={initialData || undefined}
             />
           </div>
         </div>

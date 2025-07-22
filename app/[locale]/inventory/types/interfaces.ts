@@ -1,3 +1,4 @@
+import { InventoryImage } from "@/shared/entities/inventory";
  
 export interface InventoryCreate {
   name: string;
@@ -6,9 +7,10 @@ export interface InventoryCreate {
   price?: number;
   position?: string;
   category: string;
-  expirationDate?: string;
-  dateFrom?: string;
-  img?: string;
+  expirationDays?: number;
+  dateFrom?: Date;
+  img?: InventoryImage;
+  iconColor?: string;
 }
 
 export interface InventoryUpdate {
@@ -16,6 +18,8 @@ export interface InventoryUpdate {
   quantity?: number;
   unit?: string;
   category?: string;
-  expirationDate?: string;
+  expirationDays?: number;
+  img?: InventoryImage;
+  iconColor?: string;
 }
 

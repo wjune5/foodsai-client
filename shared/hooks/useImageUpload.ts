@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useAuth } from '../services/AuthContext';
-import { guestModeService } from '../services/GuestModeService';
+import { useAuth } from '@/shared/context/AuthContext';
+import { guestModeService } from '@/shared/services/GuestModeService';
 
 export interface UploadResult {
   success: boolean;

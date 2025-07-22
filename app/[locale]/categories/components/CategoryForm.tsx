@@ -198,7 +198,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
           type="submit"
           className="flex-1 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors"
         >
-          {initialData ? t('common.save') : t('categories.addCategory')}
+          {t('common.save')}
         </button>
       </div>
     </form>

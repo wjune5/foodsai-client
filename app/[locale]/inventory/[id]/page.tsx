@@ -5,10 +5,9 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Inventory } from '@/shared/entities/inventory';
 import { guestModeService } from '@/shared/services/GuestModeService';
-import { useAuth } from '@/shared/services/AuthContext';
+import { useAuth } from '@/shared/context/AuthContext';
 import FoodDetailsPage from '../components/FoodDetailsPage';
 import Navigation from '@/shared/components/Navigation';
-import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import useLocalizedPath from '@/shared/hooks/useLocalizedPath';
 

@@ -2,7 +2,7 @@
 
 import { FC, useEffect, useRef, useState, memo } from 'react';
 import Navigation from '@/shared/components/Navigation';
-import { useAuth } from '@/shared/services/AuthContext';
+import { useAuth } from '@/shared/context/AuthContext';
 import { Toaster } from 'react-hot-toast';
 import { Inventory } from '@/shared/entities/inventory';
 import { useTranslations } from 'next-intl';
@@ -18,10 +18,8 @@ import useLocalizedPath from '@/shared/hooks/useLocalizedPath';
 
 type ChatMessage = { text?: string; imageUrl?: string; role: 'user' | 'bot' };
 
-
-
 const HomePageContainer: FC = memo(function HomePageContainer() {
-    const { isGuestMode, enterGuestMode, isAuthenticated } = useAuth();
+    const { isGuestMode, isAuthenticated } = useAuth();
     const [inventorys, setInventorys] = useState<Inventory[]>([]);
     const t = useTranslations();
     const router = useRouter();
@@ -53,12 +51,6 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
         }, 500);
     };
 
-    useEffect(() => {
-        
-        if (!isAuthenticated && !isGuestMode) {
-            enterGuestMode();
-        }
-    }, [isGuestMode]);
     // 2. Fetch inventory when mode is ready
     useEffect(() => {
         if (isAuthenticated || isGuestMode) {
@@ -81,10 +73,10 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                     comparison = a.category.localeCompare(b.category);
                     break;
                 case 'expirationDate':
-                    if (!a.expirationDate && !b.expirationDate) comparison = 0;
-                    else if (!a.expirationDate) comparison = 1;
-                    else if (!b.expirationDate) comparison = -1;
-                    else comparison = new Date(a.expirationDate).getTime() - new Date(b.expirationDate).getTime();
+                    if (!a.expirationDays && !b.expirationDays) comparison = 0;
+                    else if (!a.expirationDays) comparison = 1;
+                    else if (!b.expirationDays) comparison = -1;
+                    else comparison = new Date(a.expirationDays).getTime() - new Date(b.expirationDays).getTime();
                     break;
                 case 'dateFrom':
                     if (!a.dateFrom && !b.dateFrom) comparison = 0;
@@ -99,10 +91,8 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
         });
 
     const handleDelete = (id: string) => {
-        if (confirm(t('common.confirm'))) {
-            guestModeService.deleteInventoryItem(id);
-            getInventoryItems();
-        }
+        guestModeService.deleteInventoryItem(id);
+        getInventoryItems();
     };
 
     const handleEdit = (updatedItem: Inventory) => {

@@ -100,7 +100,9 @@ export class GuestModeService {
   async getInventoryItems(): Promise<Inventory[]> {
     return await guestDB.getInventoryItems();
   }
-
+  async getInventoryItem(id: string): Promise<Inventory | undefined> {
+    return await guestDB.getInventoryItem(id);
+  }
   async updateInventoryItem(id: string, updates: Partial<Inventory>): Promise<void> {
     await guestDB.updateInventoryItem(id, updates);
   }

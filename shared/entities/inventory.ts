@@ -1,15 +1,16 @@
 export interface Inventory {
     id: string;
     name: string;
-    img?: string;
-    expirationDate?: string;
+    img?: InventoryImage;
+    expirationDays?: number;
     quantity: number;
     originalQuantity: number;
     unit: string;
     price?: number;
     position?: string;
     category: string;
-    dateFrom?: string;
+    dateFrom?: Date;
+    iconColor?: string;
     createdBy: string;
     updatedBy: string;
     createTime: Date;
@@ -22,8 +23,6 @@ export interface InventoryImage {
     mimeType: string;
     size: number;
     data: string;
-    createdBy: string;
-    createdTime: Date;
 }
 
 // Define custom icon interface for user-uploaded SVG icons

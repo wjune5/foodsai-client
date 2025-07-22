@@ -9,10 +9,10 @@ import React, {
 } from 'react';
 import { AuthResult } from '@/shared/auth/interfaces';
 import { UserInfo } from '@/shared/entities/user';
-import { getUserInfo, refreshUserInfo } from './UserService';
+import { getUserInfo, refreshUserInfo } from '@/shared/services/UserService';
 import { getStrategy } from '@/shared/auth/strategies';
 import { getAuthInfo, setAuthInfo, clearAuthInfo, isAuthenticated } from '@/shared/auth/utils/auth_utils';
-import { guestModeService, GuestModeState } from './GuestModeService';
+import { guestModeService, GuestModeState } from '@/shared/services/GuestModeService';
 
 interface AuthContextType {
   user: UserInfo | null;

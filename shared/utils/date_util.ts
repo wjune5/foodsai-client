@@ -1,8 +1,8 @@
-export const calculateDaysLeft = (expirationDate?: string) => {
-    if (!expirationDate) return { daysLeft: '', daysNum: null, dotColor: 'bg-gray-400', status: 'no-date' };
+export const calculateDaysLeft = (dateFrom: Date, expirationDays?: number) => {
+    if (!expirationDays) return { daysLeft: '', daysNum: null, dotColor: 'bg-gray-400', status: 'no-date' };
 
     const today = new Date();
-    const expDate = new Date(expirationDate);
+    const expDate = new Date(dateFrom.getTime() + expirationDays * 24 * 60 * 60 * 1000);
     const diff = Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
     if (diff < 0) {

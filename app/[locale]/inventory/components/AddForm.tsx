@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { categories, units } from '@/shared/constants/constants';
-import { Upload, ImageIcon, Palette, Camera, Edit3 } from 'lucide-react';
+import { Upload, ImageIcon, Palette, Camera, Edit3, CalendarIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { InventoryCreate } from '../types/interfaces'
@@ -22,7 +22,12 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/components/ui
 import EditableTable from '@/shared/components/editable_table';
 import { z } from 'zod';
 import { Stepper } from '@/shared/components/stepper';
+import { Button } from '@/shared/components/ui/button';
+import { Calendar } from '@/shared/components/ui/calendar';
 import { useSys } from '@/shared/hooks/useSys';
+import { cn } from '@/lib/utils';
+import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
+import { format } from 'date-fns';
 
 type ImageSelectionMode = 'icon' | 'upload';
 type InputMode = 'photo' | 'manual';
@@ -39,10 +44,18 @@ const FormSchema = z.object({
     category: z.string().min(1, 'Category is required'),
     quantity: z.coerce.number().min(1, 'Quantity must be at least 1'),
     unit: z.string().min(1, 'Unit is required'),
-    expirationDate: z.string().optional(),
-    img: z.string().optional(),
+    expirationDays: z.number().min(1, 'Expiration days must be at least 1').optional(),
+    img: z.object({
+        id: z.string(),
+        fileName: z.string(),
+        mimeType: z.string(),
+        size: z.number(),
+        data: z.string()
+    }).optional(),
     price: z.coerce.number().min(0, 'Price must be 0 or greater').optional(),
     position: z.string().optional(),
+    iconColor: z.string().optional(),
+    dateFrom: z.date().optional(),
 });
 
 type FormData = z.infer<typeof FormSchema>;
@@ -52,8 +65,8 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
     const { uploadImage, isUploading } = useImageUpload();
     const isMobile = useSys();
 
-    const [inputMode, setInputMode] = useState<InputMode>('photo');
-    const [imageMode, setImageMode] = useState<ImageSelectionMode>('upload'); // Start with upload for photo mode
+    const [inputMode, setInputMode] = useState<InputMode>('manual');
+    const [imageMode, setImageMode] = useState<ImageSelectionMode>('icon'); // Start with upload for photo mode
     const [selectedIconKey, setSelectedIconKey] = useState<FoodIconKey>('carrot');
     const [recognizedItems, setRecognizedItems] = useState<Array<{
         action: string;
@@ -62,48 +75,73 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
         quantity?: number;
         unit?: string;
         description?: string;
-        expirationDate?: string;
+        expirationDays?: number;
     }>>([]);
-
+    const [iconColor, setIconColor] = useState<string>('#db2777'); // Default to pink-600
+    const defaultFormData: FormData = {
+        name: '',
+        category: 'vegetable',
+        quantity: 1,
+        unit: 'pcs',
+        expirationDays: 0,
+        img: {
+            id: '',
+            fileName: '',
+            mimeType: '',
+            size: 0,
+            data: ''
+        },
+        price: 0,
+        position: '',
+        dateFrom: new Date(),
+        iconColor: '#db2777', // Reset icon color to default
+    }
     const form = useForm<FormData>({
         resolver: zodResolver(FormSchema),
-        defaultValues: {
-            name: '',
-            category: 'vegetable',
-            quantity: 1,
-            unit: 'pcs',
-            expirationDate: '',
-            img: '', // Start with empty image for photo mode
-            price: 0,
-            position: '',
-        }
+        defaultValues: defaultFormData
     });
+    const [open, setOpen] = useState(false)
 
     // Initialize form with initial data when editing
     useEffect(() => {
         if (initialData && mode === 'edit') {
             // When editing, always start with manual mode to show all fields
             setInputMode('manual');
-            
+
             form.reset({
                 name: initialData.name,
                 category: initialData.category,
                 quantity: initialData.quantity,
                 unit: initialData.unit,
-                expirationDate: initialData.expirationDate || '',
-                img: initialData.img || '',
+                expirationDays: initialData.expirationDays || 1,
+                img: initialData.img || {
+                    id: '',
+                    fileName: '',
+                    mimeType: '',
+                    size: 0,
+                    data: ''
+                },
                 price: initialData.price || 0,
-                position: initialData.position || ''
+                position: initialData.position || '',
+                dateFrom: initialData.dateFrom || new Date(),
+                iconColor: (initialData as any).iconColor || '#db2777', // Set icon color if present in initialData
             });
 
             // Determine if initial data has a custom image or icon
             if (initialData.img) {
-                if (initialData.img.startsWith('icon:')) {
+                if (initialData.img.mimeType === 'image/icon') {
                     setImageMode('icon');
-                    setSelectedIconKey(initialData.img.replace('icon:', '') as FoodIconKey);
+                    setSelectedIconKey(initialData.img.fileName.replace('icon:', '') as FoodIconKey);
+                    setIconColor(initialData.iconColor || '#db2777');
                 } else {
                     setImageMode('upload');
                 }
+            }
+            // Set icon color if present in initialData (optional: expects initialData.iconColor)
+            if ((initialData as any).iconColor) {
+                setIconColor((initialData as any).iconColor);
+            } else {
+                setIconColor('#db2777');
             }
         }
     }, [initialData, mode, form]);
@@ -114,7 +152,13 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
         if (imageMode === 'icon') {
             const defaultIcon = DEFAULT_CATEGORY_ICONS[currentCategory];
             setSelectedIconKey(defaultIcon);
-            form.setValue('img', `icon:${defaultIcon}`);
+            form.setValue('img', {
+                id: '',
+                fileName: `icon:${defaultIcon}`,
+                mimeType: 'image/icon',
+                size: 0,
+                data: `${defaultIcon}`
+            });
         }
     }, [form.watch('category'), imageMode, form]);
 
@@ -123,24 +167,22 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
         setInputMode(mode);
         if (mode === 'photo') {
             // Reset form to minimal state for photo mode
-            form.reset({
-                name: '',
-                category: 'vegetable',
-                quantity: 1,
-                unit: 'pcs',
-                expirationDate: '',
-                img: '',
-                price: 0,
-                position: '',
-            });
+            form.reset(defaultFormData);
             setImageMode('upload');
             setRecognizedItems([]); // Clear recognized items
         } else if (mode === 'manual') {
             // Set default icon for manual mode if no image is set
             const currentImg = form.getValues('img');
             if (!currentImg) {
-                form.setValue('img', `icon:${DEFAULT_CATEGORY_ICONS.vegetable}`);
+                form.setValue('img', {
+                    id: '',
+                    fileName: `icon:${DEFAULT_CATEGORY_ICONS.vegetable}`,
+                    mimeType: 'image/icon',
+                    size: 0,
+                    data: `${DEFAULT_CATEGORY_ICONS.vegetable}`
+                });
                 setImageMode('icon');
+                setIconColor('#db2777'); // Reset icon color to default
             }
         }
     };
@@ -151,15 +193,34 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
             const currentCategory = form.getValues('category');
             const defaultIcon = DEFAULT_CATEGORY_ICONS[currentCategory];
             setSelectedIconKey(defaultIcon);
-            form.setValue('img', `icon:${defaultIcon}`);
+            form.setValue('img', {
+                id: '',
+                fileName: `icon:${defaultIcon}`,
+                mimeType: 'image/icon',
+                size: 0,
+                data: `${defaultIcon}`
+            });
+            setIconColor('#db2777'); // Reset icon color to default
         } else {
-            form.setValue('img', '');
+            form.setValue('img', {
+                id: '',
+                fileName: '',
+                mimeType: '',
+                size: 0,
+                data: ''
+            });
         }
     };
 
     const handleIconSelect = (iconKey: FoodIconKey) => {
         setSelectedIconKey(iconKey);
-        form.setValue('img', `icon:${iconKey}`);
+        form.setValue('img', {
+            id: '',
+            fileName: `icon:${iconKey}`,
+            mimeType: 'image/icon',
+            size: 0,
+            data: `${iconKey}`
+        });
     };
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -169,8 +230,14 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
         // Same handling for both camera capture and gallery upload
         const result = await uploadImage(file);
         if (result.success && result.imageUrl) {
-            form.setValue('img', result.imageUrl);
-            
+            form.setValue('img', {
+                id: '',
+                fileName: result.imageUrl,
+                mimeType: 'image/jpeg',
+                size: 0,
+                data: result.imageUrl
+            });
+
             // If in photo mode, populate recognized items
             // This applies to both camera and gallery images
             if (inputMode === 'photo') {
@@ -188,7 +255,7 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                     },
                     {
                         action: 'add',
-                        table: 'Inventory', 
+                        table: 'Inventory',
                         entity: 'Banana',
                         quantity: 2,
                         unit: 'pcs',
@@ -217,7 +284,7 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
 
     const onSubmit = (data: FormData) => {
         if (mode === 'edit' && onEdit && initialData) {
-            onEdit({ ...initialData, ...data });
+            onEdit({ ...initialData, ...data, iconColor });
         } else {
             if (inputMode === 'photo') {
                 // Handle multiple items from photo recognition
@@ -228,39 +295,28 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                         category: 'other', // TODO: Map from description or add category field to table
                         quantity: item.quantity || 1,
                         unit: item.unit || 'pcs',
-                        expirationDate: item.expirationDate || '',
-                        img: form.getValues('img'),
+                        expirationDays: item.expirationDays || 0,
+                        img: form.getValues('img') || {
+                            id: '',
+                            fileName: '',
+                            mimeType: '',
+                            size: 0,
+                            data: ''
+                        },
                         price: 0, // TODO: Add price field to table if needed
                         position: '',
-                        dateFrom: new Date().toISOString()
+                        dateFrom: data.dateFrom || new Date(),
+                        iconColor,
                     };
                     onAdd(inventoryItem);
                 });
                 // Reset photo mode
-                form.reset({
-                    name: '',
-                    category: 'vegetable',
-                    quantity: 1,
-                    unit: 'pcs',
-                    expirationDate: '',
-                    img: '',
-                    price: 0,
-                    position: ''
-                });
+                form.reset(defaultFormData);
                 setRecognizedItems([]);
             } else {
                 // Handle single item from manual mode
-                onAdd({ ...data, dateFrom: new Date().toISOString() });
-                form.reset({
-                    name: '',
-                    category: 'vegetable',
-                    quantity: 1,
-                    unit: 'pcs',
-                    expirationDate: '',
-                    img: `icon:${DEFAULT_CATEGORY_ICONS.vegetable}`,
-                    price: 0,
-                    position: ''
-                });
+                onAdd({ ...data, dateFrom: data.dateFrom, iconColor });
+                form.reset(defaultFormData);
                 setSelectedIconKey(DEFAULT_CATEGORY_ICONS.vegetable);
                 setImageMode('icon');
             }
@@ -269,15 +325,15 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
 
     const renderPhotoMode = () => {
         const currentImg = form.watch('img');
-        
+
         return (
             <div className="space-y-6">
                 {/* Photo Upload Section */}
                 <div className="text-center flex-shrink-0">
                     <div className="flex flex-col items-center gap-4">
-                        {currentImg ? (
+                        {currentImg?.id ? (
                             <ChatImage
-                                src={currentImg}
+                                src={currentImg.data}
                                 alt="Uploaded food item"
                                 className="w-48 h-48 object-cover rounded-xl border-4 border-pink-200 shadow-lg"
                             />
@@ -289,15 +345,15 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                                 </div>
                             </div>
                         )}
-                        
+
                         <div className="flex gap-3">
                             {/* Camera button - only show on mobile devices */}
                             {isMobile && (
                                 <label className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors cursor-pointer">
                                     <Camera className="w-4 h-4" />
                                     <span className="text-sm font-medium">{t('inventory.takePhoto')}</span>
-                                    <Input 
-                                        type="file" 
+                                    <Input
+                                        type="file"
                                         accept="image/*"
                                         capture="environment"
                                         onChange={handleImageUpload}
@@ -307,15 +363,14 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                                 </label>
                             )}
                             {/* Upload button - primary on desktop, secondary on mobile */}
-                            <label className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors cursor-pointer ${
-                                isMobile 
-                                    ? 'bg-white text-pink-600 border border-pink-300 hover:bg-pink-50' 
+                            <label className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors cursor-pointer ${isMobile
+                                    ? 'bg-white text-pink-600 border border-pink-300 hover:bg-pink-50'
                                     : 'bg-pink-500 text-white hover:bg-pink-600'
-                            }`}>
+                                }`}>
                                 <Upload className="w-4 h-4" />
                                 <span className="text-sm font-medium">{t('inventory.uploadFromGallery')}</span>
-                                <Input 
-                                    type="file" 
+                                <Input
+                                    type="file"
                                     accept="image/*"
                                     onChange={handleImageUpload}
                                     disabled={isUploading}
@@ -323,7 +378,7 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                                 />
                             </label>
                         </div>
-                        
+
                         {isUploading && (
                             <p className="text-pink-600 text-sm animate-pulse">{t('chat.uploading')}</p>
                         )}
@@ -338,11 +393,11 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                                 {t('inventory.reviewRecognizedItems')}
                             </p>
                         </div>
-                        <EditableTable 
+                        <EditableTable
                             data={recognizedItems}
                             onDataChange={setRecognizedItems}
                             showActionColumn={false}
-                        />               
+                        />
                     </div>
                 )}
             </div>
@@ -351,22 +406,22 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
 
     const renderIconPreview = () => {
         const currentImg = form.watch('img');
-        
-        if (imageMode === 'icon' && currentImg?.startsWith('icon:')) {
-            const iconKey = currentImg.replace('icon:', '') as FoodIconKey;
+
+        if (imageMode === 'icon' && currentImg?.mimeType === 'image/icon') {
+            const iconKey = currentImg.fileName.replace('icon:', '') as FoodIconKey;
             const iconData = getIconByKey(iconKey);
             if (iconData) {
                 const IconComponent = iconData.icon;
                 return (
                     <div className="flex items-center justify-center w-16 h-16 bg-pink-100 rounded-lg border-2 border-pink-200">
-                        <IconComponent className="w-8 h-8 text-pink-600" />
+                        <IconComponent className="w-8 h-8" style={{ color: iconColor }} />
                     </div>
                 );
             }
-        } else if (currentImg && !currentImg.startsWith('icon:')) {
+        } else if (currentImg && currentImg.mimeType === 'image/jpeg') {
             return (
                 <ChatImage
-                    src={currentImg}
+                    src={currentImg.data}
                     alt="Preview"
                     className="w-16 h-16 object-cover rounded-lg border-2 border-pink-200"
                 />
@@ -394,122 +449,6 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                     </FormItem>
                 )}
             />
-            
-            <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>{t('inventory.category')}</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                                <SelectTrigger>
-                                    <SelectValue placeholder={t('inventory.category')} />
-                                </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                {categories.map(cat => (
-                                    <SelectItem key={cat} value={cat}>
-                                        {t(`inventory.categories.${cat}`)}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
-                    </FormItem>
-                )}
-            />
-
-            {/* Image Selection Section */}
-            <div>
-                <label className="block mb-3 font-medium">{t('inventory.image')}</label>
-                
-                {/* Mode Selection Tabs */}
-                <div className="flex gap-2 mb-4">
-                    <button
-                        type="button"
-                        onClick={() => handleImageModeChange('icon')}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${
-                            imageMode === 'icon' 
-                                ? 'bg-pink-100 border-pink-300 text-pink-700' 
-                                : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'
-                        }`}
-                    >
-                        <Palette className="w-4 h-4" />
-                        <span className="text-sm font-medium">{t('inventory.systemIcons')}</span>
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => handleImageModeChange('upload')}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${
-                            imageMode === 'upload' 
-                                ? 'bg-pink-100 border-pink-300 text-pink-700' 
-                                : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'
-                        }`}
-                    >
-                        <Upload className="w-4 h-4" />
-                        <span className="text-sm font-medium">{t('inventory.uploadImage')}</span>
-                    </button>
-                </div>
-
-                {/* Image Preview and Icon Selection */}
-                <div className="flex items-center gap-4 mb-4">
-                    {renderIconPreview()}
-                    <div className="flex-1">
-                        <p className="text-sm text-gray-600 mb-2">
-                            {imageMode === 'icon' 
-                                ? t('inventory.chooseIcon')
-                                : t('inventory.uploadCustom')
-                            }
-                        </p>
-                        
-                        {/* Icon Selection - Select Component */}
-                        {imageMode === 'icon' && (
-                            <Select value={selectedIconKey} onValueChange={handleIconSelect}>
-                                <SelectTrigger className="w-full">
-                                    <SelectValue>
-                                        <div className="flex items-center gap-2">
-                                            {selectedIconData && (
-                                                <selectedIconData.icon className="w-4 h-4 text-pink-600" />
-                                            )}
-                                            <span>{selectedIconData?.label}</span>
-                                        </div>
-                                    </SelectValue>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {ALL_FOOD_ICONS.map((iconData) => {
-                                        const IconComponent = iconData.icon;
-                                        return (
-                                            <SelectItem key={iconData.key} value={iconData.key}>
-                                                <div className="flex items-center gap-2">
-                                                    <IconComponent className="w-4 h-4 text-pink-600" />
-                                                    <span>{iconData.label}</span>
-                                                </div>
-                                            </SelectItem>
-                                        );
-                                    })}
-                                </SelectContent>
-                            </Select>
-                        )}
-
-                        {/* Image Upload */}
-                        {imageMode === 'upload' && (
-                            <div>
-                                <Input 
-                                    type="file" 
-                                    accept="image/*"
-                                    onChange={handleImageUpload}
-                                    disabled={isUploading}
-                                />
-                                {isUploading && (
-                                    <p className="text-sm text-pink-600 mt-2">{t('chat.uploading')}</p>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-
             <div className="flex gap-2">
                 <FormField
                     control={form.control}
@@ -530,13 +469,142 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                 />
                 <FormField
                     control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                        <FormItem className="flex-1">
+                            <FormLabel>{t('inventory.category')}</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder={t('inventory.category')} />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {categories.map(cat => (
+                                        <SelectItem key={cat} value={cat}>
+                                            {t(`inventory.categories.${cat}`)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+            </div>
+            {/* Image Selection Section */}
+            <div>
+                <label className="block mb-3 font-medium">{t('inventory.image')}</label>
+
+                {/* Mode Selection Tabs */}
+                <div className="flex gap-2 mb-4">
+                    <button
+                        type="button"
+                        onClick={() => handleImageModeChange('icon')}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${imageMode === 'icon'
+                                ? 'bg-pink-100 border-pink-300 text-pink-700'
+                                : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'
+                            }`}
+                    >
+                        <Palette className="w-4 h-4" />
+                        <span className="text-sm font-medium">{t('inventory.systemIcons')}</span>
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => handleImageModeChange('upload')}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${imageMode === 'upload'
+                                ? 'bg-pink-100 border-pink-300 text-pink-700'
+                                : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'
+                            }`}
+                    >
+                        <Upload className="w-4 h-4" />
+                        <span className="text-sm font-medium">{t('inventory.uploadImage')}</span>
+                    </button>
+                </div>
+
+                {/* Image Preview and Icon Selection */}
+                <div className="flex items-center gap-4 mb-4">
+                    {renderIconPreview()}
+                    <div className="flex-1">
+                        <p className="text-sm text-gray-600 mb-2">
+                            {imageMode === 'icon'
+                                ? t('inventory.chooseIcon')
+                                : t('inventory.uploadCustom')
+                            }
+                        </p>
+
+                        {/* Icon Selection - Select Component */}
+                        {imageMode === 'icon' && (
+                            <div className="flex items-center gap-2">
+                                <Select value={selectedIconKey} onValueChange={handleIconSelect}>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue>
+                                            <div className="flex items-center gap-2">
+                                                {selectedIconData && (
+                                                    <selectedIconData.icon className="w-4 h-4" style={{ color: iconColor }} />
+                                                )}
+                                                <span>{selectedIconData?.label}</span>
+                                            </div>
+                                        </SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {ALL_FOOD_ICONS.map((iconData) => {
+                                            const IconComponent = iconData.icon;
+                                            return (
+                                                <SelectItem key={iconData.key} value={iconData.key}>
+                                                    <div className="flex items-center gap-2">
+                                                        <IconComponent className="w-4 h-4" style={{ color: iconColor }} />
+                                                        <span>{iconData.label}</span>
+                                                    </div>
+                                                </SelectItem>
+                                            );
+                                        })}
+                                    </SelectContent>
+                                </Select>
+                                {/* Color Picker */}
+                                <div className="mt-2 flex items-center gap-2">
+                                    <label htmlFor="icon-color-picker" className="text-sm text-gray-600">{t('inventory.iconColor') || 'Icon Color'}:</label>
+                                    <input
+                                        id="icon-color-picker"
+                                        type="color"
+                                        value={iconColor}
+                                        onChange={e => setIconColor(e.target.value)}
+                                        className="w-8 h-8 p-0 border-0 bg-transparent cursor-pointer"
+                                        style={{ background: 'none' }}
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Image Upload */}
+                        {imageMode === 'upload' && (
+                            <div>
+                                <Input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageUpload}
+                                    disabled={isUploading}
+                                />
+                                {isUploading && (
+                                    <p className="text-sm text-pink-600 mt-2">{t('chat.uploading')}</p>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            <div className="flex gap-2">
+                <FormField
+                    control={form.control}
                     name="unit"
                     render={({ field }) => (
                         <FormItem className="flex-1">
                             <FormLabel>{t('inventory.unit')}</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                                 <FormControl>
-                                    <SelectTrigger>
+                                    <SelectTrigger className="w-full">
                                         <SelectValue placeholder={t('inventory.unit')} />
                                     </SelectTrigger>
                                 </FormControl>
@@ -550,9 +618,6 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                         </FormItem>
                     )}
                 />
-            </div>
-            
-            <div className="flex gap-2">
                 <FormField
                     control={form.control}
                     name="price"
@@ -560,10 +625,10 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                         <FormItem className="flex-1">
                             <FormLabel>{t('inventory.price')}</FormLabel>
                             <FormControl>
-                                <Input 
-                                    type="number" 
-                                    min="0" 
-                                    step="0.01" 
+                                <Input
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
                                     placeholder="0.00"
                                     {...field}
                                     onChange={(e) => field.onChange(Number(e.target.value))}
@@ -573,32 +638,79 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                         </FormItem>
                     )}
                 />
+            </div>
+
+            <div className="flex gap-2">
                 <FormField
                     control={form.control}
-                    name="position"
+                    name="dateFrom"
                     render={({ field }) => (
                         <FormItem className="flex-1">
-                            <FormLabel>{t('inventory.position')}</FormLabel>
+                            <FormLabel>{t('inventory.startDate')}</FormLabel>
+                            <Popover open={open} onOpenChange={setOpen}>
+                                <PopoverTrigger asChild>
+                                    <FormControl>
+                                        <Button
+                                            variant={"outline"}
+                                            className={cn(
+                                                "w-full pl-3 text-left font-normal",
+                                                !field.value && "text-muted-foreground"
+                                            )}
+                                        >
+                                            {field.value ? (
+                                                format(field.value, "PPP")
+                                            ) : (
+                                                <span>Pick a date</span>
+                                            )}
+                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                        </Button>
+                                    </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                    <Calendar
+                                        mode="single"
+                                        selected={field.value}
+                                        onSelect={(date) => {
+                                            field.onChange(date)
+                                            setOpen(false)
+                                        }}
+                                        disabled={(date) =>
+                                            date > new Date() || date < new Date("1900-01-01")
+                                        }
+                                        captionLayout="dropdown"
+                                    />
+                                </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="expirationDays"
+                    render={({ field }) => (
+                        <FormItem className="flex-1">
+                            <FormLabel>{t('inventory.expiryDays')}</FormLabel>
                             <FormControl>
-                                <Input 
-                                    placeholder={t('inventory.positionPlaceholder')}
-                                    {...field}
-                                />
+                                <Stepper value={field.value} onChange={field.onChange} min={-1} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
             </div>
-            
+
             <FormField
                 control={form.control}
-                name="expirationDate"
+                name="position"
                 render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>{t('inventory.expiryDate')}</FormLabel>
+                    <FormItem className="flex-1">
+                        <FormLabel>{t('inventory.position')}</FormLabel>
                         <FormControl>
-                            <Input type="date" {...field} />
+                            <Input
+                                placeholder={t('inventory.positionPlaceholder')}
+                                {...field}
+                            />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -626,22 +738,22 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                                 {t('inventory.manualMode')}
                             </TabsTrigger>
                         </TabsList>
-                        
+
                         <TabsContent value="photo" className="mt-6 space-y-6">
                             {renderPhotoMode()}
                         </TabsContent>
-                        
+
                         <TabsContent value="manual" className="mt-6 space-y-6">
                             {renderManualMode()}
                         </TabsContent>
-                        <button 
-                                type="submit" 
-                                disabled={isUploading || (inputMode === 'photo' && recognizedItems.length === 0)}
-                                className={`btn-cute w-full disabled:opacity-50 disabled:cursor-not-allowed ${inputMode === 'photo' && !form.watch('img') ? 'hidden' : ''}`}
-                            >
-                            {isUploading 
-                                ? t('chat.uploading') 
-                                : t('inventory.addItem')
+                        <button
+                            type="submit"
+                            disabled={isUploading || (inputMode === 'photo' && recognizedItems.length === 0)}
+                            className={`btn-cute w-full disabled:opacity-50 mt-2 disabled:cursor-not-allowed ${inputMode === 'photo' && !form.watch('img') ? 'hidden' : ''}`}
+                        >
+                            {isUploading
+                                ? t('chat.uploading')
+                                : t('common.save')
                             }
                         </button>
                     </Tabs>
@@ -649,14 +761,14 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                     <div className="space-y-6">
                         {/* Edit mode - always manual */}
                         {renderManualMode()}
-                        
-                        <button 
-                            type="submit" 
+
+                        <Button
+                            type="submit"
                             disabled={isUploading}
                             className="btn-cute w-full disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isUploading ? t('chat.uploading') : t('common.save')}
-                        </button>
+                        </Button>
                     </div>
                 )}
             </form>

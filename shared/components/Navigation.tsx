@@ -1,12 +1,12 @@
 'use client';
 
-import React from 'react';
-import { usePathname } from 'next/navigation';
+import React, { useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import useLocalizedPath from '@/shared/hooks/useLocalizedPath';
 import { Home, Heart, Sparkles, User, ArrowLeft, Tag } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { useAuth } from '@/shared/services/AuthContext';
+import { useAuth } from '@/shared/context/AuthContext';
 import { ProfileDropdown } from './ProfileDropdown';
 import { Separator } from './Separator';
 import { cn } from '@/lib/utils';
@@ -25,7 +25,7 @@ function TopNav({ className, links, ...props }: TopNavProps) {
   return ( 
       <nav
         className={cn(
-          'hidden items-center space-x-4 md:flex lg:space-x-6',
+          'hidden items-center space-x-6 md:flex lg:space-x-6',
           className
         )}
         {...props}
@@ -50,9 +50,9 @@ export default function Navigation() {
   const pathname = usePathname();
   const localize = useLocalizedPath();
   const t = useTranslations();
-  const { isGuestMode } = useAuth();
+  const { isGuestMode, enterGuestMode, isAuthenticated } = useAuth();
   const [offset, setOffset] = React.useState(0);
-  
+  const router = useRouter();
   // Check if we're on a food item details page
   const isDetailsPage = pathname.includes('/inventory/') && pathname.split('/').length > 3;
 
@@ -76,23 +76,27 @@ export default function Navigation() {
     document.addEventListener('scroll', onScroll, { passive: true })
     return () => document.removeEventListener('scroll', onScroll)
   }, [])
-
+  useEffect(() => {
+    if (!isAuthenticated && !isGuestMode) {
+        enterGuestMode();
+    }
+  }, [isGuestMode]);
   return (
     <header
       className={cn(
-        'bg-background flex h-16 items-center gap-3 p-4 sm:gap-4 fixed top-0 left-0 right-0 z-50 border-b',
+        'bg-background flex h-16 items-center gap-3 p-4 sm:gap-4 fixed top-0 left-0 right-0 z-50 border-b glass',
         offset > 10 ? 'shadow-sm' : 'shadow-none'
       )}
     >
       {/* Back Button - left of sidebar trigger */}
       {isDetailsPage && (
         <>
-          <Link 
-            href={localize('/')} 
+          <button 
+            onClick={() => router.back()} 
             className="flex items-center text-pink-600 hover:text-pink-800 font-medium transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
-          </Link>
+          </button>
           
         </>
       )}

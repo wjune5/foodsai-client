@@ -41,6 +41,9 @@
     "increment": "Increment",
     "reset": "Reset"
   },
+  "message": {
+    "deleteConfirmation": "Are you sure you want to delete \"{name}\"? This action cannot be undone."
+  },
   "navigation": {
     "dashboard": "Dashboard",
     "inventory": "Inventory",
@@ -85,12 +88,11 @@
     "item": "Item",
     "tryAdjustingFilters": "Try adjusting your filters or add some items to get started.",
     "addFirstItem": "Add First Item",
-    "smartOrganization": "Smart organization",
-    "expiringToday": "Expiring Today",
-    "expiringTomorrow": "Expiring Tomorrow",
     "expired": "Expired",
     "daysLeft": "{days} days left",
     "expiredDays": "Expired {days} days ago",
+    "expiryDays": "Expiry Days",
+    "startDate": "Start Date",
     "image": "Image",
     "unit": "Unit",
     "price": "Price",
@@ -133,7 +135,8 @@
       "snacks": "Snacks",
       "condiments": "Condiments",
       "other": "Other"
-    }
+    },
+    "iconColor": "Color"
   },
   "categories": {
     "title": "Categories",

@@ -1,13 +1,13 @@
 'use client';
 
 import React from 'react';
-import { useAuth } from '@/shared/services/AuthContext';
+import { useAuth } from '@/shared/context/AuthContext';
 import { User, Settings, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import useLocalizedPath from '@/shared/hooks/useLocalizedPath';
 import { useTranslations } from 'next-intl';
 import { Avatar, AvatarFallback, AvatarImage } from './Avatar';
-import { Button } from './Button';
+import { Button } from './ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,

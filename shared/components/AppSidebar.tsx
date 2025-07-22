@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { Home, Heart, Settings, User, Sparkles, Tag } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import useLocalizedPath from '@/shared/hooks/useLocalizedPath'
-import { useAuth } from '@/shared/services/AuthContext'
+import { useAuth } from '@/shared/context/AuthContext'
 import LanguageSwitcher from '@/shared/components/LanguageSwitcher'
 import {
   Sidebar,

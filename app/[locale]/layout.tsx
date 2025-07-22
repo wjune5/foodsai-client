@@ -1,7 +1,7 @@
 import { Inter, Poppins } from "next/font/google";
 import "../globals.css";
 import Navigation from "@/shared/components/Navigation";
-import { AuthProvider } from "@/shared/services/AuthContext";
+import { AuthProvider } from "@/shared/context/AuthContext";
 import {Locale, hasLocale, NextIntlClientProvider} from 'next-intl';
 import {getTranslations, setRequestLocale} from 'next-intl/server';
 import { notFound } from "next/navigation";
@@ -9,7 +9,6 @@ import { routing } from "@/shared/i18n/routing";
 import { ReactNode } from "react";
 import { SidebarProvider } from "@/shared/components/ui/sidebar";
 import { AppSidebar } from "@/shared/components/AppSidebar";
-import { cn } from "@/lib/utils";
 
 const inter = Inter({
   variable: "--font-inter",

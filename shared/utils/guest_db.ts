@@ -26,7 +26,7 @@ export class GuestDatabase extends Dexie {
       inventoryItems: '++id, name, category, expirationDate, dateFrom, img',
       recipes: '++id, name, tags',
       settings: '++id',
-      images: '++id, fileName, mimeType, size, data, createdBy, createdTime'
+      images: '++id, fileName, mimeType, size, data'
     });
 
     // Version 3: Add custom icons table
@@ -35,7 +35,7 @@ export class GuestDatabase extends Dexie {
       inventoryItems: '++id, name, category, expirationDate, dateFrom, img',
       recipes: '++id, name, tags',
       settings: '++id',
-      images: '++id, fileName, mimeType, size, data, createdBy, createdTime',
+      images: '++id, fileName, mimeType, size, data',
       customIcons: '++id, name, category, createdBy, createdTime, isActive'
     });
   }
@@ -254,9 +254,7 @@ export class GuestDatabase extends Dexie {
             fileName: file.name,
             mimeType: file.type,
             size: file.size,
-            data: base64Data,
-            createdBy: 'guest',
-            createdTime: new Date()
+            data: base64Data
           };
 
           await this.images.add(guestImage);
@@ -285,7 +283,7 @@ export class GuestDatabase extends Dexie {
   }
 
   async getAllImages(): Promise<InventoryImage[]> {
-    return await this.images.orderBy('createdTime').reverse().toArray();
+    return await this.images.toArray();
   }
 
   // Database utilities

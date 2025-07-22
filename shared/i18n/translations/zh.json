@@ -41,6 +41,9 @@
     "increment": "增加",
     "reset": "重置"
   },
+  "message": {
+    "deleteConfirmation": "您确定要删除 \"{name}\" 吗？此操作无法撤销。"
+  },
   "navigation": {
     "dashboard": "仪表板",
     "inventory": "库存",
@@ -86,12 +89,11 @@
     "item": "物品",
     "tryAdjustingFilters": "尝试调整筛选条件或添加一些物品开始使用。",
     "addFirstItem": "添加第一个物品",
-    "smartOrganization": "智能整理",
-    "expiringToday": "今天过期",
-    "expiringTomorrow": "明天过期",
     "expired": "已过期",
     "daysLeft": "还剩 {days} 天",
     "expiredDays": "过期 {days} 天",
+    "expiryDays": "过期天数",
+    "startDate": "开始日期",
     "image": "图片",
     "unit": "单位",
     "price": "价格",
@@ -134,7 +136,8 @@
       "snacks": "零食",
       "condiments": "调味品",
       "other": "其他"
-    }
+    },
+    "iconColor": "颜色"
   },
   "categories": {
     "title": "分类管理",

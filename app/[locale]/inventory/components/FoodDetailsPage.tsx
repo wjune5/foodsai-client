@@ -8,16 +8,16 @@ import {
   Pencil, 
   Trash2, 
   AlertTriangle,
-  MapPin,
   Tag,
-  DollarSign,
-  Clock,
-  User,
-  XIcon
+  ImageIcon,
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/Dialog';
-import AddInventoryForm from './AddForm';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import useLocalizedPath from '@/shared/hooks/useLocalizedPath';
+import { calculateDaysLeft } from '@/shared/utils/date_util';
+import { FoodIconKey, getIconByKey } from '@/shared/constants/food-icons';
+import ChatImage from '@/shared/components/ChatImage';
 
 interface FoodDetailsPageProps {
   item: Inventory;
@@ -27,30 +27,14 @@ interface FoodDetailsPageProps {
 
 const FoodDetailsPage: React.FC<FoodDetailsPageProps> = ({ item, onEdit, onDelete }) => {
   const t = useTranslations();
-  const [showEditDialog, setShowEditDialog] = useState(false);
+  const router = useRouter();
+  const localize = useLocalizedPath();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  const calculateDaysLeft = (expirationDate?: string) => {
-    if (!expirationDate) return { daysLeft: '', daysNum: null, status: 'no-date' };
-    
-    const today = new Date();
-    const expDate = new Date(expirationDate);
-    const diff = Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    
-    if (diff < 0) {
-      return { daysLeft: 'Expired', daysNum: diff, status: 'expired' };
-    } else if (diff <= 3) {
-      return { daysLeft: `${diff} day${diff !== 1 ? 's' : ''}`, daysNum: diff, status: 'warning' };
-    } else {
-      return { daysLeft: `${diff} days`, daysNum: diff, status: 'good' };
-    }
-  };
-
-  const { daysLeft, status } = calculateDaysLeft(item.expirationDate);
+  const { daysLeft, status } = calculateDaysLeft(item.dateFrom || item.createTime, item.expirationDays);
 
   const handleEdit = (updatedItem: Inventory) => {
     onEdit(updatedItem);
-    setShowEditDialog(false);
   };
 
   const handleConfirmDelete = () => {
@@ -71,6 +55,33 @@ const FoodDetailsPage: React.FC<FoodDetailsPageProps> = ({ item, onEdit, onDelet
     }
   };
 
+  const renderImage = () => {
+    if (item.img?.mimeType === 'image/icon') {
+      const iconKey = item.img.data as FoodIconKey;
+      const iconData = getIconByKey(iconKey);
+      if (iconData) {
+          const IconComponent = iconData.icon;
+          return (
+              <div className="flex items-center justify-center w-48 h-48 bg-pink-100 rounded-lg border-2 border-pink-200">
+                  <IconComponent className="w-full h-full" style={{ color: item.iconColor }} />
+              </div>
+          );
+      }
+    } else if (item.img?.mimeType === 'image/jpeg') {
+        return (
+            <ChatImage
+                src={item.img.data}
+                alt="Preview"
+                className="w-48 h-48 object-cover rounded-lg border-2 border-pink-200"
+            />
+        );
+    }
+    return (
+        <div className="flex items-center justify-center w-48 h-48 bg-gray-100 rounded-lg border-2 border-gray-200">
+            <ImageIcon className="w-full h-full text-gray-400" />
+        </div>
+    );
+  }
   return (
     <div className="max-w-4xl mx-auto">
       {/* Header Card */}
@@ -79,13 +90,7 @@ const FoodDetailsPage: React.FC<FoodDetailsPageProps> = ({ item, onEdit, onDelet
           {/* Image - Centered */}
           <div className="flex justify-center">
             <div className="relative w-48 h-48 rounded-xl overflow-hidden border border-gray-200">
-              <Image
-                src={item.img || 'https://waapple.org/wp-content/uploads/2021/06/Variety_Cosmic-Crisp-transparent-658x677.png'}
-                alt={item.name}
-                fill
-                className="object-cover"
-                unoptimized
-              />
+              {renderImage()}
             </div>
           </div>
 
@@ -132,27 +137,27 @@ const FoodDetailsPage: React.FC<FoodDetailsPageProps> = ({ item, onEdit, onDelet
         <div className="space-y-4">
           {item.price && (
             <div className="flex justify-between items-center py-2">
-              <span className="text-gray-600">Price</span>
+              <span className="text-gray-600">{t('inventory.price')}</span>
               <span className="font-medium text-gray-800">${item.price.toFixed(2)}</span>
             </div>
           )}
           {item.position && (
             <div className="flex justify-between items-center py-2">
-              <span className="text-gray-600">Position</span>
+              <span className="text-gray-600">{t('inventory.position')}</span>
               <span className="font-medium text-gray-800">{item.position}</span>
             </div>
           )}
           <div className="flex justify-between items-center py-2 border-b border-gray-100">
-            <span className="text-gray-600">Added Date</span>
+            <span className="text-gray-600">{t('inventory.startDate')}</span>
             <span className="font-medium text-gray-800">
-              {new Date(item.dateFrom || '').toLocaleDateString()}
+              {new Date(item.dateFrom || item.createTime || '').toLocaleDateString()}
             </span>
           </div>
-          {item.expirationDate && (
+          {item.expirationDays && (
             <div className="flex justify-between items-center py-2 border-b border-gray-100">
-              <span className="text-gray-600">Expiration Date</span>
+              <span className="text-gray-600">{t('inventory.expiryDate')}</span>
               <span className="font-medium text-gray-800">
-                {new Date(item.expirationDate).toLocaleDateString()}
+                {new Date(new Date().getTime() + item.expirationDays * 24 * 60 * 60 * 1000).toLocaleDateString()}
               </span>
             </div>
           )}
@@ -163,48 +168,22 @@ const FoodDetailsPage: React.FC<FoodDetailsPageProps> = ({ item, onEdit, onDelet
       {/* Action Buttons */}
       <div className="flex justify-center gap-4">
         <button
-          onClick={() => setShowEditDialog(true)}
+          onClick={() => {
+            router.push(localize('/inventory/add') + `?id=${item.id}`);
+          }}
           className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
         >
           <Pencil className="w-4 h-4" />
-          Edit
+          {t('common.edit')}
         </button>
         <button
           onClick={() => setShowDeleteDialog(true)}
           className="flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium"
         >
           <Trash2 className="w-4 h-4" />
-          Delete
+          {t('common.delete')}
         </button>
       </div>
-
-      {/* Edit Dialog */}
-      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="max-h-[85vh] overflow-y-auto pb-6">
-          <DialogHeader className="sticky w-full top-0 bg-white z-10 pb-4 px-6 pt-6">
-            <div className="flex items-center justify-between">
-              <DialogTitle className="flex items-center gap-2 text-xl">
-                <Pencil className="w-6 h-6 text-blue-500" />
-                Edit {item.name}
-              </DialogTitle>
-              <button
-                onClick={() => setShowEditDialog(false)}
-                className="rounded-xs opacity-70 transition-opacity hover:opacity-100 p-1"
-              >
-                <XIcon className="w-4 h-4" />
-              </button>
-            </div>
-          </DialogHeader>
-          <div className="px-6">
-            <AddInventoryForm 
-              mode="edit"
-              initialData={item}
-              onEdit={handleEdit}
-              onAdd={() => {}} // Required prop but not used in edit mode
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
@@ -212,14 +191,14 @@ const FoodDetailsPage: React.FC<FoodDetailsPageProps> = ({ item, onEdit, onDelet
           <DialogHeader className="mb-6">
             <DialogTitle className="flex items-center gap-2 text-xl">
               <AlertTriangle className="w-6 h-6 text-red-500" />
-              Delete Item
+              {t('common.delete')} {item.name}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-6">
             <div className="flex items-center gap-4 p-4 bg-red-50 rounded-lg border border-red-200">
               <div className="w-16 h-16 rounded-lg overflow-hidden border border-red-200">
                 <Image
-                  src={item.img || 'https://waapple.org/wp-content/uploads/2021/06/Variety_Cosmic-Crisp-transparent-658x677.png'}
+                  src={item.img?.data || 'https://waapple.org/wp-content/uploads/2021/06/Variety_Cosmic-Crisp-transparent-658x677.png'}
                   alt={item.name}
                   width={64}
                   height={64}
@@ -240,14 +219,14 @@ const FoodDetailsPage: React.FC<FoodDetailsPageProps> = ({ item, onEdit, onDelet
                 onClick={() => setShowDeleteDialog(false)}
                 className="flex items-center justify-center px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={handleConfirmDelete}
                 className="flex items-center justify-center px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
-                Delete Item
+                {t('common.delete')}
               </button>
             </div>
           </div>

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { Plus, Edit2, Trash2, GripVertical, Tag, AlertTriangle } from 'lucide-react';
+import { Plus, Edit2, Trash2, GripVertical, Tag, AlertTriangle, XIcon } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/Dialog';
 import CategoryForm from './CategoryForm';
 import { categories as defaultCategories } from '@/shared/constants/constants';
@@ -203,9 +203,9 @@ const CategoryManager: React.FC = () => {
 
             {/* Add Category Dialog */}
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                <DialogContent className="max-w-md overflow-y-auto pb-6">
-                    <DialogHeader className="sticky w-full top-0 bg-white z-10 pb-4 px-6 pt-6">
-                        <DialogTitle className="flex items-center">
+                <DialogContent className="max-h-[85vh] overflow-y-auto pb-6 px-6">
+                    <DialogHeader className="sticky w-50 top-0 bg-white z-10 pb-4 pt-6">
+                        <DialogTitle className="flex items-center gap-2">
                             <Tag className="w-5 h-5 text-green-600" />
                             {t('common.add')}
                         </DialogTitle>
