@@ -273,6 +273,11 @@
   "user": {
     "title": "用户",
     "profile": "个人资料",
-    "logout": "退出登录"
+    "logout": "退出登录",
+    "username": "用户名",
+    "displayName": "显示名称",
+    "email": "邮箱",
+    "password": "密码",
+    "confirmPassword": "确认密码"
   }
 } 

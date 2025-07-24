@@ -272,6 +272,11 @@
   "user": {
     "title": "User",
     "profile": "Profile",
-    "logout": "Logout"
+    "logout": "Logout",
+    "username": "Username",
+    "displayName": "Display Name",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password"
   }
 } 

@@ -36,7 +36,7 @@ export class GuestModeService {
         // Create new guest user
         user = await guestDB.createUser({
           username: `Guest_${Math.random().toString(36).substr(2, 9)}`,
-          fullName: 'Guest User',
+          nickname: 'Guest User',
           avatar: undefined,
           email: undefined
         });
@@ -75,7 +75,7 @@ export class GuestModeService {
     return {
       id: this.guestUser.id,
       username: this.guestUser.username,
-      fullName: this.guestUser.fullName || this.guestUser.username,
+      nickname: this.guestUser.nickname || this.guestUser.username,
       email: this.guestUser.email || '',
       avatar: this.guestUser.avatar || ''
     };
@@ -94,6 +94,17 @@ export class GuestModeService {
 
   // Guest inventory operations
   async addInventoryItem(item: Omit<Inventory, 'id' | 'createTime' | 'updateTime'>): Promise<Inventory> {
+    const existing = await guestDB.getInventoryItemByName(item.name);
+    if (existing) {
+      await guestDB.updateInventoryItem(existing.id, {
+        ...item,
+        originalQuantity: existing.originalQuantity+item.quantity,
+        quantity: existing.quantity+item.quantity,
+        createdBy: existing.createdBy,
+        updatedBy: existing.updatedBy
+      });
+      return existing;
+    }
     return await guestDB.addInventoryItem(item);
   }
 

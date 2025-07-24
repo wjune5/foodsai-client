@@ -33,6 +33,7 @@ interface AuthContextType {
   enterGuestMode: () => Promise<void>;
   exitGuestMode: () => Promise<void>;
   migrateToAuthenticatedUser: (authenticatedUser: UserInfo) => Promise<void>;
+  updateUserFromGuestService: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -178,6 +179,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateUserFromGuestService = () => {
+    const updatedUser = guestModeService.getUserInfo();
+    setUser(updatedUser as UserInfo);
+  };
+
   const value = {
     user,
     loading,
@@ -191,6 +197,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     enterGuestMode,
     exitGuestMode,
     migrateToAuthenticatedUser,
+    updateUserFromGuestService,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

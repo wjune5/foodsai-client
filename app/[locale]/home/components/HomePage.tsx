@@ -7,7 +7,7 @@ import { Toaster } from 'react-hot-toast';
 import { Inventory } from '@/shared/entities/inventory';
 import { useTranslations } from 'next-intl';
 import { ReduxProvider } from '@/shared/providers/ReduxProvider';
-import { Plus as LucidePlus, ChefHat, MessageCircle, Search } from 'lucide-react';
+import { Plus as LucidePlus, ChefHat, MessageCircle, Search, Minus } from 'lucide-react';
 import { categories } from '@/shared/constants/constants';
 import ChatWindow from '@/shared/components/ChatWindow';
 import Footer from '@/shared/components/Footer';
@@ -15,6 +15,9 @@ import { guestModeService } from '@/shared/services/GuestModeService';
 import FoodCard from '../../inventory/components/FoodCard';
 import { useRouter } from 'next/navigation';
 import useLocalizedPath from '@/shared/hooks/useLocalizedPath';
+import { Switch } from '@/shared/components/ui/switch';
+import { Input } from '@/shared/components/ui/input';
+import { Button } from '@/shared/components/ui/button';
 
 type ChatMessage = { text?: string; imageUrl?: string; role: 'user' | 'bot' };
 
@@ -30,7 +33,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
     const [categoryFilter, setCategoryFilter] = useState('all');
     const [sortBy] = useState('name');
     const [sortOrder] = useState<'asc' | 'desc'>('asc');
-
+    const [consumeEnabled, setConsumeEnabled] = useState(false)
     const chatRef = useRef<HTMLDivElement>(null);
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
     const handleSendMessage = (msg: string) => {
@@ -95,8 +98,17 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
         getInventoryItems();
     };
 
-    const handleEdit = (updatedItem: Inventory) => {
-        guestModeService.updateInventoryItem(updatedItem.id, updatedItem);
+    const handleConsume = async () => {
+        setConsumeEnabled(!consumeEnabled)
+    };
+
+    const handleEdit = async (item: Inventory) => {
+        const updated = { ...item, quantity: (item.quantity || 1) - 1 };
+        if (updated.quantity > 0) {
+            await guestModeService.updateInventoryItem(item.id, updated);
+        } else {
+            await guestModeService.deleteInventoryItem(item.id);
+        }
         getInventoryItems();
     };
 
@@ -157,7 +169,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                             >
                                                 <Search className="w-5 h-5 text-pink-500" />
                                             </button>
-                                            <input
+                                            <Input
                                                 type="text"
                                                 placeholder={t('common.search')}
                                                 value={searchTerm}
@@ -166,7 +178,11 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                                 style={{ minWidth: isSearchOpen ? '8rem' : 0 }}
                                             />
                                         </div>
-                                        
+                                        {/* Consume Button */}
+                                        <Switch
+                                            checked={consumeEnabled}
+                                            onCheckedChange={handleConsume}
+                                        />
                                         {/* Add Button */}
                                         {filteredItems.length > 0 && (
                                             <button onClick={() => router.push(localize('/inventory/add'))} className="btn-cute flex items-center">
@@ -181,7 +197,8 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                     <ChefHat className="w-16 h-16 text-gray-400 mb-4" />
                                     <h3 className="text-xl font-semibold text-gray-700 mb-2">{t('inventory.noItems')}</h3>
                                     <p className="text-gray-500 mb-6">{t('inventory.tryAdjustingFilters')}</p>
-                                    <button
+                                    <Button
+                                        size="xl"
                                         onClick={() => router.push(localize('/inventory/add'))}
                                         className="btn-cute flex-col items-center"
                                     >
@@ -189,7 +206,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                             <LucidePlus className="w-6 h-6" />
                                         </span>
                                         {t('inventory.addFirstItem')}
-                                    </button>
+                                    </Button>
                                 </div>
                             ) : (
                                 categoryFilter === 'all' ? (
@@ -204,15 +221,16 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                                     </div>
                                                     <div className="flex flex-wrap gap-4">
                                                         {itemsInCategory.map((item: Inventory) => (
-                                                            <FoodCard
-                                                                key={item.id}
-                                                                item={item}
-                                                                onClick={(selectedItem) => {
-                                                                    console.log('Selected item for recipe:', selectedItem.name);
-                                                                }}
-                                                                onDelete={handleDelete}
-                                                                onEdit={handleEdit}
-                                                            />
+                                                            <div key={item.id} className="flex items-center">
+                                                                <FoodCard
+                                                                    item={item}
+                                                                    onClick={(selectedItem) => {
+                                                                        console.log('Selected item for recipe:', selectedItem.name);
+                                                                    }}
+                                                                    onDelete={handleDelete}
+                                                                    onEdit={consumeEnabled?handleEdit:undefined}
+                                                                />
+                                                            </div>
                                                         ))}
                                                     </div>
                                                 </div>
@@ -222,15 +240,16 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                 ) : (
                                     <div className="flex flex-wrap gap-4 p-4">
                                         {filteredItems.map((item: Inventory) => (
-                                            <FoodCard
-                                                key={item.id}
-                                                item={item}
-                                                onClick={(selectedItem) => {
-                                                    console.log('Selected item for recipe:', selectedItem.name);
-                                                }}
-                                                onDelete={handleDelete}
-                                                onEdit={handleEdit}
-                                            />
+                                            <div key={item.id} className="flex items-center">
+                                                <FoodCard
+                                                    item={item}
+                                                    onClick={(selectedItem) => {
+                                                        console.log('Selected item for recipe:', selectedItem.name);
+                                                    }}
+                                                    onDelete={handleDelete}
+                                                    onEdit={consumeEnabled?handleEdit:undefined}
+                                                />
+                                            </div>
                                         ))}
                                     </div>
                                 )

@@ -95,6 +95,9 @@ export class GuestDatabase extends Dexie {
     return await this.inventoryItems.get(id);
   }
 
+  async getInventoryItemByName(name: string): Promise<Inventory | undefined> {
+    return await this.inventoryItems.where('name').equals(name).first();
+  }
   async updateInventoryItem(id: string, updates: Partial<Inventory>): Promise<void> {
     await this.inventoryItems.update(id, {
       ...updates,

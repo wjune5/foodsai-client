@@ -59,7 +59,7 @@ export default function Navigation() {
   const navigation = [
     { name: t('navigation.inventory'), href: '/', icon: Home },
     { name: t('navigation.categories'), href: '/categories', icon: Tag },
-    { name: t('navigation.favorites'), href: '/favorites', icon: Heart }
+    // { name: t('navigation.favorites'), href: '/favorites', icon: Heart }
   ];
 
   const navLinks = navigation.map(item => ({

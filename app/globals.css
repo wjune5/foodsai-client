@@ -123,10 +123,8 @@ body {
 
 /* Cute button styles */
 .btn-cute {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
   border: none;
   border-radius: 25px;
-  color: white;
   cursor: pointer;
   font-weight: 600;
   padding: 12px 24px;

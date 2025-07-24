@@ -27,6 +27,10 @@ const FoodCard: React.FC<FoodCardProps> = ({ item, onClick, onDelete, onEdit }) 
   const { daysLeft, dotColor, status } = calculateDaysLeft(item.dateFrom || item.createTime, item.expirationDays);
 
   const handleClick = () => {
+    if (onEdit) {
+      onEdit(item);
+      return;
+    }
     // Navigate to the details page instead of showing modal
     router.push(localize(`/inventory/${item.id}`));
     if (onClick) {

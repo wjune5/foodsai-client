@@ -6,6 +6,7 @@ import { Plus, Edit2, Trash2, GripVertical, Tag, AlertTriangle, XIcon } from 'lu
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/Dialog';
 import CategoryForm from './CategoryForm';
 import { categories as defaultCategories } from '@/shared/constants/constants';
+import { Button } from '@/shared/components/ui/button';
 
 interface Category {
     id: string;
@@ -130,12 +131,12 @@ const CategoryManager: React.FC = () => {
                                 {t('categories.manageCategories')}
                             </h2>
                         </div>
-                        <button
+                        <Button
                             onClick={() => setIsAddDialogOpen(true)}
                             className="btn-cute flex items-center gap-2"
                         >
                             <Plus className="w-4 h-4" />
-                        </button>
+                        </Button>
                     </div>
                     <div className="space-y-3">
                         {categories.map((category, index) => (

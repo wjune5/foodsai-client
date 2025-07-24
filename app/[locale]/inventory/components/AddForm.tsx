@@ -746,16 +746,16 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                         <TabsContent value="manual" className="mt-6 space-y-6">
                             {renderManualMode()}
                         </TabsContent>
-                        <button
+                        <Button
                             type="submit"
                             disabled={isUploading || (inputMode === 'photo' && recognizedItems.length === 0)}
-                            className={`btn-cute w-full disabled:opacity-50 mt-2 disabled:cursor-not-allowed ${inputMode === 'photo' && !form.watch('img') ? 'hidden' : ''}`}
+                            className={`btn-cute flex-col mt-4 items-center ${inputMode === 'photo' && !form.watch('img') ? 'hidden' : ''}`}
                         >
                             {isUploading
                                 ? t('chat.uploading')
                                 : t('common.save')
                             }
-                        </button>
+                        </Button>
                     </Tabs>
                 ) : (
                     <div className="space-y-6">
@@ -765,8 +765,8 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                         <Button
                             type="submit"
                             disabled={isUploading}
-                            className="btn-cute w-full disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
+                            className="btn-cute bg-pink-400 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                            variant={isUploading ? 'default' : 'outline'}>
                             {isUploading ? t('chat.uploading') : t('common.save')}
                         </Button>
                     </div>

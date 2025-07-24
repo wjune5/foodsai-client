@@ -5,27 +5,30 @@ import { useAuth } from '@/shared/context/AuthContext';
 import { User, Mail, Calendar, Edit, Save, Camera, LogOut, UserCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslations } from 'next-intl';
+import { Input } from '@/shared/components/ui/input';
+import { Button } from '@/shared/components/ui/button';
+import { guestModeService } from '@/shared/services/GuestModeService';
 
 export const ProfilePageContent: React.FC = () => {
   const t = useTranslations();
-  const { user, isGuestMode, isAuthenticated, logout, exitGuestMode } = useAuth();
+  const { user, isGuestMode, isAuthenticated, logout, exitGuestMode, updateUserFromGuestService } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
+    id: String(user?.id),
     username: user?.username || '',
     nickname: user?.nickname || '',
     email: user?.email || '',
     avatar: user?.avatar || ''
   });
 
-  const handleEditToggle = () => {
+  const handleEditToggle = async () => {
     if (isEditing) {
-      // Save changes
-      // TODO: Implement save functionality
+      await guestModeService.updateUserProfile(editForm);
+      updateUserFromGuestService();
       toast.success('Profile updated successfully!');
     }
     setIsEditing(!isEditing);
   };
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEditForm({
       ...editForm,
@@ -70,19 +73,23 @@ export const ProfilePageContent: React.FC = () => {
       <div className="space-y-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Username
+            {t('user.username')}
           </label>
           {isEditing ? (
-            <input
-              type="text"
-              name="username"
-              value={editForm.username}
-              onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200"
-            />
+            <div className="relative flex items-center">
+              <User className="w-5 h-5 text-gray-400 absolute left-3 pointer-events-none" />
+              <Input
+                type="text"
+                name="username"
+                disabled={true}
+                value={editForm.username}
+                onChange={handleInputChange}
+                className="pl-10"
+              />
+            </div>
           ) : (
-            <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
-              <User className="w-5 h-5 text-gray-400" />
+            <div className="flex items-center px-3 py-1 bg-gray-50 h-9 w-full min-w-0 rounded-md">
+              <User className="w-5 h-5 text-gray-400 mr-2" />
               <span className="text-gray-900 font-medium">{user.username}</span>
             </div>
           )}
@@ -90,40 +97,46 @@ export const ProfilePageContent: React.FC = () => {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Display Name
+            {t('user.displayName')}
           </label>
           {isEditing ? (
-            <input
-              type="text"
-              name="nickname"
-              value={editForm.nickname}
-              onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200"
-            />
+            <div className="relative flex items-center">
+              <User className="w-5 h-5 text-gray-400 absolute left-3 pointer-events-none" />
+              <Input
+                type="text"
+                name="nickname"
+                value={editForm.nickname}
+                onChange={handleInputChange}
+                className="pl-10"
+              />
+            </div>
           ) : (
-            <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
-              <User className="w-5 h-5 text-gray-400" />
-              <span className="text-gray-900 font-medium">{user.nickname || 'Not set'}</span>
+            <div className="flex items-center px-3 py-1 bg-gray-50 h-9 w-full min-w-0 rounded-md">
+              <User className="w-5 h-5 text-gray-400 mr-2" />
+              <span className="text-gray-900 font-medium">{user.nickname || ''}</span>
             </div>
           )}
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Email
+            {t('user.email')}
           </label>
           {isEditing ? (
-            <input
-              type="email"
-              name="email"
-              value={editForm.email}
-              onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200"
-            />
+            <div className="relative flex items-center">
+              <Mail className="w-5 h-5 text-gray-400 absolute left-3 pointer-events-none" />
+              <Input
+                type="email"
+                name="email"
+                value={editForm.email}
+                onChange={handleInputChange}
+                className="pl-10"
+              />
+            </div>
           ) : (
-            <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
-              <Mail className="w-5 h-5 text-gray-400" />
-              <span className="text-gray-900 font-medium">{user.email || 'Not set'}</span>
+            <div className="flex items-center px-3 py-1 bg-gray-50 h-9 w-full min-w-0 rounded-md">
+              <Mail className="w-5 h-5 text-gray-400 mr-2" />
+              <span className="text-gray-900 font-medium">{user.email || ''}</span>
             </div>
           )}
         </div>
@@ -131,10 +144,10 @@ export const ProfilePageContent: React.FC = () => {
         {!isGuestMode && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Member Since
+              {t('user.memberSince')}
             </label>
-            <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
-              <Calendar className="w-5 h-5 text-gray-400" />
+            <div className="flex items-center px-3 py-1 bg-gray-50 h-9 w-full min-w-0 rounded-md">
+              <Calendar className="w-5 h-5 text-gray-400 mr-2" />
               <span className="text-gray-900 font-medium">
                 {new Date().toLocaleDateString()}
               </span>
@@ -144,14 +157,11 @@ export const ProfilePageContent: React.FC = () => {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex space-x-4 pt-6">
-        <button
+      <div className="flex space-x-4 pt-6 w-full justify-center">
+        <Button
           onClick={handleEditToggle}
-          className={`flex-1 flex items-center justify-center px-6 py-3 rounded-lg font-medium transition-colors ${
-            isEditing
-              ? 'bg-green-500 text-white hover:bg-green-600'
-              : 'bg-pink-500 text-white hover:bg-pink-600'
-          }`}
+          className="w-[50%] flex items-center justify-center"
+          variant={isEditing ? 'default' : 'outline'}
         >
           {isEditing ? (
             <>
@@ -164,15 +174,14 @@ export const ProfilePageContent: React.FC = () => {
               {t('common.edit')}
             </>
           )}
-        </button>
+        </Button>
         {isAuthenticated && (
-        <button
+        <Button
           onClick={handleLogout}
-          className="flex-1 flex items-center justify-center px-6 py-3 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors"
         >
           <LogOut className="w-4 h-4 mr-2" />
               {t('common.logout')}
-            </button>
+            </Button>
         )}
       </div>
 
