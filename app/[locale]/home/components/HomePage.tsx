@@ -250,7 +250,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                 </div>
             </main>
             {/* Floating Chat Button */}
-            {!isChatOpen && <button
+            {/* {!isChatOpen && <button
                 type="button"
                 className="fixed bottom-18 right-[-20px] btn-cute shadow-2xl z-50"
                 onClick={() => {
@@ -263,7 +263,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                 }}
             >
                 <MessageCircle className="w-5 h-5 mr-2" />
-            </button>}
+            </button>} */}
 
             <Toaster position="top-right" />
         </div>
