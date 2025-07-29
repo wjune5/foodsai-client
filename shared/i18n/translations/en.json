@@ -101,7 +101,7 @@
     "systemIcons": "System Icons",
     "uploadImage": "Upload Image",
     "chooseIcon": "Choose from our collection of food icons",
-    "uploadCustom": "Upload your own image (max 5MB)",
+    "uploadCustom": "Upload your own image (max 1MB)",
     "showMore": "Show More",
     "showLess": "Show Less",
     "allIcons": "All Icons",
@@ -121,6 +121,7 @@
     "confidenceNote": "AI recognition confidence shown in order",
     "addManualRow": "Add Manual Row",
     "addSelectedItems": "Add Selected Items",
+    "noItemsRecognized": "No items were recognized in the image. Please try again or add items manually.",
     "categories": {
       "all": "All",
       "dairy": "Dairy",

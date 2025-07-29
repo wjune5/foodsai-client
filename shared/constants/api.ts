@@ -27,5 +27,5 @@ export const API_ENDPOINTS = {
   RECIPE_LIST: `${API_BASE_URL}/recipe-list`,
   
   // File upload
-  UPLOAD: '/api/upload',
+  UPLOAD: `${API_BASE_URL}/inventory/image`,
 };

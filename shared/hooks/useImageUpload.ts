@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/shared/context/AuthContext';
 import { guestModeService } from '@/shared/services/GuestModeService';
+import { API_ENDPOINTS } from '@/shared/constants/api';
 
 export interface UploadResult {
   success: boolean;
@@ -8,6 +9,8 @@ export interface UploadResult {
   error?: string;
   fileType?: string;
   isSVG?: boolean;
+  inventoryItems?: any[];
+  extractionId?: string;
 }
 
 export const useImageUpload = () => {
@@ -42,9 +45,9 @@ export const useImageUpload = () => {
         return { success: false, error: 'Could not read SVG file' };
       }
     } else {
-      // Standard validation for other image types (5MB max)
-      if (file.size > 5 * 1024 * 1024) {
-        return { success: false, error: 'File size must be less than 5MB' };
+      // Standard validation for other image types (10MB max for AI processing)
+      if (file.size > 1 * 1024 * 1024) {
+        return { success: false, error: 'File size must be less than 1MB' };
       }
     }
 
@@ -54,38 +57,64 @@ export const useImageUpload = () => {
       let imageUrl: string;
       let uploadResult: any = {};
 
-      if (isGuestMode) {
-        // Store in Dexie database for guest mode
-        imageUrl = await guestModeService.uploadImage(file);
-        uploadResult = { fileType: file.type, isSVG };
-      } else {
-        // Upload to cloud for authenticated users
-        const formData = new FormData();
-        formData.append('file', file);
+      // Upload to UPLOAD endpoint for AI processing
+      const formData = new FormData();
+      formData.append('file', file);
 
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Upload failed');
-        }
-
-        const data = await response.json();
-        imageUrl = data.imageUrl;
-        uploadResult = {
-          fileType: data.fileType,
-          isSVG: data.isSVG
-        };
+      const response = await fetch(API_ENDPOINTS.UPLOAD, {
+        method: 'POST',
+        body: formData,
+      });
+      console.log('response', response);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Upload failed');
       }
+
+      // Check if response has content
+      const responseText = await response.text();
+      console.log('Raw response text:', responseText); // Debug log
+      
+      if (!responseText) {
+        throw new Error('Empty response from server');
+      }
+
+      let responseData;
+      try {
+        responseData = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('Failed to parse response as JSON:', parseError);
+        throw new Error('Invalid JSON response from server');
+      }
+        console.log('Upload response:', responseData); // Debug log
+        
+        // The UPLOAD endpoint returns data wrapped in a response structure
+        if (responseData.data) {
+          // Success response from backend
+          const result = responseData.data;
+          console.log('Extracted result:', result); // Debug log
+          imageUrl = result.filename || file.name; // Use filename as imageUrl for now
+          uploadResult = {
+            fileType: file.type,
+            isSVG,
+            inventoryItems: result.inventory_items || [],
+            extractionId: result.extraction_id
+          };
+        } else {
+          // Fallback for unexpected response format
+          console.log('No data field in response, using fallback'); // Debug log
+          imageUrl = file.name;
+          uploadResult = { fileType: file.type, isSVG };
+        }
+      
 
       return { 
         success: true, 
         imageUrl,
         fileType: uploadResult.fileType,
-        isSVG: uploadResult.isSVG
+        isSVG: uploadResult.isSVG,
+        inventoryItems: uploadResult.inventoryItems,
+        extractionId: uploadResult.extractionId
       };
     } catch (error) {
       console.error('Upload error:', error);

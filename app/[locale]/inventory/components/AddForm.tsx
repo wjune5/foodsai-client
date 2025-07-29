@@ -238,42 +238,24 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                 data: result.imageUrl
             });
 
-            // If in photo mode, populate recognized items
-            // This applies to both camera and gallery images
-            if (inputMode === 'photo') {
-                // TODO: Replace with actual AI service integration
-                // Mock recognized items for demonstration
-                const mockRecognizedItems = [
-                    {
-                        action: 'add',
-                        table: 'Inventory',
-                        entity: 'Apple',
-                        quantity: 3,
-                        unit: 'pcs',
-                        description: 'Fresh red apples',
-                        expirationDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 7 days from now
-                    },
-                    {
-                        action: 'add',
-                        table: 'Inventory',
-                        entity: 'Banana',
-                        quantity: 2,
-                        unit: 'pcs',
-                        description: 'Yellow bananas',
-                        expirationDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 5 days from now
-                    },
-                    {
-                        action: 'add',
-                        table: 'Inventory',
-                        entity: 'Milk',
-                        quantity: 1,
-                        unit: 'liter',
-                        description: 'Fresh dairy milk',
-                        expirationDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 10 days from now
-                    }
-                ];
-                setRecognizedItems(mockRecognizedItems);
+            // Handle AI-processed inventory items from UPLOAD endpoint
+            if (result.inventoryItems && result.inventoryItems.length > 0) {
+                const processedItems = result.inventoryItems.map(item => ({
+                    action: 'add',
+                    table: 'inventory',
+                    entity: item.name,
+                    quantity: item.quantity || 1,
+                    unit: item.unit || 'pcs',
+                    description: item.category || 'other',
+                    expirationDays: item.expiration_days || 0
+                }));
+                setRecognizedItems(processedItems);
+            } else {
+                // If no items were recognized, show a message
+                setRecognizedItems([]);
+                alert(t('inventory.noItemsRecognized') || 'No items were recognized in the image. Please try again or add items manually.');
             }
+
         } else {
             alert(result.error || t('chat.uploadError'));
         }
@@ -378,10 +360,6 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                                 />
                             </label>
                         </div>
-
-                        {isUploading && (
-                            <p className="text-pink-600 text-sm animate-pulse">{t('chat.uploading')}</p>
-                        )}
                     </div>
                 </div>
 

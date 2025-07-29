@@ -102,7 +102,7 @@
     "systemIcons": "系统图标",
     "uploadImage": "上传图片",
     "chooseIcon": "从我们的食物图标库中选择",
-    "uploadCustom": "上传您自己的图片（最大5MB）",
+    "uploadCustom": "上传您自己的图片（最大1MB）",
     "showMore": "显示更多",
     "showLess": "显示更少",
     "allIcons": "所有图标",
@@ -122,6 +122,7 @@
     "confidenceNote": "AI识别置信度按顺序显示",
     "addManualRow": "添加手动行",
     "addSelectedItems": "添加选中的物品",
+    "noItemsRecognized": "图片中未识别到任何物品。请重试或手动添加物品。",
     "categories": {
       "all": "所有",
       "dairy": "乳制品",
