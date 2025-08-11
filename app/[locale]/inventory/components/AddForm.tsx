@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { categories, units } from '@/shared/constants/constants';
 import { Upload, ImageIcon, Palette, Camera, Edit3, CalendarIcon } from 'lucide-react';
@@ -28,6 +28,8 @@ import { useSys } from '@/shared/hooks/useSys';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { format } from 'date-fns';
+import toast from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
 
 type ImageSelectionMode = 'icon' | 'upload';
 type InputMode = 'photo' | 'manual';
@@ -39,34 +41,13 @@ type AddInventoryProps = {
     mode?: 'add' | 'edit';
 };
 
-const FormSchema = z.object({
-    name: z.string().min(1, 'Name is required'),
-    category: z.string().min(1, 'Category is required'),
-    quantity: z.coerce.number().min(1, 'Quantity must be at least 1'),
-    unit: z.string().min(1, 'Unit is required'),
-    expirationDays: z.number().min(1, 'Expiration days must be at least 1').optional(),
-    img: z.object({
-        id: z.string(),
-        fileName: z.string(),
-        mimeType: z.string(),
-        size: z.number(),
-        data: z.string()
-    }).optional(),
-    price: z.coerce.number().min(0, 'Price must be 0 or greater').optional(),
-    position: z.string().optional(),
-    iconColor: z.string().optional(),
-    dateFrom: z.date().optional(),
-});
-
-type FormData = z.infer<typeof FormSchema>;
-
 const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialData, mode = 'add' }) => {
     const t = useTranslations();
     const { uploadImage, isUploading } = useImageUpload();
     const isMobile = useSys();
 
     const [inputMode, setInputMode] = useState<InputMode>('manual');
-    const [imageMode, setImageMode] = useState<ImageSelectionMode>('icon'); // Start with upload for photo mode
+    const [imageMode, setImageMode] = useState<ImageSelectionMode>('icon');
     const [selectedIconKey, setSelectedIconKey] = useState<FoodIconKey>('carrot');
     const [recognizedItems, setRecognizedItems] = useState<Array<{
         action: string;
@@ -77,71 +58,123 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
         description?: string;
         expirationDays?: number;
     }>>([]);
-    const [iconColor, setIconColor] = useState<string>('#db2777'); // Default to pink-600
-    const defaultFormData: FormData = {
-        name: '',
-        category: 'vegetable',
-        quantity: 1,
-        unit: 'pcs',
-        expirationDays: 0,
-        img: {
-            id: '',
-            fileName: '',
-            mimeType: '',
-            size: 0,
-            data: ''
-        },
-        price: 0,
-        position: '',
-        dateFrom: new Date(),
-        iconColor: '#db2777', // Reset icon color to default
-    }
+    const [iconColor, setIconColor] = useState<string>('#db2777');
+
+    const FormSchema = z.object({
+        name: z.string().min(1, t('inventory.nameRequired')),
+        category: z.string().min(1, t('inventory.categoryRequired')),
+        quantity: z.coerce.number().min(1, t('inventory.quantityRequired')),
+        unit: z.string().min(1, t('inventory.unitRequired')),
+        expirationDays: z.number().min(-365).optional(),
+        img: z.object({
+            id: z.string(),
+            fileName: z.string(),
+            mimeType: z.string(),
+            size: z.number(),
+            data: z.string()
+        }).optional(),
+        price: z.coerce.number().min(0, t('inventory.priceRequired')).optional(),
+        position: z.string().optional(),
+        iconColor: z.string().optional(),
+        dateFrom: z.date().optional(),
+    });
+
+    type FormData = z.infer<typeof FormSchema>;
+
+    const defaultFormData = useMemo(() => {
+        const category = initialData?.category || 'vegetable';
+        const defaultIcon = DEFAULT_CATEGORY_ICONS[category];
+        setSelectedIconKey(defaultIcon);
+
+        return {
+            name: '',
+            category: category,
+            quantity: 1,
+            unit: 'pcs',
+            expirationDays: 0,
+            img: {
+                id: '',
+                fileName: `icon:${defaultIcon}`,
+                mimeType: 'image/icon',
+                size: 0,
+                data: `${defaultIcon}`
+            },
+            price: 0,
+            position: '',
+            dateFrom: new Date(),
+            iconColor: '#db2777',
+        };
+    }, [initialData?.category]);
+
     const form = useForm<FormData>({
         resolver: zodResolver(FormSchema),
-        defaultValues: defaultFormData
+        defaultValues: defaultFormData,
+        mode: 'onSubmit'
     });
     const [open, setOpen] = useState(false)
 
+    // Set initial selectedIconKey to match default category
+    useEffect(() => {
+        const defaultCategory = initialData?.category || 'vegetable';
+        const defaultIcon = DEFAULT_CATEGORY_ICONS[defaultCategory];
+
+        if (defaultIcon) {
+            setSelectedIconKey(defaultIcon);
+            // Also ensure the form has the correct default icon
+            if (!form.getValues('img')?.fileName || !form.getValues('img')?.fileName.includes('icon:')) {
+                console.log("Setting form img to default icon:", defaultIcon);
+                form.setValue('img', {
+                    id: '',
+                    fileName: `icon:${defaultIcon}`,
+                    mimeType: 'image/icon',
+                    size: 0,
+                    data: `${defaultIcon}`
+                });
+            }
+        }
+    }, [initialData?.category, form]);
+
     // Initialize form with initial data when editing
     useEffect(() => {
-        if (initialData && mode === 'edit') {
-            // When editing, always start with manual mode to show all fields
-            setInputMode('manual');
+        if (initialData) {
+            if (mode === 'edit') {
+                // When editing, always start with manual mode to show all fields
+                setInputMode('manual');
+                form.reset({
+                    name: initialData.name,
+                    category: initialData.category,
+                    quantity: initialData.quantity,
+                    unit: initialData.unit,
+                    expirationDays: initialData.expirationDays || 1,
+                    img: initialData.img || {
+                        id: '',
+                        fileName: '',
+                        mimeType: '',
+                        size: 0,
+                        data: ''
+                    },
+                    price: initialData.price || 0,
+                    position: initialData.position || '',
+                    dateFrom: initialData.dateFrom || new Date(),
+                    iconColor: (initialData as any).iconColor || '#db2777',
+                });
 
-            form.reset({
-                name: initialData.name,
-                category: initialData.category,
-                quantity: initialData.quantity,
-                unit: initialData.unit,
-                expirationDays: initialData.expirationDays || 1,
-                img: initialData.img || {
-                    id: '',
-                    fileName: '',
-                    mimeType: '',
-                    size: 0,
-                    data: ''
-                },
-                price: initialData.price || 0,
-                position: initialData.position || '',
-                dateFrom: initialData.dateFrom || new Date(),
-                iconColor: (initialData as any).iconColor || '#db2777', // Set icon color if present in initialData
-            });
-
-            // Determine if initial data has a custom image or icon
-            if (initialData.img) {
-                if (initialData.img.mimeType === 'image/icon') {
-                    setImageMode('icon');
-                    setSelectedIconKey(initialData.img.fileName.replace('icon:', '') as FoodIconKey);
-                    setIconColor(initialData.iconColor || '#db2777');
-                } else {
-                    setImageMode('upload');
+                // Determine if initial data has a custom image or icon
+                if (initialData.img) {
+                    if (initialData.img.mimeType === 'image/icon') {
+                        setImageMode('icon');
+                        setSelectedIconKey(initialData.img.fileName.replace('icon:', '') as FoodIconKey);
+                        setIconColor(initialData.iconColor || '#db2777');
+                    } else {
+                        setImageMode('upload');
+                    }
                 }
-            }
-            // Set icon color if present in initialData (optional: expects initialData.iconColor)
-            if ((initialData as any).iconColor) {
-                setIconColor((initialData as any).iconColor);
-            } else {
-                setIconColor('#db2777');
+                // Set icon color if present in initialData (optional: expects initialData.iconColor)
+                if ((initialData as any).iconColor) {
+                    setIconColor((initialData as any).iconColor);
+                } else {
+                    setIconColor('#db2777');
+                }
             }
         }
     }, [initialData, mode, form]);
@@ -166,12 +199,10 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
         const mode = newMode as InputMode;
         setInputMode(mode);
         if (mode === 'photo') {
-            // Reset form to minimal state for photo mode
             form.reset(defaultFormData);
             setImageMode('upload');
-            setRecognizedItems([]); // Clear recognized items
+            setRecognizedItems([]);
         } else if (mode === 'manual') {
-            // Set default icon for manual mode if no image is set
             const currentImg = form.getValues('img');
             if (!currentImg) {
                 form.setValue('img', {
@@ -182,7 +213,7 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                     data: `${DEFAULT_CATEGORY_ICONS.vegetable}`
                 });
                 setImageMode('icon');
-                setIconColor('#db2777'); // Reset icon color to default
+                setIconColor('#db2777');
             }
         }
     };
@@ -200,7 +231,7 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                 size: 0,
                 data: `${defaultIcon}`
             });
-            setIconColor('#db2777'); // Reset icon color to default
+            setIconColor('#db2777');
         } else {
             form.setValue('img', {
                 id: '',
@@ -227,18 +258,19 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Same handling for both camera capture and gallery upload
+        // Create a local preview URL so the image shows immediately
+        const localPreviewUrl = URL.createObjectURL(file);
+
         const result = await uploadImage(file);
-        if (result.success && result.imageUrl) {
+        if (result.success) {
             form.setValue('img', {
-                id: '',
-                fileName: result.imageUrl,
-                mimeType: 'image/jpeg',
-                size: 0,
-                data: result.imageUrl
+                id: 'local',
+                fileName: result.imageUrl || file.name,
+                mimeType: file.type || 'image/jpeg',
+                size: file.size || 0,
+                data: localPreviewUrl
             });
 
-            // Handle AI-processed inventory items from UPLOAD endpoint
             if (result.inventoryItems && result.inventoryItems.length > 0) {
                 const processedItems = result.inventoryItems.map(item => ({
                     action: 'add',
@@ -251,30 +283,26 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                 }));
                 setRecognizedItems(processedItems);
             } else {
-                // If no items were recognized, show a message
                 setRecognizedItems([]);
                 alert(t('inventory.noItemsRecognized') || 'No items were recognized in the image. Please try again or add items manually.');
             }
-
         } else {
             alert(result.error || t('chat.uploadError'));
         }
 
-        // Reset file input
         e.target.value = '';
     };
 
     const onSubmit = (data: FormData) => {
         if (mode === 'edit' && onEdit && initialData) {
             onEdit({ ...initialData, ...data, iconColor });
+            toast.success(t('common.success'));
         } else {
             if (inputMode === 'photo') {
-                // Handle multiple items from photo recognition
-                // Since action column is hidden, treat all items as items to add
                 recognizedItems.forEach(item => {
                     const inventoryItem: InventoryCreate = {
                         name: item.entity,
-                        category: 'other', // TODO: Map from description or add category field to table
+                        category: 'other',
                         quantity: item.quantity || 1,
                         unit: item.unit || 'pcs',
                         expirationDays: item.expirationDays || 0,
@@ -285,24 +313,30 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                             size: 0,
                             data: ''
                         },
-                        price: 0, // TODO: Add price field to table if needed
+                        price: 0,
                         position: '',
                         dateFrom: data.dateFrom || new Date(),
                         iconColor,
                     };
                     onAdd(inventoryItem);
                 });
-                // Reset photo mode
                 form.reset(defaultFormData);
                 setRecognizedItems([]);
+                toast.success(t('common.success'));
             } else {
-                // Handle single item from manual mode
                 onAdd({ ...data, dateFrom: data.dateFrom, iconColor });
                 form.reset(defaultFormData);
                 setSelectedIconKey(DEFAULT_CATEGORY_ICONS.vegetable);
                 setImageMode('icon');
+                toast.success(t('common.success'));
             }
         }
+    };
+
+    const handlePhotoSubmit = () => {
+        // Bypass form schema validation in photo mode
+        const currentValues = form.getValues() as FormData;
+        onSubmit(currentValues);
     };
 
     const renderPhotoMode = () => {
@@ -310,10 +344,9 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
 
         return (
             <div className="space-y-6">
-                {/* Photo Upload Section */}
                 <div className="text-center flex-shrink-0">
                     <div className="flex flex-col items-center gap-4">
-                        {currentImg?.id ? (
+                        {(currentImg && currentImg.mimeType && currentImg.mimeType !== 'image/icon' && currentImg.data) ? (
                             <ChatImage
                                 src={currentImg.data}
                                 alt="Uploaded food item"
@@ -329,7 +362,6 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                         )}
 
                         <div className="flex gap-3">
-                            {/* Camera button - only show on mobile devices */}
                             {isMobile && (
                                 <label className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors cursor-pointer">
                                     <Camera className="w-4 h-4" />
@@ -344,10 +376,9 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                                     />
                                 </label>
                             )}
-                            {/* Upload button - primary on desktop, secondary on mobile */}
                             <label className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors cursor-pointer ${isMobile
-                                    ? 'bg-white text-pink-600 border border-pink-300 hover:bg-pink-50'
-                                    : 'bg-pink-500 text-white hover:bg-pink-600'
+                                ? 'bg-white text-pink-600 border border-pink-300 hover:bg-pink-50'
+                                : 'bg-pink-500 text-white hover:bg-pink-600'
                                 }`}>
                                 <Upload className="w-4 h-4" />
                                 <span className="text-sm font-medium">{t('inventory.uploadFromGallery')}</span>
@@ -363,7 +394,6 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                     </div>
                 </div>
 
-                {/* Recognized Items Table */}
                 {currentImg && (
                     <div className="space-y-4 pt-4 border-t border-pink-100">
                         <div className="text-center">
@@ -396,7 +426,12 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                     </div>
                 );
             }
-        } else if (currentImg && currentImg.mimeType === 'image/jpeg') {
+        } else if (
+            currentImg &&
+            currentImg.mimeType &&
+            currentImg.mimeType.startsWith('image/') &&
+            currentImg.mimeType !== 'image/icon'
+        ) {
             return (
                 <ChatImage
                     src={currentImg.data}
@@ -419,11 +454,10 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                 name="name"
                 render={({ field }) => (
                     <FormItem>
-                        <FormLabel>{t('inventory.itemName')}</FormLabel>
+                        <FormLabel>{t('inventory.name')}</FormLabel>
                         <FormControl>
                             <Input {...field} />
                         </FormControl>
-                        <FormMessage />
                     </FormItem>
                 )}
             />
@@ -441,7 +475,6 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                                     min={1}
                                 />
                             </FormControl>
-                            <FormMessage />
                         </FormItem>
                     )}
                 />
@@ -465,112 +498,114 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                                     ))}
                                 </SelectContent>
                             </Select>
-                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            </div>
+
+            <div>
+                <FormField
+                    control={form.control}
+                    name="img"
+                    render={({ field }) => (
+                        <FormItem className="flex-1">
+                            <FormLabel>{t('inventory.image')}</FormLabel>
+                            <div className="flex gap-2 mb-4">
+                                <button
+                                    type="button"
+                                    onClick={() => handleImageModeChange('icon')}
+                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${imageMode === 'icon'
+                                        ? 'bg-pink-100 border-pink-300 text-pink-700'
+                                        : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'
+                                        }`}
+                                >
+                                    <Palette className="w-4 h-4" />
+                                    <span className="text-sm font-medium">{t('inventory.systemIcons')}</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => handleImageModeChange('upload')}
+                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${imageMode === 'upload'
+                                        ? 'bg-pink-100 border-pink-300 text-pink-700'
+                                        : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'
+                                        }`}
+                                >
+                                    <Upload className="w-4 h-4" />
+                                    <span className="text-sm font-medium">{t('inventory.uploadImage')}</span>
+                                </button>
+                            </div>
+
+                            <div className="flex items-center gap-4 mb-4">
+                                {renderIconPreview()}
+                                <div className="flex-1">
+                                    <p className="text-sm text-gray-600 mb-2">
+                                        {imageMode === 'icon'
+                                            ? t('inventory.chooseIcon')
+                                            : t('inventory.uploadCustom')
+                                        }
+                                    </p>
+
+                                    {imageMode === 'icon' && (
+                                        <div className="flex items-center gap-2">
+                                            <Select value={selectedIconKey} onValueChange={handleIconSelect}>
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue>
+                                                        <div className="flex items-center gap-2">
+                                                            {selectedIconData && (
+                                                                <selectedIconData.icon className="w-4 h-4" style={{ color: iconColor }} />
+                                                            )}
+                                                            <span>{selectedIconData?.label}</span>
+                                                        </div>
+                                                    </SelectValue>
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {ALL_FOOD_ICONS.map((iconData) => {
+                                                        const IconComponent = iconData.icon;
+                                                        return (
+                                                            <SelectItem key={iconData.key} value={iconData.key}>
+                                                                <div className="flex items-center gap-2">
+                                                                    <IconComponent className="w-4 h-4" style={{ color: iconColor }} />
+                                                                    <span>{iconData.label}</span>
+                                                                </div>
+                                                            </SelectItem>
+                                                        );
+                                                    })}
+                                                </SelectContent>
+                                            </Select>
+                                            <div className="mt-2 flex items-center gap-2">
+                                                <label htmlFor="icon-color-picker" className="text-sm text-gray-600">{t('inventory.iconColor') || 'Icon Color'}:</label>
+                                                <input
+                                                    id="icon-color-picker"
+                                                    type="color"
+                                                    value={iconColor}
+                                                    onChange={e => setIconColor(e.target.value)}
+                                                    className="w-8 h-8 p-0 border-0 bg-transparent cursor-pointer"
+                                                    style={{ background: 'none' }}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {imageMode === 'upload' && (
+                                        <div>
+                                            <Input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleImageUpload}
+                                                disabled={isUploading}
+                                            />
+                                            {isUploading && (
+                                                <p className="text-sm text-pink-600 mt-2">{t('chat.uploading')}</p>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </FormItem>
                     )}
                 />
 
-            </div>
-            {/* Image Selection Section */}
-            <div>
-                <label className="block mb-3 font-medium">{t('inventory.image')}</label>
 
-                {/* Mode Selection Tabs */}
-                <div className="flex gap-2 mb-4">
-                    <button
-                        type="button"
-                        onClick={() => handleImageModeChange('icon')}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${imageMode === 'icon'
-                                ? 'bg-pink-100 border-pink-300 text-pink-700'
-                                : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'
-                            }`}
-                    >
-                        <Palette className="w-4 h-4" />
-                        <span className="text-sm font-medium">{t('inventory.systemIcons')}</span>
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => handleImageModeChange('upload')}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${imageMode === 'upload'
-                                ? 'bg-pink-100 border-pink-300 text-pink-700'
-                                : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'
-                            }`}
-                    >
-                        <Upload className="w-4 h-4" />
-                        <span className="text-sm font-medium">{t('inventory.uploadImage')}</span>
-                    </button>
-                </div>
-
-                {/* Image Preview and Icon Selection */}
-                <div className="flex items-center gap-4 mb-4">
-                    {renderIconPreview()}
-                    <div className="flex-1">
-                        <p className="text-sm text-gray-600 mb-2">
-                            {imageMode === 'icon'
-                                ? t('inventory.chooseIcon')
-                                : t('inventory.uploadCustom')
-                            }
-                        </p>
-
-                        {/* Icon Selection - Select Component */}
-                        {imageMode === 'icon' && (
-                            <div className="flex items-center gap-2">
-                                <Select value={selectedIconKey} onValueChange={handleIconSelect}>
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue>
-                                            <div className="flex items-center gap-2">
-                                                {selectedIconData && (
-                                                    <selectedIconData.icon className="w-4 h-4" style={{ color: iconColor }} />
-                                                )}
-                                                <span>{selectedIconData?.label}</span>
-                                            </div>
-                                        </SelectValue>
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {ALL_FOOD_ICONS.map((iconData) => {
-                                            const IconComponent = iconData.icon;
-                                            return (
-                                                <SelectItem key={iconData.key} value={iconData.key}>
-                                                    <div className="flex items-center gap-2">
-                                                        <IconComponent className="w-4 h-4" style={{ color: iconColor }} />
-                                                        <span>{iconData.label}</span>
-                                                    </div>
-                                                </SelectItem>
-                                            );
-                                        })}
-                                    </SelectContent>
-                                </Select>
-                                {/* Color Picker */}
-                                <div className="mt-2 flex items-center gap-2">
-                                    <label htmlFor="icon-color-picker" className="text-sm text-gray-600">{t('inventory.iconColor') || 'Icon Color'}:</label>
-                                    <input
-                                        id="icon-color-picker"
-                                        type="color"
-                                        value={iconColor}
-                                        onChange={e => setIconColor(e.target.value)}
-                                        className="w-8 h-8 p-0 border-0 bg-transparent cursor-pointer"
-                                        style={{ background: 'none' }}
-                                    />
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Image Upload */}
-                        {imageMode === 'upload' && (
-                            <div>
-                                <Input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleImageUpload}
-                                    disabled={isUploading}
-                                />
-                                {isUploading && (
-                                    <p className="text-sm text-pink-600 mt-2">{t('chat.uploading')}</p>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                </div>
             </div>
 
             <div className="flex gap-2">
@@ -592,7 +627,6 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                                     ))}
                                 </SelectContent>
                             </Select>
-                            <FormMessage />
                         </FormItem>
                     )}
                 />
@@ -612,7 +646,6 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                                     onChange={(e) => field.onChange(Number(e.target.value))}
                                 />
                             </FormControl>
-                            <FormMessage />
                         </FormItem>
                     )}
                 />
@@ -659,7 +692,6 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                                     />
                                 </PopoverContent>
                             </Popover>
-                            <FormMessage />
                         </FormItem>
                     )}
                 />
@@ -672,7 +704,6 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                             <FormControl>
                                 <Stepper value={field.value} onChange={field.onChange} min={-1} />
                             </FormControl>
-                            <FormMessage />
                         </FormItem>
                     )}
                 />
@@ -690,7 +721,6 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                                 {...field}
                             />
                         </FormControl>
-                        <FormMessage />
                     </FormItem>
                 )}
             />
@@ -700,57 +730,72 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
     const selectedIconData = getIconByKey(selectedIconKey);
 
     return (
-        <Form {...form}>
+        <>
+            <Toaster position="top-right" />
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
+                    Object.entries(errors).forEach(([fieldName, error]) => {
+                        toast.error(`${error?.message}`, {
+                            duration: 4000,
+                            position: 'top-right',
+                        });
+                    });
+                })} className="flex flex-col">
+                    {mode === 'add' ? (
+                        <Tabs value={inputMode} onValueChange={handleInputModeChange} className="w-full">
+                            <TabsList className="grid w-full grid-cols-2">
+                                <TabsTrigger value="photo" className="flex items-center gap-2">
+                                    <Camera className="w-4 h-4" />
+                                    {t('inventory.photoMode')}
+                                </TabsTrigger>
+                                <TabsTrigger value="manual" className="flex items-center gap-2">
+                                    <Edit3 className="w-4 h-4" />
+                                    {t('inventory.manualMode')}
+                                </TabsTrigger>
+                            </TabsList>
 
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
-                {/* Input Mode Selection - Only show for add mode */}
-                {mode === 'add' ? (
-                    <Tabs value={inputMode} onValueChange={handleInputModeChange} className="w-full">
-                        <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="photo" className="flex items-center gap-2">
-                                <Camera className="w-4 h-4" />
-                                {t('inventory.photoMode')}
-                            </TabsTrigger>
-                            <TabsTrigger value="manual" className="flex items-center gap-2">
-                                <Edit3 className="w-4 h-4" />
-                                {t('inventory.manualMode')}
-                            </TabsTrigger>
-                        </TabsList>
+                            <TabsContent value="photo" className="mt-6 space-y-6">
+                                {renderPhotoMode()}
+                            </TabsContent>
 
-                        <TabsContent value="photo" className="mt-6 space-y-6">
-                            {renderPhotoMode()}
-                        </TabsContent>
-
-                        <TabsContent value="manual" className="mt-6 space-y-6">
+                            <TabsContent value="manual" className="mt-6 space-y-6">
+                                {renderManualMode()}
+                            </TabsContent>
+                            {inputMode === 'photo' ? (
+                                <Button
+                                    type="button"
+                                    onClick={handlePhotoSubmit}
+                                    disabled={isUploading || recognizedItems.length === 0}
+                                    className={`btn-cute flex-col mt-4 items-center ${!form.watch('img') ? 'hidden' : ''}`}
+                                >
+                                    {isUploading ? t('chat.uploading') : t('common.save')}
+                                </Button>
+                            ) : (
+                                <Button
+                                    type="submit"
+                                    disabled={isUploading}
+                                    className="btn-cute flex-col mt-4 items-center"
+                                >
+                                    {isUploading ? t('chat.uploading') : t('common.save')}
+                                </Button>
+                            )}
+                        </Tabs>
+                    ) : (
+                        <div className="space-y-6">
                             {renderManualMode()}
-                        </TabsContent>
-                        <Button
-                            type="submit"
-                            disabled={isUploading || (inputMode === 'photo' && recognizedItems.length === 0)}
-                            className={`btn-cute flex-col mt-4 items-center ${inputMode === 'photo' && !form.watch('img') ? 'hidden' : ''}`}
-                        >
-                            {isUploading
-                                ? t('chat.uploading')
-                                : t('common.save')
-                            }
-                        </Button>
-                    </Tabs>
-                ) : (
-                    <div className="space-y-6">
-                        {/* Edit mode - always manual */}
-                        {renderManualMode()}
 
-                        <Button
-                            type="submit"
-                            disabled={isUploading}
-                            className="btn-cute bg-pink-400 text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                            variant={isUploading ? 'default' : 'outline'}>
-                            {isUploading ? t('chat.uploading') : t('common.save')}
-                        </Button>
-                    </div>
-                )}
-            </form>
-        </Form>
+                            <Button
+                                type="submit"
+                                disabled={isUploading}
+                                className="btn-cute bg-pink-400 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                                variant={isUploading ? 'default' : 'outline'}>
+                                {isUploading ? t('chat.uploading') : t('common.save')}
+                            </Button>
+                        </div>
+                    )}
+                </form>
+            </Form>
+        </>
     );
 };
 

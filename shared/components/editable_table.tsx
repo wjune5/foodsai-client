@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Edit2, Save, X, Plus, Trash2 } from 'lucide-react';
+import { Edit2, Save, X, Plus, Trash2, Calendar, CalendarIcon } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -13,6 +13,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { useTranslations } from 'next-intl';
 import { units } from '@/shared/constants/constants';
 import { Stepper } from './stepper';
+import { Popover, PopoverTrigger, PopoverContent } from './ui/popover';
+import { FormControl } from './ui/form';
+import { cn } from '@/lib/utils';
+import { Button } from './ui/button';
+import { format } from 'date-fns';
 
 interface TableRow {
   action: string;
@@ -20,7 +25,8 @@ interface TableRow {
   entity: string;
   quantity?: number;
   unit?: string;
-  expirationDate?: string;
+  expirationDays?: number;
+  dateFrom?: Date;
 }
 
 interface EditableTableProps {
@@ -32,6 +38,7 @@ interface EditableTableProps {
 const EditableTable: React.FC<EditableTableProps> = ({ data, onDataChange, showActionColumn = true }) => {
   const [editingRow, setEditingRow] = useState<number | null>(null);
   const [editData, setEditData] = useState<TableRow | null>(null);
+  const [open, setOpen] = useState(false)
   const t = useTranslations();
 
   const handleEdit = (index: number) => {
@@ -66,7 +73,8 @@ const EditableTable: React.FC<EditableTableProps> = ({ data, onDataChange, showA
       entity: '',
       quantity: 1,
       unit: 'pcs',
-      expirationDate: ''
+      expirationDays: 0,
+      dateFrom: new Date()
     };
     onDataChange([...data, newRow]);
     setEditingRow(data.length);
@@ -86,11 +94,12 @@ const EditableTable: React.FC<EditableTableProps> = ({ data, onDataChange, showA
           <TableHeader>
             <TableRow>
               {showActionColumn && <TableHead className="min-w-[80px]">Action</TableHead>}
-              <TableHead className="min-w-[120px]">Object</TableHead>
+              <TableHead className="min-w-[140px]">Object</TableHead>
               <TableHead className="min-w-[40px]">Unit</TableHead>
-              <TableHead className="min-w-[50px]">Quantity</TableHead>
-              <TableHead className="min-w-[60px]">Expiration Date</TableHead>
-              <TableHead className="min-w-[80px]">Actions</TableHead>
+              <TableHead className="min-w-[40px]">Quantity</TableHead>
+              <TableHead className="min-w-[40px]">Expiry Days</TableHead>
+              <TableHead className="min-w-[120px]">Create Date</TableHead>
+              <TableHead className="min-w-[60px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -116,7 +125,7 @@ const EditableTable: React.FC<EditableTableProps> = ({ data, onDataChange, showA
                     )}
                   </TableCell>
                 )}
-                <TableCell className="min-w-[120px]">
+                <TableCell className="min-w-[140px]">
                   {editingRow === index ? (
                     <Input
                       type="text"
@@ -144,7 +153,7 @@ const EditableTable: React.FC<EditableTableProps> = ({ data, onDataChange, showA
                     <div className="truncate">{row.unit || '-'}</div>
                   )}
                 </TableCell>
-                <TableCell className="min-w-[50px]">
+                <TableCell className="min-w-[40px]">
                   {editingRow === index ? (
                     <Stepper
                       value={editData?.quantity || 0}
@@ -157,21 +166,61 @@ const EditableTable: React.FC<EditableTableProps> = ({ data, onDataChange, showA
                   )}
                 </TableCell>
                
-                <TableCell className="min-w-[60px]">
+                <TableCell className="min-w-[40px]">
                   {editingRow === index ? (
-                    <Input
-                      type="date"
-                      value={editData?.expirationDate || ''}
-                      onChange={(e) => updateEditData('expirationDate', e.target.value)}
-                      className="w-full h-8 px-2 border border-gray-300 rounded focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-sm"
+                     <Stepper
+                      value={editData?.expirationDays || 0}
+                      onChange={(value) => updateEditData('expirationDays', value)}
+                      min={1}
+                      className="w-full h-8"
                     />
                   ) : (
                     <div className="truncate">
-                      {row.expirationDate ? new Date(row.expirationDate).toLocaleDateString() : '-'}
+                      {row.expirationDays ? row.expirationDays : '-'}
                     </div>
                   )}
                 </TableCell>
-                <TableCell className="min-w-[80px]">
+                <TableCell className="min-w-[120px]">
+                  {editingRow === index ? (
+                    <Popover open={open} onOpenChange={setOpen}>
+                      <PopoverTrigger asChild>
+                          <FormControl>
+                              <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                      "w-full pl-3 text-left font-normal",
+                                      !editData?.dateFrom && "text-muted-foreground"
+                                  )}
+                              >
+                                  {editData?.dateFrom ? (
+                                      format(editData?.dateFrom, "PPP")
+                                  ) : (
+                                      <span>Pick a date</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                          </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                              mode="single"
+                              selected={editData?.dateFrom}
+                              onSelect={(date) => {
+                                  updateEditData('dateFrom', date)
+                                  setOpen(false)
+                              }}
+                              disabled={(date) =>
+                                  date > new Date() || date < new Date("1900-01-01")
+                              }
+                              captionLayout="dropdown"
+                          />
+                      </PopoverContent>
+                    </Popover>
+                  ) : (
+                    <div className="truncate">{row.dateFrom ? format(row.dateFrom, "PPP") : '-'}</div>
+                  )}
+                </TableCell>
+                <TableCell className="min-w-[60px]">
                   <div className="flex items-center space-x-2">
                     {editingRow === index ? (
                       <>

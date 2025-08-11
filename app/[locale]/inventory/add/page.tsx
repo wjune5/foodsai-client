@@ -1,7 +1,6 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
 import useLocalizedPath from '@/shared/hooks/useLocalizedPath';
 import AddInventoryForm from '../components/AddForm';
 import { InventoryCreate } from '../types/interfaces';
@@ -13,11 +12,11 @@ import { Inventory } from '@/shared/entities/inventory';
 
 function AddInventoryPageInner() {
   const router = useRouter();
-  const t = useTranslations();
   const localize = useLocalizedPath();
   const { isGuestMode } = useAuth();
   const searchParams = useSearchParams();
   const id = searchParams.get('id');
+  const category = searchParams.get('category');
   const [initialData, setInitialData] = useState<Inventory | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -28,11 +27,24 @@ function AddInventoryPageInner() {
         const found = await guestModeService.getInventoryItem(id);
         setInitialData(found || null);
         setLoading(false);
+      } else if (category) {
+        setInitialData({
+          id: '',
+          name: '',
+          category: category,
+          quantity: 1,
+          originalQuantity: 1,
+          unit: 'pcs',
+          createdBy: 'guest',
+          updatedBy: 'guest',
+          createTime: new Date(),
+          updateTime: new Date()
+        });
       }
       // TODO: Add cloud API fetch for authenticated users
     };
     fetchItem();
-  }, [id, isGuestMode]);
+  }, [id, isGuestMode, category]);
 
   const handleAddItem = async (item: InventoryCreate) => {
     try {
@@ -90,6 +102,7 @@ function AddInventoryPageInner() {
           <div className="p-6 md:p-8">
             {/* The Form Component */}
             <AddInventoryForm
+              key={initialData?.category || 'default'}
               onAdd={handleAddItem}
               onEdit={handleEditItem}
               mode={id ? 'edit' : 'add'}
@@ -103,9 +116,8 @@ function AddInventoryPageInner() {
 }
 
 export default function AddInventoryPage() {
-  const t = useTranslations();
   return (
-    <Suspense fallback={<div>{t('loading')}</div>}>
+    <Suspense fallback={<div>{'loading...'}</div>}>
       <AddInventoryPageInner />
     </Suspense>
   );

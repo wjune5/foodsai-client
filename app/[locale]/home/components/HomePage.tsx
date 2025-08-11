@@ -185,7 +185,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                         />
                                         {/* Add Button */}
                                         {filteredItems.length > 0 && (
-                                            <button onClick={() => router.push(localize('/inventory/add'))} className="btn-cute flex items-center">
+                                            <button onClick={() => router.push(localize(`/inventory/add?category=${categoryFilter}`))} className="btn-cute flex items-center">
                                                 <LucidePlus className="w-4 h-4" />
                                             </button>
                                         )}
@@ -199,7 +199,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                     <p className="text-gray-500 mb-6">{t('inventory.tryAdjustingFilters')}</p>
                                     <Button
                                         size="xl"
-                                        onClick={() => router.push(localize('/inventory/add'))}
+                                        onClick={() => router.push(localize(`/inventory/add?category=${categoryFilter}`))}
                                         className="btn-cute flex-col items-center"
                                     >
                                         <span className="flex justify-center w-full">

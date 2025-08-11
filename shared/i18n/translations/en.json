@@ -76,7 +76,7 @@
     "title": "Food Inventory",
     "description": "Manage your refrigerator items with style ✨",
     "addItem": "Add Item",
-    "itemName": "Item Name",
+    "name": "Name",
     "quantity": "Quantity",
     "expiryDate": "Expiry Date",
     "dateAdded": "Date Added",
@@ -137,7 +137,12 @@
       "condiments": "Condiments",
       "other": "Other"
     },
-    "iconColor": "Color"
+    "iconColor": "Color",
+    "nameRequired": "Name is required",
+    "categoryRequired": "Category is required",
+    "quantityRequired": "Quantity must be at least 1",
+    "unitRequired": "Unit is required",
+    "priceRequired": "Price must be 0 or greater"
   },
   "categories": {
     "title": "Categories",

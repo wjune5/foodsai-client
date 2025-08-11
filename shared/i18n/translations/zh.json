@@ -138,7 +138,12 @@
       "condiments": "调味品",
       "other": "其他"
     },
-    "iconColor": "颜色"
+    "iconColor": "颜色",
+    "nameRequired": "名称是必需的",
+    "categoryRequired": "类别是必需的",
+    "quantityRequired": "数量必须至少为1",
+    "unitRequired": "单位是必需的",
+    "priceRequired": "价格必须大于0"
   },
   "categories": {
     "title": "分类管理",
