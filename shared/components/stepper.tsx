@@ -22,6 +22,7 @@ const Stepper = React.forwardRef<HTMLInputElement, StepperProps>(
     step = 1, 
     disabled = false, 
     className,
+    "aria-invalid": ariaInvalid,
     ...props 
   }, ref) => {
     const [internalValue, setInternalValue] = React.useState(value)
@@ -60,24 +61,10 @@ const Stepper = React.forwardRef<HTMLInputElement, StepperProps>(
       }
     }
 
+    const isInvalid = ariaInvalid === true || ariaInvalid === "true"
+
     return (
-      <div className={cn("relative flex items-center", className)}>
-        <button
-          type="button"
-          onClick={handleDecrement}
-          disabled={disabled || internalValue <= min}
-          className={cn(
-            "flex h-9 w-9 items-center justify-center rounded-l-md border border-r-0 border-input bg-background transition-colors",
-            "hover:bg-accent hover:text-accent-foreground",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-            "disabled:pointer-events-none disabled:opacity-50",
-            "active:bg-accent/80"
-          )}
-          aria-label="Decrease value"
-        >
-          <Minus className="h-4 w-4" />
-        </button>
-        
+      <div className={cn("relative", className)}>
         <Input
           ref={ref}
           type="number"
@@ -87,8 +74,9 @@ const Stepper = React.forwardRef<HTMLInputElement, StepperProps>(
           max={max}
           step={step}
           disabled={disabled}
+          aria-invalid={ariaInvalid}
           className={cn(
-            "rounded-none border-l-0 border-r-0 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
+            "pr-16 pl-12 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
             "focus-visible:z-10"
           )}
           {...props}
@@ -96,18 +84,36 @@ const Stepper = React.forwardRef<HTMLInputElement, StepperProps>(
         
         <button
           type="button"
-          onClick={handleIncrement}
-          disabled={disabled || internalValue >= max}
+          onClick={handleDecrement}
+          disabled={disabled || internalValue <= min}
           className={cn(
-            "flex h-9 w-9 items-center justify-center rounded-r-md border border-l-0 border-input bg-background transition-colors",
+            "absolute left-1 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded bg-background transition-colors",
             "hover:bg-accent hover:text-accent-foreground",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
             "disabled:pointer-events-none disabled:opacity-50",
-            "active:bg-accent/80"
+            "active:bg-accent/80",
+            isInvalid && "border-destructive"
+          )}
+          aria-label="Decrease value"
+        >
+          <Minus className="h-3 w-3" />
+        </button>
+        
+        <button
+          type="button"
+          onClick={handleIncrement}
+          disabled={disabled || internalValue >= max}
+          className={cn(
+            "absolute right-1 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded bg-background transition-colors",
+            "hover:bg-accent hover:text-accent-foreground",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+            "disabled:pointer-events-none disabled:opacity-50",
+            "active:bg-accent/80",
+            isInvalid && "border-destructive"
           )}
           aria-label="Increase value"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-3 w-3" />
         </button>
       </div>
     )

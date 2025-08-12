@@ -65,7 +65,6 @@ export const useImageUpload = () => {
         method: 'POST',
         body: formData,
       });
-      console.log('response', response);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Upload failed');
@@ -73,7 +72,6 @@ export const useImageUpload = () => {
 
       // Check if response has content
       const responseText = await response.text();
-      console.log('Raw response text:', responseText); // Debug log
       
       if (!responseText) {
         throw new Error('Empty response from server');
@@ -86,13 +84,11 @@ export const useImageUpload = () => {
         console.error('Failed to parse response as JSON:', parseError);
         throw new Error('Invalid JSON response from server');
       }
-        console.log('Upload response:', responseData); // Debug log
         
         // The UPLOAD endpoint returns data wrapped in a response structure
         if (responseData.data) {
           // Success response from backend
           const result = responseData.data;
-          console.log('Extracted result:', result); // Debug log
           imageUrl = result.filename || file.name; // Use filename as imageUrl for now
           uploadResult = {
             fileType: file.type,
@@ -102,7 +98,6 @@ export const useImageUpload = () => {
           };
         } else {
           // Fallback for unexpected response format
-          console.log('No data field in response, using fallback'); // Debug log
           imageUrl = file.name;
           uploadResult = { fileType: file.type, isSVG };
         }
