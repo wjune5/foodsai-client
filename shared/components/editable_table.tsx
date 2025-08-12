@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Edit2, Save, X, Plus, Trash2, Calendar, CalendarIcon } from 'lucide-react';
+import { Edit2, Save, X, Trash2, CalendarIcon } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -18,6 +18,7 @@ import { FormControl } from './ui/form';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { format } from 'date-fns';
+import { Calendar } from "./ui/calendar";
 
 interface TableRow {
   action: string;
@@ -81,7 +82,10 @@ const EditableTable: React.FC<EditableTableProps> = ({ data, onDataChange, showA
     setEditData(newRow);
   };
 
-  const updateEditData = (field: keyof TableRow, value: string | number) => {
+  const updateEditData = (
+    field: keyof TableRow,
+    value: string | number | Date | undefined
+  ) => {
     if (editData) {
       setEditData({ ...editData, [field]: value });
     }
@@ -205,11 +209,11 @@ const EditableTable: React.FC<EditableTableProps> = ({ data, onDataChange, showA
                           <Calendar
                               mode="single"
                               selected={editData?.dateFrom}
-                              onSelect={(date) => {
+                              onSelect={(date: Date | undefined) => {
                                   updateEditData('dateFrom', date)
                                   setOpen(false)
                               }}
-                              disabled={(date) =>
+                              disabled={(date: Date) =>
                                   date > new Date() || date < new Date("1900-01-01")
                               }
                               captionLayout="dropdown"
