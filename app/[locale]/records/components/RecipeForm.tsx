@@ -127,12 +127,10 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
     const recipeData = {
       name: data.name.trim(),
       description: data.description?.trim() || undefined,
-      ingredients: data.ingredients
-        .map(ing => ing.value.trim())
-        .filter(ing => ing.length > 0),
-      instructions: data.instructions
-        .map(inst => inst.value.trim())
-        .filter(inst => inst.length > 0),
+      ingredients: data.ingredients?.map(ing => ing.value.trim())
+        .filter(ing => ing.length > 0) || [],
+      instructions: data.instructions?.map(inst => inst.value.trim())
+        .filter(inst => inst.length > 0) || [],
       cookingTime: data.cookingTime,
       servings: data.servings,
       difficulty: data.difficulty,
