@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from '@/shared/i18n/navigation';
 import { Recipe } from '@/shared/entities/inventory';
 import { guestModeService } from '@/shared/services/GuestModeService';
 import { Button } from '@/shared/components/ui/button';
@@ -10,16 +11,14 @@ import { Plus, Search, Filter, ChefHat } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import toast from 'react-hot-toast';
 import RecipeCard from './components/RecipeCard';
-import RecipeForm from './components/RecipeForm';
 
 export default function RecipesPage() {
   const t = useTranslations();
+  const router = useRouter();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [tagFilter, setTagFilter] = useState('all');
-  const [showForm, setShowForm] = useState(false);
-  const [editingRecipe, setEditingRecipe] = useState<Recipe | undefined>();
   const [availableTags, setAvailableTags] = useState<string[]>([]);
 
   useEffect(() => {
@@ -48,28 +47,8 @@ export default function RecipesPage() {
     }
   };
 
-  const handleSaveRecipe = async (recipeData: Omit<Recipe, 'id' | 'createTime' | 'updateTime'>) => {
-    try {
-      if (editingRecipe) {
-        await guestModeService.updateRecipe(editingRecipe.id, recipeData);
-        toast.success(t('records.recipeUpdated'));
-      } else {
-        await guestModeService.addRecipe(recipeData);
-        toast.success(t('records.recipeAdded'));
-      }
-      
-      await loadRecipes();
-      setShowForm(false);
-      setEditingRecipe(undefined);
-    } catch (error) {
-      console.error('Error saving recipe:', error);
-      toast.error('Failed to save recipe');
-    }
-  };
-
   const handleEditRecipe = (recipe: Recipe) => {
-    setEditingRecipe(recipe);
-    setShowForm(true);
+    router.push(`/records/form?id=${recipe.id}`);
   };
 
   const handleDeleteRecipe = async (recipe: Recipe) => {
@@ -109,8 +88,11 @@ export default function RecipesPage() {
   };
 
   const handleViewRecipe = (recipe: Recipe) => {
-    // For now, just edit the recipe. In the future, this could open a read-only view
-    handleEditRecipe(recipe);
+    router.push(`/records/${recipe.id}`);
+  };
+
+  const handleAddRecipe = () => {
+    router.push('/records/form');
   };
 
   const filteredRecipes = recipes.filter(recipe => {
@@ -124,30 +106,8 @@ export default function RecipesPage() {
     return matchesSearch && matchesTag;
   });
 
-  if (showForm) {
-    return (
-      <RecipeForm
-        recipe={editingRecipe}
-        onSave={handleSaveRecipe}
-        onCancel={() => {
-          setShowForm(false);
-          setEditingRecipe(undefined);
-        }}
-      />
-    );
-  }
-
   return (
     <div className="container mx-auto p-6 pt-20">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <ChefHat className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold">{t('recipes.title')}</h1>
-        </div>
-        <p className="text-muted-foreground">{t('recipes.description')}</p>
-      </div>
-
       {/* Actions and Filters */}
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="flex-1 flex gap-2">
@@ -156,7 +116,7 @@ export default function RecipesPage() {
             <Input
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder={t('recipes.searchRecipes')}
+              placeholder={t('records.searchRecipes')}
               className="pl-10"
             />
           </div>
@@ -167,7 +127,7 @@ export default function RecipesPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t('recipes.allTags')}</SelectItem>
+              <SelectItem value="all">{t('records.allTags')}</SelectItem>
               {availableTags.map(tag => (
                 <SelectItem key={tag} value={tag}>{tag}</SelectItem>
               ))}
@@ -175,9 +135,9 @@ export default function RecipesPage() {
           </Select>
         </div>
 
-        <Button onClick={() => setShowForm(true)} className="sm:w-auto w-full">
+        <Button onClick={handleAddRecipe} className="sm:w-auto w-full">
           <Plus className="h-4 w-4 mr-2" />
-          {t('recipes.addRecipe')}
+          {t('recipe.addRecipe')}
         </Button>
       </div>
 
@@ -192,11 +152,11 @@ export default function RecipesPage() {
           {recipes.length === 0 ? (
             <>
               <ChefHat className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">{t('recipes.noRecipes')}</h3>
-              <p className="text-muted-foreground mb-6">{t('recipes.addFirstRecipe')}</p>
-              <Button onClick={() => setShowForm(true)}>
+              <h3 className="text-lg font-semibold mb-2">{t('records.noRecipes')}</h3>
+              <p className="text-muted-foreground mb-6">{t('records.addFirstRecipe')}</p>
+              <Button onClick={handleAddRecipe}>
                 <Plus className="h-4 w-4 mr-2" />
-                {t('recipes.addRecipe')}
+                {t('recipe.addRecipe')}
               </Button>
             </>
           ) : (

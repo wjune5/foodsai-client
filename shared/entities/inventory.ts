@@ -46,7 +46,7 @@ export interface Recipe {
     servings?: number;
     difficulty?: string;
     tags?: string[];
-    img?: string;
+    img?: InventoryImage;
     createTime: Date;
     updateTime: Date;
 }

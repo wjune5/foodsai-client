@@ -103,7 +103,7 @@ export default function RecipeCard({
         {recipe.img ? (
           <div className="w-full h-32 rounded-md bg-gray-100 mb-3 overflow-hidden">
             <img 
-              src={recipe.img} 
+              src={recipe.img.data} 
               alt={recipe.name}
               className="w-full h-full object-cover"
             />
@@ -119,7 +119,7 @@ export default function RecipeCard({
           {recipe.cookingTime && (
             <div className="flex items-center gap-1">
               <Clock className="h-4 w-4" />
-              <span>{recipe.cookingTime} {t('recipes.cookingTimeMinutes')}</span>
+              <span>{recipe.cookingTime} {t('recipe.cookingTimeMinutes')}</span>
             </div>
           )}
           {recipe.servings && (
@@ -135,7 +135,7 @@ export default function RecipeCard({
                 variant="secondary" 
                 className={`text-xs ${getDifficultyColor(recipe.difficulty)}`}
               >
-                {t(`recipes.difficultyLevels.${recipe.difficulty.toLowerCase()}`)}
+                {t(`recipe.difficultyLevels.${recipe.difficulty.toLowerCase()}`)}
               </Badge>
             </div>
           )}
@@ -159,13 +159,13 @@ export default function RecipeCard({
 
         {/* Ingredients Count */}
         <div className="text-xs text-muted-foreground">
-          {recipe.ingredients.length} {t('recipes.ingredients').toLowerCase()} • 
-          {recipe.instructions.length} {t('recipes.instructions').toLowerCase()}
+          {recipe.ingredients.length} {t('recipe.ingredients').toLowerCase()} • 
+          {recipe.instructions.length} {t('recipe.instructions').toLowerCase()}
         </div>
 
         {/* Creation Date */}
         <div className="text-xs text-muted-foreground mt-2">
-          {t('recipes.createdAt')}: {formatDistanceToNow(new Date(recipe.createTime), { addSuffix: true })}
+          {t('recipe.createdAt')}: {formatDistanceToNow(new Date(recipe.createTime), { addSuffix: true })}
         </div>
       </CardContent>
     </Card>

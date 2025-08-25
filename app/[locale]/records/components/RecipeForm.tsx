@@ -1,176 +1,150 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Recipe } from '@/shared/entities/inventory';
+import { useForm, useFieldArray } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Recipe, InventoryImage } from '@/shared/entities/inventory';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
-import { Label } from '@/shared/components/ui/label';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Badge } from '@/shared/components/ui/badge';
-import { 
-  Plus, 
-  Minus, 
-  Upload, 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from '@/shared/components/ui/form';
+import {
+  Plus,
+  Minus,
+  Upload,
   X,
   Clock,
   Users,
-  ChefHat,
   Hash,
   FileText,
   List
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import toast from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 
 interface RecipeFormProps {
-  recipe?: Recipe;
-  onSave: (recipe: Omit<Recipe, 'id' | 'createTime' | 'updateTime'>) => void;
-  onCancel: () => void;
+  initialData?: Recipe;
+  mode?: 'add' | 'edit';
+  onAdd: (recipe: Omit<Recipe, 'id' | 'createTime' | 'updateTime'>) => void;
+  onEdit: (recipe: Omit<Recipe, 'id' | 'createTime' | 'updateTime'>) => void;
 }
 
-export default function RecipeForm({ recipe, onSave, onCancel }: RecipeFormProps) {
+const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mode = 'add' }) => {
   const t = useTranslations();
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    ingredients: [''],
-    instructions: [''],
-    cookingTime: undefined as number | undefined,
-    servings: undefined as number | undefined,
-    difficulty: '',
-    tags: [] as string[],
-    img: ''
+
+  const recipeSchema = z.object({
+    name: z.string().min(1, t('recipe.nameRequired')),
+    description: z.string().optional(),
+    ingredients: z.array(z.object({
+      value: z.string()
+    })).min(1, t('recipe.ingredientsRequired')).optional(),
+    instructions: z.array(z.object({
+      value: z.string()
+    })).min(1, t('recipe.instructionsRequired')).optional(),
+    cookingTime: z.coerce.number().min(1),
+    servings: z.coerce.number().min(1),
+    difficulty: z.enum(['easy', 'medium', 'hard']),
+    tags: z.array(z.string()).optional(),
+    img: z.object({
+      id: z.string(),
+      fileName: z.string(),
+      mimeType: z.string(),
+      size: z.number(),
+      data: z.string()
+    }).optional(),
   });
+
+  type RecipeFormData = z.infer<typeof recipeSchema>;
+
+  const form = useForm<RecipeFormData>({
+    resolver: zodResolver(recipeSchema),
+    defaultValues: {
+      name: '',
+      description: '',
+      ingredients: [{ value: '' }],
+      instructions: [{ value: '' }],
+      cookingTime: 10,
+      servings: 1,
+      difficulty: 'easy',
+      tags: [],
+      img: undefined,
+    },
+  });
+
+  const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
-  const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const {
+    fields: ingredientFields,
+    append: appendIngredient,
+    remove: removeIngredient,
+  } = useFieldArray({
+    control: form.control,
+    name: 'ingredients',
+  });
+
+  const {
+    fields: instructionFields,
+    append: appendInstruction,
+    remove: removeInstruction,
+  } = useFieldArray({
+    control: form.control,
+    name: 'instructions',
+  });
+
+  // Initialize form with recipe data
   useEffect(() => {
-    if (recipe) {
-      setFormData({
-        name: recipe.name,
-        description: recipe.description || '',
-        ingredients: recipe.ingredients.length > 0 ? recipe.ingredients : [''],
-        instructions: recipe.instructions.length > 0 ? recipe.instructions : [''],
-        cookingTime: recipe.cookingTime,
-        servings: recipe.servings,
-        difficulty: recipe.difficulty || '',
-        tags: recipe.tags || [],
-        img: recipe.img || ''
+    if (initialData) {
+      form.reset({
+        name: initialData.name,
+        description: initialData.description || '',
+        ingredients: initialData.ingredients.length > 0
+          ? initialData.ingredients.map(ing => ({ value: ing }))
+          : [{ value: '' }],
+        instructions: initialData.instructions.length > 0
+          ? initialData.instructions.map(inst => ({ value: inst }))
+          : [{ value: '' }],
+        cookingTime: initialData.cookingTime,
+        servings: initialData.servings,
+        difficulty: initialData.difficulty as 'easy' | 'medium' | 'hard' | undefined,
+        tags: initialData.tags || [],
+        img: initialData.img,
       });
+      setTags(initialData.tags || []);
     }
-  }, [recipe]);
+  }, [initialData, form]);
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = t('recipes.nameRequired');
-    }
-
-    const validIngredients = formData.ingredients.filter(ingredient => ingredient.trim());
-    if (validIngredients.length === 0) {
-      newErrors.ingredients = t('recipes.ingredientsRequired');
-    }
-
-    const validInstructions = formData.instructions.filter(instruction => instruction.trim());
-    if (validInstructions.length === 0) {
-      newErrors.instructions = t('recipes.instructionsRequired');
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      toast.error('Please fix the errors below');
-      return;
-    }
-
+  const onSubmit = (data: RecipeFormData) => {
     const recipeData = {
-      name: formData.name.trim(),
-      description: formData.description.trim() || undefined,
-      ingredients: formData.ingredients.filter(ingredient => ingredient.trim()),
-      instructions: formData.instructions.filter(instruction => instruction.trim()),
-      cookingTime: formData.cookingTime,
-      servings: formData.servings,
-      difficulty: formData.difficulty || undefined,
-      tags: formData.tags,
-      img: formData.img || undefined
+      name: data.name.trim(),
+      description: data.description?.trim() || undefined,
+      ingredients: data.ingredients
+        .map(ing => ing.value.trim())
+        .filter(ing => ing.length > 0),
+      instructions: data.instructions
+        .map(inst => inst.value.trim())
+        .filter(inst => inst.length > 0),
+      cookingTime: data.cookingTime,
+      servings: data.servings,
+      difficulty: data.difficulty,
+      tags: tags,
+      img: data.img,
     };
 
-    onSave(recipeData);
-  };
-
-  const addIngredient = () => {
-    setFormData(prev => ({
-      ...prev,
-      ingredients: [...prev.ingredients, '']
-    }));
-  };
-
-  const removeIngredient = (index: number) => {
-    if (formData.ingredients.length > 1) {
-      setFormData(prev => ({
-        ...prev,
-        ingredients: prev.ingredients.filter((_, i) => i !== index)
-      }));
+    if (mode === 'edit') {
+      onEdit(recipeData);
+    } else {
+      onAdd(recipeData);
     }
-  };
-
-  const updateIngredient = (index: number, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      ingredients: prev.ingredients.map((ingredient, i) => 
-        i === index ? value : ingredient
-      )
-    }));
-  };
-
-  const addInstruction = () => {
-    setFormData(prev => ({
-      ...prev,
-      instructions: [...prev.instructions, '']
-    }));
-  };
-
-  const removeInstruction = (index: number) => {
-    if (formData.instructions.length > 1) {
-      setFormData(prev => ({
-        ...prev,
-        instructions: prev.instructions.filter((_, i) => i !== index)
-      }));
-    }
-  };
-
-  const updateInstruction = (index: number, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      instructions: prev.instructions.map((instruction, i) => 
-        i === index ? value : instruction
-      )
-    }));
-  };
-
-  const addTag = () => {
-    if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        tags: [...prev.tags, newTag.trim()]
-      }));
-      setNewTag('');
-    }
-  };
-
-  const removeTag = (tagToRemove: string) => {
-    setFormData(prev => ({
-      ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove)
-    }));
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -183,296 +157,381 @@ export default function RecipeForm({ recipe, onSave, onCancel }: RecipeFormProps
 
       const reader = new FileReader();
       reader.onload = () => {
-        setFormData(prev => ({
-          ...prev,
-          img: reader.result as string
-        }));
+        const imageData: InventoryImage = {
+          id: Date.now().toString(),
+          fileName: file.name,
+          mimeType: file.type,
+          size: file.size,
+          data: reader.result as string
+        };
+        form.setValue('img', imageData);
       };
       reader.readAsDataURL(file);
     }
   };
 
+  const addIngredient = () => {
+    appendIngredient({ value: '' });
+  };
+
+  const removeIngredientItem = (index: number) => {
+    if (ingredientFields.length > 1) {
+      removeIngredient(index);
+    }
+  };
+
+  const addInstruction = () => {
+    appendInstruction({ value: '' });
+  };
+
+  const removeInstructionItem = (index: number) => {
+    if (instructionFields.length > 1) {
+      removeInstruction(index);
+    }
+  };
+
+  const addTag = (tag: string) => {
+    if (!tags.includes(tag)) {
+      setTags([...tags, tag]);
+    }
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    setTags(tags.filter(tag => tag !== tagToRemove));
+  };
+
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ChefHat className="h-6 w-6" />
-            {recipe ? t('recipes.editRecipe') : t('recipes.addRecipe')}
-          </CardTitle>
-        </CardHeader>
+    <>
+      <Toaster position="top-right" />
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
+          Object.entries(errors).forEach(([fieldName, error]) => {
+            toast.error(`${error?.message}`, {
+              duration: 4000,
+              position: 'top-right',
+            });
+          });
+        })} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('recipe.name')} *</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder="e.g., Chocolate Chip Cookies"
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
 
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Basic Information */}
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="name">{t('recipes.recipeName')} *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="e.g., Chocolate Chip Cookies"
-                  className={errors.name ? 'border-red-500' : ''}
-                />
-                {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name}</p>}
-              </div>
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('recipe.description')}</FormLabel>
+                <FormControl>
+                  <Textarea
+                    {...field}
+                    placeholder="A delicious recipe that..."
+                    className="min-h-[80px]"
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
 
-              <div>
-                <Label htmlFor="description">{t('recipes.recipeDescription')}</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="A delicious recipe that..."
-                  className="min-h-[80px]"
-                />
-              </div>
-
-              {/* Recipe Details Row */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="cookingTime" className="flex items-center gap-1">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <FormField
+              control={form.control}
+              name="cookingTime"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
-                    {t('recipes.cookingTime')}
-                  </Label>
-                  <div className="flex items-center gap-2">
+                    {t('recipe.cookingTime')}
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input
+                        {...field}
+                        type="number"
+                        min="1"
+                        value={field.value || ''}
+                        className="pr-16"
+                      />
+                      <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">
+                        {t('recipe.minutes')}
+                      </span>
+                    </div>
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="servings"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-1">
+                    <Users className="h-4 w-4" />
+                    {t('recipe.servings')}
+                  </FormLabel>
+                  <FormControl>
                     <Input
-                      id="cookingTime"
+                      {...field}
                       type="number"
                       min="1"
-                      value={formData.cookingTime || ''}
-                      onChange={(e) => setFormData(prev => ({ 
-                        ...prev, 
-                        cookingTime: e.target.value ? parseInt(e.target.value) : undefined 
-                      }))}
+                      value={field.value || ''}
                     />
-                    <span className="text-sm text-muted-foreground">
-                      {t('recipes.cookingTimeMinutes')}
-                    </span>
-                  </div>
-                </div>
+                  </FormControl>
+                </FormItem>
+              )}
+            />
 
-                <div>
-                  <Label htmlFor="servings" className="flex items-center gap-1">
-                    <Users className="h-4 w-4" />
-                    {t('recipes.servings')}
-                  </Label>
-                  <Input
-                    id="servings"
-                    type="number"
-                    min="1"
-                    value={formData.servings || ''}
-                    onChange={(e) => setFormData(prev => ({ 
-                      ...prev, 
-                      servings: e.target.value ? parseInt(e.target.value) : undefined 
-                    }))}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="difficulty">{t('recipes.difficulty')}</Label>
-                  <Select 
-                    value={formData.difficulty} 
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, difficulty: value }))}
+            <FormField
+              control={form.control}
+              name="difficulty"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('recipe.difficulty')}</FormLabel>
+                  <Select
+                    value={field.value || ''}
+                    onValueChange={field.onChange}
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select difficulty" />
-                    </SelectTrigger>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select difficulty" />
+                      </SelectTrigger>
+                    </FormControl>
                     <SelectContent>
-                      <SelectItem value="easy">{t('recipes.difficultyLevels.easy')}</SelectItem>
-                      <SelectItem value="medium">{t('recipes.difficultyLevels.medium')}</SelectItem>
-                      <SelectItem value="hard">{t('recipes.difficultyLevels.hard')}</SelectItem>
+                      <SelectItem value="easy">{t('recipe.difficultyLevels.easy')}</SelectItem>
+                      <SelectItem value="medium">{t('recipe.difficultyLevels.medium')}</SelectItem>
+                      <SelectItem value="hard">{t('recipe.difficultyLevels.hard')}</SelectItem>
                     </SelectContent>
                   </Select>
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="img"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-1">
+                  <Upload className="h-4 w-4" />
+                  {t('recipe.image')}
+                </FormLabel>
+                <div className="space-y-3">
+                  {field.value ? (
+                    <div className="relative">
+                      <img
+                        src={field.value.data}
+                        alt="Recipe"
+                        className="w-full h-48 object-cover rounded-lg border border-gray-200"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-2 right-2"
+                        onClick={() => form.setValue('img', undefined)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <label
+                      htmlFor="image-upload"
+                      className="block border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-gray-400 transition-colors"
+                    >
+                      <Upload className="h-8 w-8 mx-auto text-gray-400 mb-2" />
+                      <p className="text-sm text-gray-600 mb-2">{t('common.uploadImage')}</p>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        id="image-upload"
+                      />
+                    </label>
+                  )}
                 </div>
-              </div>
-            </div>
+              </FormItem>
+            )}
+          />
 
-            {/* Image Upload */}
-            <div>
-              <Label className="flex items-center gap-1">
-                <Upload className="h-4 w-4" />
-                {t('recipes.image')}
-              </Label>
-              <div className="mt-2">
-                {formData.img ? (
-                  <div className="relative">
-                    <img 
-                      src={formData.img} 
-                      alt="Recipe" 
-                      className="w-full h-48 object-cover rounded-lg"
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2"
-                      onClick={() => setFormData(prev => ({ ...prev, img: '' }))}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                    <Upload className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-                    <p className="text-sm text-gray-600 mb-2">Upload recipe image</p>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                      id="image-upload"
-                    />
-                    <Button type="button" variant="outline" asChild>
-                      <label htmlFor="image-upload" className="cursor-pointer">
-                        Choose Image
-                      </label>
-                    </Button>
-                  </div>
-                )}
-              </div>
+          <FormItem>
+            <FormLabel className="flex items-center gap-1">
+              <List className="h-4 w-4" />
+              {t('recipe.ingredients')} *
+            </FormLabel>
+            <div className="space-y-2">
+              {ingredientFields.map((ingredient, index) => (
+                <FormField
+                  key={ingredient.id}
+                  control={form.control}
+                  name={`ingredients.${index}.value`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="flex gap-2">
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder={t('recipe.ingredientPlaceholder')}
+                          />
+                        </FormControl>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => removeIngredientItem(index)}
+                          disabled={ingredientFields.length === 1}
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={addIngredient}
+                className="w-full"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                {t('recipe.addIngredient')}
+              </Button>
             </div>
+          </FormItem>
 
-            {/* Ingredients */}
-            <div>
-              <Label className="flex items-center gap-1">
-                <List className="h-4 w-4" />
-                {t('recipes.ingredients')} *
-              </Label>
-              <div className="space-y-2 mt-2">
-                {formData.ingredients.map((ingredient, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Input
-                      value={ingredient}
-                      onChange={(e) => updateIngredient(index, e.target.value)}
-                      placeholder={t('recipes.ingredientPlaceholder')}
-                      className={errors.ingredients ? 'border-red-500' : ''}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => removeIngredient(index)}
-                      disabled={formData.ingredients.length === 1}
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={addIngredient}
-                  className="w-full"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t('recipes.addIngredient')}
-                </Button>
-                {errors.ingredients && <p className="text-sm text-red-500">{errors.ingredients}</p>}
-              </div>
-            </div>
-
-            {/* Instructions */}
-            <div>
-              <Label className="flex items-center gap-1">
-                <FileText className="h-4 w-4" />
-                {t('recipes.instructions')} *
-              </Label>
-              <div className="space-y-2 mt-2">
-                {formData.instructions.map((instruction, index) => (
-                  <div key={index} className="flex gap-2">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Badge variant="outline" className="text-xs">
+          <FormItem>
+            <FormLabel className="flex items-center gap-1">
+              <FileText className="h-4 w-4" />
+              {t('recipe.instructions')} *
+            </FormLabel>
+            <div className="space-y-3">
+              {instructionFields.map((instruction, index) => (
+                <FormField
+                  key={instruction.id}
+                  control={form.control}
+                  name={`instructions.${index}.value`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="flex gap-2 items-start">
+                        <Badge variant="outline" className="text-xs mt-2 flex-shrink-0">
                           {index + 1}
                         </Badge>
+                        <div className="flex-1">
+                          <FormControl>
+                            <Textarea
+                              {...field}
+                              placeholder={t('recipe.instructionPlaceholder')}
+                              className="min-h-[60px]"
+                            />
+                          </FormControl>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => removeInstructionItem(index)}
+                          disabled={instructionFields.length === 1}
+                          className="mt-2 flex-shrink-0"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
                       </div>
-                      <Textarea
-                        value={instruction}
-                        onChange={(e) => updateInstruction(index, e.target.value)}
-                        placeholder={t('recipes.instructionPlaceholder')}
-                        className={`${errors.instructions ? 'border-red-500' : ''} min-h-[60px]`}
-                      />
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => removeInstruction(index)}
-                      disabled={formData.instructions.length === 1}
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
+                    </FormItem>
+                  )}
+                />
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={addInstruction}
+                className="w-full"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                {t('recipe.addInstruction')}
+              </Button>
+            </div>
+          </FormItem>
+
+          {/* Tags */}
+          <FormItem>
+            <FormLabel className="flex items-center gap-1">
+              <Hash className="h-4 w-4" />
+              {t('recipe.tags')}
+            </FormLabel>
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <Input
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  placeholder={t('recipe.tagPlaceholder')}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      if (newTag.trim() && !tags.includes(newTag.trim())) {
+                        addTag(newTag.trim());
+                        setNewTag('');
+                      }
+                    }
+                  }}
+                />
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={addInstruction}
-                  className="w-full"
+                  onClick={() => {
+                    if (newTag.trim() && !tags.includes(newTag.trim())) {
+                      addTag(newTag.trim());
+                      setNewTag('');
+                    }
+                  }}
+                  disabled={!newTag.trim() || tags.includes(newTag.trim())}
                 >
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t('recipes.addInstruction')}
+                  <Plus className="h-4 w-4" />
                 </Button>
-                {errors.instructions && <p className="text-sm text-red-500">{errors.instructions}</p>}
               </div>
-            </div>
-
-            {/* Tags */}
-            <div>
-              <Label className="flex items-center gap-1">
-                <Hash className="h-4 w-4" />
-                {t('recipes.tags')}
-              </Label>
-              <div className="space-y-2 mt-2">
-                <div className="flex gap-2">
-                  <Input
-                    value={newTag}
-                    onChange={(e) => setNewTag(e.target.value)}
-                    placeholder={t('recipes.tagPlaceholder')}
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={addTag}
-                    disabled={!newTag.trim() || formData.tags.includes(newTag.trim())}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
+              {tags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {tags.map((tag, index) => (
+                    <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => removeTag(tag)}
+                        className="text-xs hover:text-red-500"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
                 </div>
-                {formData.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {formData.tags.map((tag, index) => (
-                      <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                        {tag}
-                        <button
-                          type="button"
-                          onClick={() => removeTag(tag)}
-                          className="text-xs hover:text-red-500"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-              </div>
+              )}
             </div>
+          </FormItem>
 
-            {/* Form Actions */}
-            <div className="flex gap-3 pt-4">
-              <Button type="submit" className="flex-1">
-                {recipe ? t('common.save') : t('recipes.addRecipe')}
-              </Button>
-              <Button type="button" variant="outline" onClick={onCancel}>
-                {t('common.cancel')}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+          {/* Form Actions */}
+          <div className="flex gap-3 pt-6 border-t border-gray-200">
+            <Button type="submit" className="flex-1">
+              {t('common.save')}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </>
   );
-}
+};
+
+export default RecipeForm;

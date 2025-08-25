@@ -33,7 +33,7 @@ export class GuestDatabase extends Dexie {
     this.version(3).stores({
       users: '++id, username, email',
       inventoryItems: '++id, name, category, expirationDate, dateFrom, img',
-      recipes: '++id, name, tags',
+      recipes: '++id, name, tags, img, description, ingredients, instructions, cookingTime, servings, difficulty',
       settings: '++id',
       images: '++id, fileName, mimeType, size, data',
       customIcons: '++id, name, category, createdBy, createdTime, isActive',
