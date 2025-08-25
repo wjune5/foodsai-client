@@ -79,7 +79,7 @@ export function ProfileDropdown() {
                         <DropdownMenuItem asChild>
                             <button onClick={handleProfileClick} className="w-full text-left">
                                 <User className="mr-2 h-4 w-4" />
-                                {t('user.profile')}
+                                {t('settings.profile')}
                             </button>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
@@ -126,7 +126,7 @@ export function ProfileDropdown() {
                             {user.nickname || user.username}
                         </p>
                         <p className="text-muted-foreground text-xs leading-none">
-                            {isGuestMode ? 'Guest Mode' : 'Authenticated'}
+                            {isGuestMode ? t('settings.guestMode') : t('settings.authenticated')}
                         </p>
                     </div>
                 </DropdownMenuLabel>
@@ -135,7 +135,7 @@ export function ProfileDropdown() {
                     <DropdownMenuItem asChild>
                         <button onClick={handleProfileClick} className="w-full text-left">
                             <User className="mr-2 h-4 w-4" />
-                            {t('user.profile')}
+                            {t('settings.profile')}
                         </button>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
