@@ -51,3 +51,12 @@ export interface Recipe {
     updateTime: Date;
 }
 
+export interface Category {
+    id?: string;
+    name: string;
+    displayName: string;
+    color?: string;
+    icon?: string;
+    isDefault?: boolean;
+    sortValue: number;
+}

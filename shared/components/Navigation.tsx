@@ -3,7 +3,7 @@
 import React, { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import useLocalizedPath from '@/shared/hooks/useLocalizedPath';
-import { Home, Heart, Sparkles, User, ArrowLeft, Tag } from 'lucide-react';
+import { Home, Heart, Sparkles, User, ArrowLeft, Tag, Book } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useAuth } from '@/shared/context/AuthContext';
@@ -59,6 +59,7 @@ export default function Navigation() {
   const navigation = [
     { name: t('navigation.inventory'), href: '/', icon: Home },
     { name: t('navigation.categories'), href: '/categories', icon: Tag },
+    { name: t('navigation.records'), href: '/records', icon: Book },
     // { name: t('navigation.favorites'), href: '/favorites', icon: Heart }
   ];
 
