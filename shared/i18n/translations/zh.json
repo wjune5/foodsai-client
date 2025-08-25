@@ -57,7 +57,8 @@
     "management": "管理",
     "openMenu": "打开主菜单",
     "hometitle": "Butlo",
-    "guestMode": "访客模式"
+    "guestMode": "访客模式",
+    "records": "记录"
   },
   "home": {
     "title": "智能冰箱管理器 🍎",
@@ -145,6 +146,16 @@
     "unitRequired": "单位是必需的",
     "priceRequired": "价格必须大于0"
   },
+  "records": {
+    "deleteRecipe": "删除食谱",
+    "noRecipes": "未找到食谱",
+    "addFirstRecipe": "添加您的第一个食谱开始吧",
+    "searchRecipes": "搜索食谱...",
+    "filterByTag": "按标签筛选",
+    "allTags": "所有标签",
+    "viewRecipe": "查看食谱",
+    "duplicateRecipe": "复制食谱"
+  },
   "categories": {
     "title": "分类管理",
     "description": "通过创建和管理自定义分类来组织您的食物",
@@ -168,19 +179,44 @@
       "colorRequired": "颜色是必需的"
     }
   },
-  "recipes": {
+  "recipe": {
     "title": "食谱",
     "searchRecipes": "搜索食谱...",
+    "addRecipe": "添加食谱",
+    "editRecipe": "编辑食谱",
     "noRecipes": "未找到食谱",
+    "recipeName": "食谱名称",
+    "recipeDescription": "描述",
     "cookTime": "烹饪时间",
     "prepTime": "准备时间",
     "servings": "份量",
     "ingredients": "配料",
     "instructions": "制作步骤",
     "difficulty": "难度",
-    "easy": "简单",
-    "medium": "中等",
-    "hard": "困难"
+    "difficultyLevels": {
+      "easy": "简单",
+      "medium": "中等",
+      "hard": "困难"
+    },
+    "createdAt": "创建时间",
+    "updatedAt": "最后更新",
+    "ingredientPlaceholder": "例如：面粉 2 杯",
+    "instructionPlaceholder": "例如：在碗中混合食材",
+    "cookingTimeMinutes": "分钟",
+    "tagPlaceholder": "例如：素食、辛辣",
+    "addIngredient": "添加食材",
+    "addInstruction": "添加步骤",
+    "addTag": "添加标签",
+    "removeIngredient": "移除食材",
+    "removeInstruction": "移除步骤",
+    "removeTag": "移除标签",
+    "recipeAdded": "食谱添加成功",
+    "recipeUpdated": "食谱更新成功",
+    "recipeDeleted": "食谱删除成功",
+    "confirmDelete": "您确定要删除这个食谱吗？",
+    "nameRequired": "食谱名称为必填项",
+    "ingredientsRequired": "至少需要一个食材",
+    "instructionsRequired": "至少需要一个制作步骤"
   },
   "favorites": {
     "title": "收藏",

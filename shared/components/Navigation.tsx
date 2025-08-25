@@ -3,7 +3,7 @@
 import React, { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import useLocalizedPath from '@/shared/hooks/useLocalizedPath';
-import { Home, Heart, Sparkles, User, ArrowLeft, Tag } from 'lucide-react';
+import { Home, Heart, Sparkles, User, ArrowLeft, Tag, Book } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useAuth } from '@/shared/context/AuthContext';
@@ -54,11 +54,12 @@ export default function Navigation() {
   const [offset, setOffset] = React.useState(0);
   const router = useRouter();
   // Check if we're on a food item details page
-  const isDetailsPage = pathname.includes('/inventory/') && pathname.split('/').length > 3;
+  const isDetailsPage = (pathname.includes('/inventory/') || pathname.includes('/records/')) && pathname.split('/').length > 3;
 
   const navigation = [
     { name: t('navigation.inventory'), href: '/', icon: Home },
     { name: t('navigation.categories'), href: '/categories', icon: Tag },
+    { name: t('navigation.records'), href: '/records', icon: Book },
     // { name: t('navigation.favorites'), href: '/favorites', icon: Heart }
   ];
 

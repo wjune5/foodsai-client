@@ -1,14 +1,13 @@
 'use client';
 
-import { FC, useEffect, useRef, useState, memo } from 'react';
+import { FC, useEffect, useRef, useState, memo, useMemo } from 'react';
 import Navigation from '@/shared/components/Navigation';
 import { useAuth } from '@/shared/context/AuthContext';
 import { Toaster } from 'react-hot-toast';
-import { Inventory } from '@/shared/entities/inventory';
+import { Category, Inventory } from '@/shared/entities/inventory';
 import { useTranslations } from 'next-intl';
 import { ReduxProvider } from '@/shared/providers/ReduxProvider';
 import { Plus as LucidePlus, ChefHat, MessageCircle, Search, Minus } from 'lucide-react';
-import { categories } from '@/shared/constants/constants';
 import ChatWindow from '@/shared/components/ChatWindow';
 import Footer from '@/shared/components/Footer';
 import { guestModeService } from '@/shared/services/GuestModeService';
@@ -18,6 +17,7 @@ import useLocalizedPath from '@/shared/hooks/useLocalizedPath';
 import { Switch } from '@/shared/components/ui/switch';
 import { Input } from '@/shared/components/ui/input';
 import { Button } from '@/shared/components/ui/button';
+import { categories as defaultCategories } from '@/shared/constants/constants';
 
 type ChatMessage = { text?: string; imageUrl?: string; role: 'user' | 'bot' };
 
@@ -53,10 +53,25 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
             setChatMessages(prev => [...prev, { text: `I can see your image! That looks interesting.`, role: 'bot' }]);
         }, 500);
     };
+    const [categories, setCategories] = useState<Category[]>([]);
 
     // 2. Fetch inventory when mode is ready
     useEffect(() => {
-        if (isAuthenticated || isGuestMode) {
+        if (isGuestMode) {
+            guestModeService.getCategories().then(cats => {
+                if (cats.length === 0) {
+                    defaultCategories.forEach((cat, index) => {
+                        const newCat: Category = {
+                            name: cat,
+                            displayName: t(`inventory.categories.${cat}`),
+                            sortValue: index
+                        };
+                        guestModeService.addCategory(newCat);
+                        cats.push(newCat);
+                    });
+                } 
+                setCategories(cats);
+            });
             getInventoryItems();
         }
     }, [isGuestMode]);
@@ -119,7 +134,6 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
             // setInventory(items);
         } else {
             const items = await guestModeService.getInventoryItems();
-            console.log('items', items);
             setInventorys(items);
         }
     };
@@ -140,11 +154,11 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                         </button>
                         {categories.map(cat => (
                             <button
-                                key={cat}
-                                className={`px-4 py-2 rounded-full border-pink-400 text-sm font-medium transition ${categoryFilter === cat ? 'bg-pink-500 text-white' : 'bg-white text-gray-700 hover:bg-pink-100'}`}
-                                onClick={() => setCategoryFilter(cat)}
+                                key={cat.id}
+                                className={`px-4 py-2 rounded-full border-pink-400 text-sm font-medium transition ${categoryFilter === cat.name ? 'bg-pink-500 text-white' : 'bg-white text-gray-700 hover:bg-pink-100'}`}
+                                onClick={() => setCategoryFilter(cat.name)}
                             >
-                                {t(`inventory.categories.${cat}`)}
+                                {cat.displayName}
                             </button>
                         ))}
                     </div>
@@ -212,12 +226,12 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                 categoryFilter === 'all' ? (
                                     <div className="flex flex-col gap-4 p-4">
                                         {categories.map(cat => {
-                                            const itemsInCategory = filteredItems.filter(item => item.category === cat);
+                                            const itemsInCategory = filteredItems.filter(item => item.category === cat.name);
                                             if (itemsInCategory.length === 0) return null;
                                             return (
-                                                <div key={cat} className="flex flex-col gap-2">
+                                                <div key={cat.id} className="flex flex-col gap-2">
                                                     <div className="font-bold text-pink-600 text-lg">
-                                                        {t(`inventory.categories.${cat}`)}
+                                                        {cat.displayName}
                                                     </div>
                                                     <div className="flex flex-wrap gap-4">
                                                         {itemsInCategory.map((item: Inventory) => (

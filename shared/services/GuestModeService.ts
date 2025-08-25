@@ -1,6 +1,6 @@
 import { guestDB } from '../utils/guest_db';
 import { DEFAULT_SETTINGS, GuestUser, UserInfo, UserSettings } from '../entities/user';
-import { Inventory, Recipe } from '../entities/inventory';
+import { Category, Inventory, Recipe } from '../entities/inventory';
 
 export interface GuestModeState {
   isGuestMode: boolean;
@@ -106,6 +106,14 @@ export class GuestModeService {
       return existing;
     }
     return await guestDB.addInventoryItem(item);
+  }
+
+  async getCategories(): Promise<Category[]> {
+    return await guestDB.getCategories();
+  }
+
+  async addCategory(category: Omit<Category, 'id' | 'isDefault' | 'icon'>): Promise<Category> {
+    return await guestDB.addCategory(category);
   }
 
   async getInventoryItems(): Promise<Inventory[]> {

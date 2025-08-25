@@ -1,5 +1,5 @@
 import Dexie, { Table } from 'dexie';
-import { Inventory, InventoryImage, Recipe } from '../entities/inventory';
+import { Category, Inventory, InventoryImage, Recipe } from '../entities/inventory';
 import { GuestUser, UserSettings } from '../entities/user';
 
 // Define the database class
@@ -9,7 +9,7 @@ export class GuestDatabase extends Dexie {
   recipes!: Table<Recipe>;
   settings!: Table<UserSettings>;
   images!: Table<InventoryImage>;
-
+  categories!: Table<Category>;
   constructor() {
     super('ButloGuestDB');
     
@@ -33,10 +33,11 @@ export class GuestDatabase extends Dexie {
     this.version(3).stores({
       users: '++id, username, email',
       inventoryItems: '++id, name, category, expirationDate, dateFrom, img',
-      recipes: '++id, name, tags',
+      recipes: '++id, name, tags, img, description, ingredients, instructions, cookingTime, servings, difficulty',
       settings: '++id',
       images: '++id, fileName, mimeType, size, data',
-      customIcons: '++id, name, category, createdBy, createdTime, isActive'
+      customIcons: '++id, name, category, createdBy, createdTime, isActive',
+      categories: '++id, name, displayName, color, icon, isDefault, sortValue'
     });
   }
 
@@ -72,6 +73,29 @@ export class GuestDatabase extends Dexie {
       await this.recipes.clear(); // Clear all recipes
       await this.settings.clear(); // Clear all settings
     });
+  }
+
+  async getCategories(): Promise<Category[]> {
+    return await this.categories.toArray();
+  }
+
+  async addCategory(category: Omit<Category, 'id' | 'isDefault' | 'icon'>): Promise<Category> {
+    const newCategory: Category = {
+      ...category,
+      id: crypto.randomUUID(),
+    };
+    await this.categories.add(newCategory);
+    return newCategory;
+  }
+
+  async updateCategory(id: string, updates: Partial<Category>): Promise<void> {
+    await this.categories.update(id, {
+      ...updates,
+    });
+  }
+
+  async deleteCategory(id: string): Promise<void> {
+    await this.categories.delete(id);
   }
 
   // Inventory management

@@ -46,8 +46,17 @@ export interface Recipe {
     servings?: number;
     difficulty?: string;
     tags?: string[];
-    img?: string;
+    img?: InventoryImage;
     createTime: Date;
     updateTime: Date;
 }
 
+export interface Category {
+    id?: string;
+    name: string;
+    displayName: string;
+    color?: string;
+    icon?: string;
+    isDefault?: boolean;
+    sortValue: number;
+}

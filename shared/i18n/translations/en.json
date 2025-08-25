@@ -39,7 +39,8 @@
     "currency": "Currency",
     "itemsCount": "{count} items",
     "increment": "Increment",
-    "reset": "Reset"
+    "reset": "Reset",
+    "uploadImage": "Upload Image"
   },
   "message": {
     "deleteConfirmation": "Are you sure you want to delete \"{name}\"? This action cannot be undone."
@@ -56,7 +57,9 @@
     "statistics": "Statistics",
     "management": "Management",
     "openMenu": "Open main menu",
-    "hometitle": "Butlo"
+    "hometitle": "Butlo",
+    "records": "Records",
+    "guestMode": "Guest Mode"
   },
   "home": {
     "title": "Smart Fridge Organizer 🍎",
@@ -144,6 +147,16 @@
     "unitRequired": "Unit is required",
     "priceRequired": "Price must be 0 or greater"
   },
+  "records": {
+    "deleteRecipe": "Delete Recipe",
+    "noRecipes": "No recipes found",
+    "addFirstRecipe": "Add your first recipe to get started",
+    "searchRecipes": "Search recipes...",
+    "filterByTag": "Filter by tag",
+    "allTags": "All Tags",
+    "viewRecipe": "View Recipe",
+    "duplicateRecipe": "Duplicate Recipe"
+  },
   "categories": {
     "title": "Categories",
     "description": "Organize your food items by creating and managing custom categories",
@@ -167,19 +180,50 @@
       "colorRequired": "Color is required"
     }
   },
-  "recipes": {
+  "recipe": {
     "title": "Recipes",
+    "name": "Name",
+    "description": "Description",
     "searchRecipes": "Search recipes...",
+    "addRecipe": "Add Recipe",
+    "editRecipe": "Edit Recipe",
     "noRecipes": "No recipes found",
     "cookTime": "Cook Time",
     "prepTime": "Prep Time",
-    "servings": "Servings",
+    "recipeName": "Recipe Name",
+    "recipeDescription": "Description",
     "ingredients": "Ingredients",
     "instructions": "Instructions",
+    "cookingTime": "Cooking Time",
+    "servings": "Servings",
     "difficulty": "Difficulty",
-    "easy": "Easy",
-    "medium": "Medium",
-    "hard": "Hard"
+    "tags": "Tags",
+    "image": "Recipe Image",
+    "difficultyLevels": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    },
+    "tagPlaceholder": "e.g., vegetarian, spicy",
+    "ingredientPlaceholder": "e.g., 2 cups flour",
+    "instructionPlaceholder": "e.g., Mix ingredients in a bowl",
+    "cookingTimeMinutes": "minutes",
+    "createdAt": "Created",
+    "updatedAt": "Last updated",
+    "addIngredient": "Add Ingredient",
+    "addInstruction": "Add Instruction",
+    "addTag": "Add Tag",
+    "removeIngredient": "Remove Ingredient",
+    "removeInstruction": "Remove Instruction",
+    "removeTag": "Remove Tag",
+    "recipeAdded": "Recipe added successfully",
+    "recipeUpdated": "Recipe updated successfully",
+    "recipeDeleted": "Recipe deleted successfully",
+    "confirmDelete": "Are you sure you want to delete this recipe?",
+    "nameRequired": "Recipe name is required",
+    "ingredientsRequired": "At least one ingredient is required",
+    "instructionsRequired": "At least one instruction is required",
+    "minutes": "min"
   },
   "favorites": {
     "title": "Favorites",
