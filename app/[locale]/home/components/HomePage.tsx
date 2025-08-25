@@ -5,9 +5,9 @@ import Navigation from '@/shared/components/Navigation';
 import { useAuth } from '@/shared/context/AuthContext';
 import { Toaster } from 'react-hot-toast';
 import { Category, Inventory } from '@/shared/entities/inventory';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { ReduxProvider } from '@/shared/providers/ReduxProvider';
-import { Plus as LucidePlus, ChefHat, MessageCircle, Search, Minus } from 'lucide-react';
+import { Plus as LucidePlus, ChefHat, MessageCircle, Search, Minus, Globe } from 'lucide-react';
 import ChatWindow from '@/shared/components/ChatWindow';
 import Footer from '@/shared/components/Footer';
 import { guestModeService } from '@/shared/services/GuestModeService';
@@ -18,6 +18,13 @@ import { Switch } from '@/shared/components/ui/switch';
 import { Input } from '@/shared/components/ui/input';
 import { Button } from '@/shared/components/ui/button';
 import { categories as defaultCategories } from '@/shared/constants/constants';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/shared/components/Dialog';
 
 type ChatMessage = { text?: string; imageUrl?: string; role: 'user' | 'bot' };
 
@@ -36,6 +43,33 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
     const [consumeEnabled, setConsumeEnabled] = useState(false)
     const chatRef = useRef<HTMLDivElement>(null);
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+    const [showLanguageDialog, setShowLanguageDialog] = useState(false);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const locale = useLocale();
+    // Check if user has already selected a language
+    useEffect(() => {
+        const hasSelectedLanguage = localStorage.getItem('language-selected');
+        if (!hasSelectedLanguage) {
+            setShowLanguageDialog(true);
+        }
+    }, []);
+
+    const handleLanguageSelect = (locale: string) => {
+        localStorage.setItem('language-selected', 'true');
+        setShowLanguageDialog(false);
+        
+        // Redirect to the selected language
+        const currentPath = window.location.pathname;
+        const pathWithoutLocale = currentPath.replace(/^\/[a-z]{2}/, '');
+        const newPath = `/${locale}${pathWithoutLocale}`;
+        router.push(newPath);
+    };
+
+    const languages = [
+        { code: 'en', name: 'English' },
+        { code: 'zh', name: '中文' }
+    ];
+
     const handleSendMessage = (msg: string) => {
         if (msg.trim()) {
             setChatMessages(prev => [...prev, { text: msg, role: 'user' }]);
@@ -53,14 +87,13 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
             setChatMessages(prev => [...prev, { text: `I can see your image! That looks interesting.`, role: 'bot' }]);
         }, 500);
     };
-    const [categories, setCategories] = useState<Category[]>([]);
 
     // 2. Fetch inventory when mode is ready
     useEffect(() => {
         if (isGuestMode) {
             guestModeService.getCategories().then(cats => {
                 if (cats.length === 0) {
-                    defaultCategories.forEach((cat, index) => {
+                    defaultCategories[locale as keyof typeof defaultCategories].forEach((cat: string, index: number) => {
                         const newCat: Category = {
                             name: cat,
                             displayName: t(`inventory.categories.${cat}`),
@@ -299,6 +332,32 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
             </button>}
 
             <Toaster position="top-right" />
+
+            {/* Language Selection Dialog */}
+            <Dialog open={showLanguageDialog} onOpenChange={setShowLanguageDialog}>
+                <DialogContent className="sm:max-w-md px-8 py-8" showCloseButton={false}>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-center">
+                            <Globe className="h-6 w-6 text-pink-500" />
+                            Choose Your Language
+                        </DialogTitle>
+                        <DialogDescription className="text-center">
+                            Please select your preferred language to continue
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-3 py-4">
+                        {languages.map((language) => (
+                            <button
+                                key={language.code}
+                                onClick={() => handleLanguageSelect(language.code)}
+                                className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:border-pink-300 hover:bg-pink-50 transition-colors"
+                            >
+                                <span className="font-medium text-gray-900">{language.name}</span>
+                            </button>
+                        ))}
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 });

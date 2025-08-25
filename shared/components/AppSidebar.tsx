@@ -57,7 +57,7 @@ export function AppSidebar() {
             <div className="icon-cute pulse">
               <Sparkles className="w-5 h-5" />
             </div>
-            <span className="text-lg font-bold gradient-text">Smart Fridge</span>
+            <span className="text-lg font-bold gradient-text">Foodsai</span>
           </div>
           <SidebarTrigger className="md:hidden" />
         </div>
@@ -132,8 +132,8 @@ export function AppSidebar() {
         <LanguageSwitcher className="mb-3" />
         <SidebarSeparator />
         <div className="px-2 py-2 text-xs text-muted-foreground">
-          <p>Smart Fridge v1.0</p>
-          <p>© 2024 FoodSai</p>
+          <p>Foodsai v1.0</p>
+          <p>© 2024 Foodsai</p>
         </div>
       </SidebarFooter>
     </Sidebar>

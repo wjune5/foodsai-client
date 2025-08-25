@@ -1,6 +1,6 @@
 {
   "LocaleLayout": {
-    "title": "Smart Fridge Organizer 🍎"
+    "title": "Smart Food Organizer 🍎"
   },
   "common": {
     "loading": "Loading...",
@@ -40,7 +40,8 @@
     "itemsCount": "{count} items",
     "increment": "Increment",
     "reset": "Reset",
-    "uploadImage": "Upload Image"
+    "uploadImage": "Upload Image",
+    "dragAndDrop": "Drag and drop an image here, or click to browse"
   },
   "message": {
     "deleteConfirmation": "Are you sure you want to delete \"{name}\"? This action cannot be undone."
@@ -51,18 +52,15 @@
     "categories": "Categories",
     "recipes": "Recipes",
     "favorites": "Favorites",
-    "profile": "Profile",
     "support": "Support",
     "settings": "Settings",
     "statistics": "Statistics",
     "management": "Management",
     "openMenu": "Open main menu",
     "hometitle": "Butlo",
-    "records": "Records",
-    "guestMode": "Guest Mode"
+    "records": "Records"
   },
   "home": {
-    "title": "Smart Fridge Organizer 🍎",
     "description": "Manage your refrigerator items, track expiration dates, and get AI-powered recipe suggestions",
     "welcome": "Welcome to Smart Fridge",
     "quickActions": "Quick Actions",
@@ -194,7 +192,6 @@
     "recipeDescription": "Description",
     "ingredients": "Ingredients",
     "instructions": "Instructions",
-    "cookingTime": "Cooking Time",
     "servings": "Servings",
     "difficulty": "Difficulty",
     "tags": "Tags",
@@ -204,6 +201,8 @@
       "medium": "Medium",
       "hard": "Hard"
     },
+    "namePlaceholder": "e.g., Chocolate Chip Cookies",
+    "descriptionPlaceholder": "e.g., A delicious recipe that...",
     "tagPlaceholder": "e.g., vegetarian, spicy",
     "ingredientPlaceholder": "e.g., 2 cups flour",
     "instructionPlaceholder": "e.g., Mix ingredients in a bowl",
@@ -321,7 +320,6 @@
   },
   "user": {
     "title": "User",
-    "profile": "Profile",
     "logout": "Logout",
     "username": "Username",
     "displayName": "Display Name",

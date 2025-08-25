@@ -109,7 +109,7 @@ export default function Navigation() {
             <div className="icon-cute pulse">
               <Sparkles className="w-5 h-5" />
             </div>
-            <span className="text-xl font-bold gradient-text">Smart Fridge</span>
+            <span className="text-xl font-bold gradient-text">Foodsai</span>
           </Link>
           {isGuestMode && (
             <div className="hidden md:flex items-center ml-4 space-x-2 px-3 py-1 bg-yellow-100 border border-yellow-300 rounded-full" title='💡 Your data is stored locally on this device. Consider creating an account to sync your data across devices.'>
