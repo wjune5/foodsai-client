@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Heart, Settings, User, Sparkles, Tag } from 'lucide-react'
+import { Home, Heart, Settings, User, Sparkles, Tag, Book } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import useLocalizedPath from '@/shared/hooks/useLocalizedPath'
 import { useAuth } from '@/shared/context/AuthContext'
@@ -41,6 +41,7 @@ export function AppSidebar() {
   const managementNavigation = [
     { name: t('navigation.inventory'), href: '/', icon: Home },
     { name: t('navigation.categories'), href: '/categories', icon: Tag },
+    { name: t('navigation.records'), href: '/records', icon: Book },
   ]
 
   const otherNavigation = [
