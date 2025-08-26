@@ -12,7 +12,7 @@ import { UserInfo } from '@/shared/entities/user';
 import { getUserInfo, refreshUserInfo } from '@/shared/services/UserService';
 import { getStrategy } from '@/shared/auth/strategies';
 import { getAuthInfo, setAuthInfo, clearAuthInfo, isAuthenticated } from '@/shared/auth/utils/auth_utils';
-import { guestModeService, GuestModeState } from '@/shared/services/GuestModeService';
+import { databaseService, GuestModeState } from '@/shared/services/DatabaseService';
 
 interface AuthContextType {
   user: UserInfo | null;
@@ -130,8 +130,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Guest mode methods
   const enterGuestMode = async (): Promise<void> => {
     try {
-      const guestUser = await guestModeService.initializeGuestMode();
-      const guestUserInfo = guestModeService.getUserInfo();
+      const guestUser = await databaseService.initializeGuestMode();
+      const guestUserInfo = databaseService.getUserInfo();
       
       setGuestModeState({
         isGuestMode: true,
@@ -151,7 +151,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const exitGuestMode = async (): Promise<void> => {
     try {
-      await guestModeService.clearDBData();
+      await databaseService.clearDBData();
       setGuestModeState({
         isGuestMode: false,
         guestUser: null,
@@ -166,7 +166,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const migrateToAuthenticatedUser = async (authenticatedUser: UserInfo): Promise<void> => {
     try {
-      await guestModeService.migrateToAuthenticatedUser(authenticatedUser);
+      await databaseService.migrateToAuthenticatedUser(authenticatedUser);
       setGuestModeState({
         isGuestMode: false,
         guestUser: null,
@@ -180,7 +180,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const updateUserFromGuestService = () => {
-    const updatedUser = guestModeService.getUserInfo();
+    const updatedUser = databaseService.getUserInfo();
     setUser(updatedUser as UserInfo);
   };
 

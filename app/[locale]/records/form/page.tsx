@@ -4,7 +4,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from '@/shared/i18n/navigation';
 import { Recipe } from '@/shared/entities/inventory';
-import { guestModeService } from '@/shared/services/GuestModeService';
+import { databaseService } from '@/shared/services/DatabaseService';
 import { useTranslations } from 'next-intl';
 import toast from 'react-hot-toast';
 import RecipeForm from '../components/RecipeForm';
@@ -24,7 +24,7 @@ function RecipeFormPageInner() {
       const loadRecipe = async () => {
         try {
           setLoading(true);
-          const recipes = await guestModeService.getRecipes();
+          const recipes = await databaseService.getRecipes();
           const foundRecipe = recipes.find(r => r.id === recipeId);
           
           if (foundRecipe) {
@@ -48,7 +48,7 @@ function RecipeFormPageInner() {
 
   const handleAddRecipe = async (recipeData: Omit<Recipe, 'id' | 'createTime' | 'updateTime'>) => {
     try {
-      await guestModeService.addRecipe(recipeData);
+      await databaseService.addRecipe(recipeData);
       toast.success(t('records.recipeAdded'));
       router.push('/records');
     } catch (error) {
@@ -60,7 +60,7 @@ function RecipeFormPageInner() {
   const handleEditRecipe = async (recipeData: Omit<Recipe, 'id' | 'createTime' | 'updateTime'>) => {
     try {
       if (recipe) {
-        await guestModeService.updateRecipe(recipe.id, recipeData);
+        await databaseService.updateRecipe(recipe.id, recipeData);
         toast.success(t('records.recipeUpdated'));
         router.push('/records');
       }

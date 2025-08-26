@@ -8,18 +8,18 @@ export interface GuestModeState {
   isInitialized: boolean;
 }
 
-export class GuestModeService {
-  private static instance: GuestModeService;
+export class DatabaseService {
+  private static instance: DatabaseService;
   private guestUser: GuestUser | null = null;
   private isInitialized = false;
 
   private constructor() {}
 
-  static getInstance(): GuestModeService {
-    if (!GuestModeService.instance) {
-      GuestModeService.instance = new GuestModeService();
+  static getInstance(): DatabaseService {
+    if (!DatabaseService.instance) {
+      DatabaseService.instance = new DatabaseService();
     }
-    return GuestModeService.instance;
+    return DatabaseService.instance;
   }
 
   // Initialize guest mode
@@ -114,6 +114,14 @@ export class GuestModeService {
 
   async addCategory(category: Omit<Category, 'id' | 'isDefault' | 'icon'>): Promise<Category> {
     return await guestDB.addCategory(category);
+  }
+
+  async updateCategory(id: string, updates: Partial<Category>): Promise<void> {
+    await guestDB.updateCategory(id, updates);
+  }
+
+  async deleteCategory(id: string): Promise<void> {
+    await guestDB.deleteCategory(id);
   }
 
   async getInventoryItems(): Promise<Inventory[]> {
@@ -265,4 +273,4 @@ export class GuestModeService {
 }
 
 // Export singleton instance
-export const guestModeService = GuestModeService.getInstance(); 
+export const databaseService = DatabaseService.getInstance(); 

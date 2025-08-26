@@ -10,7 +10,7 @@ import { ReduxProvider } from '@/shared/providers/ReduxProvider';
 import { Plus as LucidePlus, ChefHat, MessageCircle, Search, Minus, Globe } from 'lucide-react';
 import ChatWindow from '@/shared/components/ChatWindow';
 import Footer from '@/shared/components/Footer';
-import { guestModeService } from '@/shared/services/GuestModeService';
+import { databaseService } from '@/shared/services/DatabaseService';
 import FoodCard from '../../inventory/components/FoodCard';
 import { useRouter } from 'next/navigation';
 import useLocalizedPath from '@/shared/hooks/useLocalizedPath';
@@ -91,7 +91,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
     // 2. Fetch inventory when mode is ready
     useEffect(() => {
         if (isGuestMode) {
-            guestModeService.getCategories().then(cats => {
+            databaseService.getCategories().then(cats => {
                 if (cats.length === 0) {
                     defaultCategories[locale as keyof typeof defaultCategories].forEach((cat: string, index: number) => {
                         const newCat: Category = {
@@ -99,7 +99,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                             displayName: t(`inventory.categories.${cat}`),
                             sortValue: index
                         };
-                        guestModeService.addCategory(newCat);
+                        databaseService.addCategory(newCat);
                         cats.push(newCat);
                     });
                 } 
@@ -142,7 +142,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
         });
 
     const handleDelete = (id: string) => {
-        guestModeService.deleteInventoryItem(id);
+        databaseService.deleteInventoryItem(id);
         getInventoryItems();
     };
 
@@ -153,9 +153,9 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
     const handleEdit = async (item: Inventory) => {
         const updated = { ...item, quantity: (item.quantity || 1) - 1 };
         if (updated.quantity > 0) {
-            await guestModeService.updateInventoryItem(item.id, updated);
+            await databaseService.updateInventoryItem(item.id, updated);
         } else {
-            await guestModeService.deleteInventoryItem(item.id);
+            await databaseService.deleteInventoryItem(item.id);
         }
         getInventoryItems();
     };
@@ -163,10 +163,10 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
     const getInventoryItems = async () => {
         if (isAuthenticated) {
             // TODO: get inventory items from cloud
-            // const items = await guestModeService.getInventoryItems();
+            // const items = await databaseService.getInventoryItems();
             // setInventory(items);
         } else {
-            const items = await guestModeService.getInventoryItems();
+            const items = await databaseService.getInventoryItems();
             setInventorys(items);
         }
     };

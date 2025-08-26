@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Inventory } from '@/shared/entities/inventory';
-import { guestModeService } from '@/shared/services/GuestModeService';
+import { databaseService } from '@/shared/services/DatabaseService';
 import { useAuth } from '@/shared/context/AuthContext';
 import FoodDetailsPage from '../components/FoodDetailsPage';
 import Navigation from '@/shared/components/Navigation';
@@ -33,7 +33,7 @@ export default function FoodItemPage() {
           // TODO: Fetch from cloud API
           setError('Cloud API not implemented yet');
         } else if (isGuestMode) {
-          const items = await guestModeService.getInventoryItems();
+          const items = await databaseService.getInventoryItems();
           const foundItem = items.find((item: Inventory) => item.id === itemId);
           if (foundItem) {
             setItem(foundItem);
@@ -58,7 +58,7 @@ export default function FoodItemPage() {
 
   const handleEdit = (updatedItem: Inventory) => {
     if (isGuestMode) {
-      guestModeService.updateInventoryItem(updatedItem.id, updatedItem);
+      databaseService.updateInventoryItem(updatedItem.id, updatedItem);
       setItem(updatedItem);
     }
     // TODO: Handle cloud API update
@@ -66,7 +66,7 @@ export default function FoodItemPage() {
 
   const handleDelete = () => {
     if (isGuestMode) {
-      guestModeService.deleteInventoryItem(itemId);
+      databaseService.deleteInventoryItem(itemId);
       router.push(localize('/'));
     }
     // TODO: Handle cloud API delete

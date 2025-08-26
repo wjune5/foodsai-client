@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { useTranslations } from 'next-intl';
 import { Input } from '@/shared/components/ui/input';
 import { Button } from '@/shared/components/ui/button';
-import { guestModeService } from '@/shared/services/GuestModeService';
+import { databaseService } from '@/shared/services/DatabaseService';
 
 export const ProfilePageContent: React.FC = () => {
   const t = useTranslations();
@@ -23,7 +23,7 @@ export const ProfilePageContent: React.FC = () => {
 
   const handleEditToggle = async () => {
     if (isEditing) {
-      await guestModeService.updateUserProfile(editForm);
+      await databaseService.updateUserProfile(editForm);
       updateUserFromGuestService();
       toast.success('Profile updated successfully!');
     }

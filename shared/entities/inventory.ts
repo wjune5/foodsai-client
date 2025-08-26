@@ -59,4 +59,5 @@ export interface Category {
     icon?: string;
     isDefault?: boolean;
     sortValue: number;
+    count?: number;
 }

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from '@/shared/i18n/navigation';
 import { Recipe } from '@/shared/entities/inventory';
-import { guestModeService } from '@/shared/services/GuestModeService';
+import { databaseService } from '@/shared/services/DatabaseService';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
@@ -37,7 +37,7 @@ export default function RecipesPage() {
   const loadRecipes = async () => {
     try {
       setLoading(true);
-      const recipeList = await guestModeService.getRecipes();
+      const recipeList = await databaseService.getRecipes();
       setRecipes(recipeList);
     } catch (error) {
       console.error('Error loading recipes:', error);
@@ -54,7 +54,7 @@ export default function RecipesPage() {
   const handleDeleteRecipe = async (recipe: Recipe) => {
     if (window.confirm(t('recipes.confirmDelete'))) {
       try {
-        await guestModeService.deleteRecipe(recipe.id);
+        await databaseService.deleteRecipe(recipe.id);
         toast.success(t('records.recipeDeleted'));
         await loadRecipes();
       } catch (error) {
@@ -78,7 +78,7 @@ export default function RecipesPage() {
         img: recipe.img
       };
       
-      await guestModeService.addRecipe(duplicateData);
+      await databaseService.addRecipe(duplicateData);
       toast.success('Recipe duplicated successfully');
       await loadRecipes();
     } catch (error) {
