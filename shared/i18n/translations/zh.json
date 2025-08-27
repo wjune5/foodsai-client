@@ -42,10 +42,12 @@
     "reset": "重置",
     "uploadImage": "上传图片",
     "dragAndDrop": "拖拽图片到这里，或点击浏览",
-    "clear": "清除"
+    "clear": "清除",
+    "all": "全部"
   },
   "message": {
-    "deleteConfirmation": "您确定要删除 \"{name}\" 吗？此操作无法撤销。"
+    "deleteConfirmation": "您确定要删除 \"{name}\" 吗？此操作无法撤销。",
+    "consumeSuccess": "成功消耗了 {quantity} {name}"
   },
   "navigation": {
     "dashboard": "仪表板",
@@ -146,7 +148,11 @@
     "categoryRequired": "类别是必需的",
     "quantityRequired": "数量必须至少为1",
     "unitRequired": "单位是必需的",
-    "priceRequired": "价格必须大于0"
+    "priceRequired": "价格必须大于0",
+    "consumeItem": "消耗物品",
+    "available": "可用",
+    "quantityToConsume": "消耗数量",
+    "consume": "消耗"
   },
   "records": {
     "deleteRecipe": "删除食谱",

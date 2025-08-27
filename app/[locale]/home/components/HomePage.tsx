@@ -3,7 +3,7 @@
 import { FC, useEffect, useRef, useState, memo, useMemo } from 'react';
 import Navigation from '@/shared/components/Navigation';
 import { useAuth } from '@/shared/context/AuthContext';
-import { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import { Category, Inventory } from '@/shared/entities/inventory';
 import { useLocale, useTranslations } from 'next-intl';
 import { ReduxProvider } from '@/shared/providers/ReduxProvider';
@@ -148,13 +148,20 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
         setConsumeEnabled(!consumeEnabled)
     };
 
-    const handleEdit = async (item: Inventory) => {
-        const updated = { ...item, quantity: (item.quantity || 1) - 1 };
+    const handleEdit = async (item: Inventory, quantity: number) => {
+        const updated = { ...item, quantity: (item.quantity || 1) - quantity };
         if (updated.quantity > 0) {
             await databaseService.updateInventoryItem(item.id, updated);
         } else {
             await databaseService.deleteInventoryItem(item.id);
         }
+        databaseService.addConsumptionHistory({
+            itemId: item.id,
+            quantity: quantity,
+            consumedAt: new Date(),
+            type: 'food'
+        });
+        toast.success(t('message.consumeSuccess', { name: item.name, quantity: quantity }));
         getInventoryItems();
     };
 
@@ -186,8 +193,8 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                         {categories.map(cat => (
                             <button
                                 key={cat.id}
-                                className={`px-4 py-2 rounded-full border-pink-400 text-sm font-medium transition ${categoryFilter === cat.name ? 'bg-pink-500 text-white' : 'bg-white text-gray-700 hover:bg-pink-100'}`}
-                                onClick={() => setCategoryFilter(cat.name)}
+                                className={`px-4 py-2 rounded-full border-pink-400 text-sm font-medium transition ${categoryFilter === cat.id ? 'bg-pink-500 text-white' : 'bg-white text-gray-700 hover:bg-pink-100'}`}
+                                onClick={() => setCategoryFilter(cat.id || '')}
                             >
                                 {cat.displayName}
                             </button>
@@ -257,7 +264,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                 categoryFilter === 'all' ? (
                                     <div className="flex flex-col gap-4 p-4">
                                         {categories.map(cat => {
-                                            const itemsInCategory = filteredItems.filter(item => item.category === cat.name);
+                                            const itemsInCategory = filteredItems.filter(item => item.category === cat.id);
                                             if (itemsInCategory.length === 0) return null;
                                             return (
                                                 <div key={cat.id} className="flex flex-col gap-2">
@@ -274,6 +281,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                                                     }}
                                                                     onDelete={handleDelete}
                                                                     onEdit={consumeEnabled?handleEdit:undefined}
+                                                                    consumeEnabled={consumeEnabled}
                                                                 />
                                                             </div>
                                                         ))}
@@ -286,14 +294,15 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                     <div className="flex flex-wrap gap-4 p-4">
                                         {filteredItems.map((item: Inventory) => (
                                             <div key={item.id} className="flex items-center">
-                                                <FoodCard
-                                                    item={item}
-                                                    onClick={(selectedItem) => {
-                                                        console.log('Selected item for recipe:', selectedItem.name);
-                                                    }}
-                                                    onDelete={handleDelete}
-                                                    onEdit={consumeEnabled?handleEdit:undefined}
-                                                />
+                                                                                                                <FoodCard
+                                                                    item={item}
+                                                                    onClick={(selectedItem) => {
+                                                                        console.log('Selected item for recipe:', selectedItem.name);
+                                                                    }}
+                                                                    onDelete={handleDelete}
+                                                                    onEdit={consumeEnabled?handleEdit:undefined}
+                                                                    consumeEnabled={consumeEnabled}
+                                                                />
                                             </div>
                                         ))}
                                     </div>

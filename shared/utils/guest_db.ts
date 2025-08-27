@@ -129,16 +129,14 @@ export class GuestDatabase extends Dexie {
   }
 
   async getConsumptionHistoryByType(type: 'recipe' | 'food'): Promise<ConsumptionHistory[]> {
-    return await this.consumptionHistory.where('type').equals(type).orderBy('consumedAt').reverse().toArray();
+    return await this.consumptionHistory.where('type').equals(type).sortBy('consumedAt');
   }
 
   async getConsumptionHistoryByDateRange(startDate: Date, endDate: Date): Promise<ConsumptionHistory[]> {
     return await this.consumptionHistory
       .where('consumedAt')
       .between(startDate, endDate)
-      .orderBy('consumedAt')
-      .reverse()
-      .toArray();
+      .sortBy('consumedAt');
   }
 
   async updateConsumptionHistory(id: string, updates: Partial<ConsumptionHistory>): Promise<void> {

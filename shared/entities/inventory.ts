@@ -66,14 +66,11 @@ export interface ConsumptionHistory {
     id: string;
     type: 'recipe' | 'food';
     itemId?: string; // For food consumption, refers to inventory item
-    itemName: string;
-    recipeId?: string; // For recipe consumption
-    recipeName?: string; // For recipe consumption
+    itemName?: string;
     quantity: number;
     unit?: string;
     consumedAt: Date;
     notes?: string;
-    img?: InventoryImage;
     createTime: Date;
     updateTime: Date;
 }

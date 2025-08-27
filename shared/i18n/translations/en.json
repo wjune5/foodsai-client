@@ -45,7 +45,14 @@
     "clear": "Clear"
   },
   "message": {
-    "deleteConfirmation": "Are you sure you want to delete \"{name}\"? This action cannot be undone."
+    "deleteConfirmation": "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
+    "addSuccess": "Added successfully",
+    "duplicateSuccess": "Duplicated successfully",
+    "editSuccess": "Edited successfully",
+    "deleteSuccess": "Deleted successfully",
+    "deleteFailed": "Failed to delete",
+    "duplicateFailed": "Failed to duplicate",
+    "consumeSuccess": "Consumed {quantity} {name} successfully"
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -147,7 +154,11 @@
     "categoryRequired": "Category is required",
     "quantityRequired": "Quantity must be at least 1",
     "unitRequired": "Unit is required",
-    "priceRequired": "Price must be 0 or greater"
+    "priceRequired": "Price must be 0 or greater",
+    "consumeItem": "Consume Item",
+    "available": "Available",
+    "quantityToConsume": "Quantity to Consume",
+    "consume": "Consume"
   },
   "records": {
     "deleteRecipe": "Delete Recipe",

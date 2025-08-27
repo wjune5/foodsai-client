@@ -7,13 +7,11 @@ import { Badge } from '@/shared/components/ui/badge';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/shared/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/Dialog';
 import {
-  Edit2,
   Trash2,
   Utensils,
   ChefHat,
@@ -22,17 +20,15 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { format } from 'date-fns';
-import ChatImage from '@/shared/components/ChatImage';
 
 interface ConsumptionHistoryListProps {
   history: ConsumptionHistory[];
-  onEdit: (item: ConsumptionHistory) => void;
+  onEdit?: (item: ConsumptionHistory) => void;
   onDelete: (item: ConsumptionHistory) => void;
 }
 
 const ConsumptionHistoryList: React.FC<ConsumptionHistoryListProps> = ({
   history,
-  onEdit,
   onDelete
 }) => {
   const t = useTranslations();
@@ -48,8 +44,7 @@ const ConsumptionHistoryList: React.FC<ConsumptionHistoryListProps> = ({
     // Search filter
     if (searchTerm) {
       filtered = filtered.filter(item =>
-        item.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (item.recipeName && item.recipeName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        item.itemName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (item.notes && item.notes.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
@@ -169,14 +164,6 @@ const ConsumptionHistoryList: React.FC<ConsumptionHistoryListProps> = ({
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => onEdit(item)}
-                      className="h-8 w-8"
-                    >
-                      <Edit2 className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
                       onClick={() => handleDeleteClick(item)}
                       className="h-8 w-8 text-red-600 hover:text-red-700"
                     >
@@ -185,23 +172,9 @@ const ConsumptionHistoryList: React.FC<ConsumptionHistoryListProps> = ({
                   </div>
                 </div>
                 <CardTitle className="text-lg">{item.itemName}</CardTitle>
-                {item.type === 'recipe' && item.recipeName && (
-                  <CardDescription>Recipe: {item.recipeName}</CardDescription>
-                )}
               </CardHeader>
               
               <CardContent className="space-y-3">
-                {/* Image */}
-                {item.img && (
-                  <div className="relative h-32 rounded-md overflow-hidden">
-                    <ChatImage
-                      src={item.img.data}
-                      alt={item.itemName}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-
                 {/* Quantity */}
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Quantity:</span>

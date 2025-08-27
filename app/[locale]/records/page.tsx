@@ -8,13 +8,11 @@ import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/Dialog';
-import { Plus, Search, Filter, ChefHat, Clock, History } from 'lucide-react';
+import { Plus, Search, Filter, ChefHat, History } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import toast from 'react-hot-toast';
 import RecipeCard from './components/RecipeCard';
 import ConsumptionHistoryList from './components/ConsumptionHistoryList';
-import ConsumptionHistoryForm from './components/ConsumptionHistoryForm';
 
 export default function RecipesPage() {
   const t = useTranslations();
@@ -26,8 +24,6 @@ export default function RecipesPage() {
   const [tagFilter, setTagFilter] = useState('all');
   const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState('recipes');
-  const [isConsumptionDialogOpen, setIsConsumptionDialogOpen] = useState(false);
-  const [editingConsumption, setEditingConsumption] = useState<ConsumptionHistory | undefined>();
 
   useEffect(() => {
     loadData();
@@ -64,14 +60,14 @@ export default function RecipesPage() {
   };
 
   const handleDeleteRecipe = async (recipe: Recipe) => {
-    if (window.confirm(t('recipes.confirmDelete'))) {
+    if (window.confirm(t('recipe.confirmDelete'))) {
       try {
         await databaseService.deleteRecipe(recipe.id);
-        toast.success(t('records.recipeDeleted'));
+        toast.success(t('message.deleteSuccess'));
         await loadData();
       } catch (error) {
         console.error('Error deleting recipe:', error);
-        toast.error('Failed to delete recipe');
+        toast.error(t('message.deleteFailed'));
       }
     }
   };
@@ -91,11 +87,11 @@ export default function RecipesPage() {
       };
 
       await databaseService.addRecipe(duplicateData);
-      toast.success('Recipe duplicated successfully');
+      toast.success(t('message.duplicateSuccess'));
       await loadData();
     } catch (error) {
       console.error('Error duplicating recipe:', error);
-      toast.error('Failed to duplicate recipe');
+      toast.error(t('message.duplicateFailed'));
     }
   };
 
@@ -107,53 +103,15 @@ export default function RecipesPage() {
     router.push('/records/form');
   };
 
-  // Consumption History handlers
-  const handleAddConsumption = async (historyData: Omit<ConsumptionHistory, 'id' | 'createTime' | 'updateTime'>) => {
-    try {
-      await databaseService.addConsumptionHistory(historyData);
-      toast.success('Consumption recorded successfully');
-      setIsConsumptionDialogOpen(false);
-      await loadData();
-    } catch (error) {
-      console.error('Error adding consumption:', error);
-      toast.error('Failed to record consumption');
-    }
-  };
-
-  const handleEditConsumption = async (historyData: Omit<ConsumptionHistory, 'id' | 'createTime' | 'updateTime'>) => {
-    if (!editingConsumption) return;
-
-    try {
-      await databaseService.updateConsumptionHistory(editingConsumption.id, historyData);
-      toast.success('Consumption updated successfully');
-      setIsConsumptionDialogOpen(false);
-      setEditingConsumption(undefined);
-      await loadData();
-    } catch (error) {
-      console.error('Error updating consumption:', error);
-      toast.error('Failed to update consumption');
-    }
-  };
-
   const handleDeleteConsumption = async (consumption: ConsumptionHistory) => {
     try {
       await databaseService.deleteConsumptionHistory(consumption.id);
-      toast.success('Consumption deleted successfully');
+      toast.success(t('message.deleteSuccess'));
       await loadData();
     } catch (error) {
       console.error('Error deleting consumption:', error);
-      toast.error('Failed to delete consumption');
+      toast.error(t('message.deleteFailed'));
     }
-  };
-
-  const handleEditConsumptionClick = (consumption: ConsumptionHistory) => {
-    setEditingConsumption(consumption);
-    setIsConsumptionDialogOpen(true);
-  };
-
-  const handleAddConsumptionClick = () => {
-    setEditingConsumption(undefined);
-    setIsConsumptionDialogOpen(true);
   };
 
   const filteredRecipes = recipes.filter(recipe => {
@@ -168,7 +126,7 @@ export default function RecipesPage() {
   });
 
   return (
-    <div className="container mx-auto p-6 pt-14">
+    <div className="container mx-auto p-6 pt-2 md:pt-14">
       {/* Header with Tabs */}
       <div className="mb-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -193,7 +151,7 @@ export default function RecipesPage() {
                 />
               </div>
 
-              <Select value={tagFilter} onValueChange={setTagFilter}>
+              {/* <Select value={tagFilter} onValueChange={setTagFilter}>
                 <SelectTrigger className="w-48">
                   <Filter className="h-4 w-4 mr-2" />
                   <SelectValue />
@@ -204,16 +162,16 @@ export default function RecipesPage() {
                     <SelectItem key={tag} value={tag}>{tag}</SelectItem>
                   ))}
                 </SelectContent>
-              </Select>
-              <Button onClick={activeTab === 'recipes' ? handleAddRecipe : handleAddConsumptionClick}>
-                <Plus className="h-4 w-4" />
-                {activeTab === 'recipes' ? t('recipe.title') : t('consumption.title')}
-              </Button>
+              </Select> */}
+              {activeTab === 'recipes' && (
+                <Button onClick={handleAddRecipe}>
+                  <Plus className="h-4 w-4" />
+                  <span className="hidden md:block">{t('recipe.title')}</span>
+                </Button>
+              )}
             </div>
           </div>
           <TabsContent value="recipes" className="space-y-6">
-
-
             {/* Recipes Grid */}
             {loading ? (
               <div className="text-center py-12">
@@ -229,7 +187,7 @@ export default function RecipesPage() {
                     <p className="text-muted-foreground mb-6">{t('records.addFirstRecipe')}</p>
                     <Button onClick={handleAddRecipe}>
                       <Plus className="h-4 w-4 mr-2" />
-                      {t('recipe.addRecipe')}
+                      {t('recipe.title')}
                     </Button>
                   </>
                 ) : (
@@ -249,7 +207,7 @@ export default function RecipesPage() {
                 )}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {filteredRecipes.map(recipe => (
                   <RecipeCard
                     key={recipe.id}
@@ -283,34 +241,12 @@ export default function RecipesPage() {
             ) : (
               <ConsumptionHistoryList
                 history={consumptionHistory}
-                onEdit={handleEditConsumptionClick}
                 onDelete={handleDeleteConsumption}
               />
             )}
           </TabsContent>
         </Tabs>
       </div>
-
-      {/* Consumption History Form Dialog */}
-      <Dialog open={isConsumptionDialogOpen} onOpenChange={setIsConsumptionDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingConsumption ? 'Edit Consumption Record' : 'Record Consumption'}
-            </DialogTitle>
-          </DialogHeader>
-          <ConsumptionHistoryForm
-            initialData={editingConsumption}
-            mode={editingConsumption ? 'edit' : 'add'}
-            onAdd={handleAddConsumption}
-            onEdit={handleEditConsumption}
-            onCancel={() => {
-              setIsConsumptionDialogOpen(false);
-              setEditingConsumption(undefined);
-            }}
-          />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

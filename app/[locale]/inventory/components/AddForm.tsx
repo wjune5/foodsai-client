@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useTranslations } from 'next-intl';
-import { categories, units } from '@/shared/constants/constants';
+import { useLocale, useTranslations } from 'next-intl';
+import { categories as defaultCategories, units } from '@/shared/constants/constants';
 import { Upload, ImageIcon, Palette, Camera, Edit3, CalendarIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { InventoryCreate } from '../types/interfaces'
-import { Inventory } from '@/shared/entities/inventory';
+import { Category, Inventory } from '@/shared/entities/inventory';
 import { ALL_FOOD_ICONS, getIconByKey, DEFAULT_CATEGORY_ICONS, FoodIconKey } from '@/shared/constants/food-icons';
 import { useImageUpload } from '@/shared/hooks/useImageUpload';
 import ChatImage from '@/shared/components/ChatImage';
@@ -17,7 +17,7 @@ import {
     SelectValue,
 } from '@/shared/components/ui/select';
 import { Input } from '@/shared/components/ui/input';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel } from '@/shared/components/ui/form';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/components/ui/tabs';
 import EditableTable from '@/shared/components/editable_table';
 import { z } from 'zod';
@@ -30,6 +30,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
+import { databaseService } from '@/shared/services/DatabaseService';
 
 type ImageSelectionMode = 'icon' | 'upload';
 type InputMode = 'photo' | 'manual';
@@ -45,7 +46,7 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
     const t = useTranslations();
     const { uploadImage, isUploading } = useImageUpload();
     const isMobile = useSys();
-
+    const locale = useLocale();
     const [inputMode, setInputMode] = useState<InputMode>('manual');
     const [imageMode, setImageMode] = useState<ImageSelectionMode>('icon');
     const [selectedIconKey, setSelectedIconKey] = useState<FoodIconKey>('carrot');
@@ -80,11 +81,43 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
     });
 
     type FormData = z.infer<typeof FormSchema>;
+    const [categories, setCategories] = useState<Category[]>([]);
+
+    useEffect(() => {
+        loadCategories().then(cats => {
+            setCategories(cats);
+        });
+    }, []);
+
+    const defaultImg = useMemo(() => {
+        return {
+            id: '',
+            fileName: `icon:${DEFAULT_CATEGORY_ICONS.vegetable}`,
+            mimeType: 'image/icon',
+            size: 0,
+            data: `${DEFAULT_CATEGORY_ICONS.vegetable}`
+        };
+    }, []);
+
+    const loadCategories = async () => {
+        const cats = await databaseService.getCategories();
+        if (cats.length === 0) {
+            defaultCategories[locale as keyof typeof defaultCategories].forEach((cat: string, index: number) => {
+                const newCat: Category = {
+                    name: cat,
+                    displayName: t(`inventory.categories.${cat}`),
+                    sortValue: index
+                };
+                databaseService.addCategory(newCat);
+                cats.push(newCat);
+            });
+        } 
+        return cats.sort((a, b) => a.sortValue - b.sortValue);
+    }
 
     const defaultFormData = useMemo(() => {
-        const category = initialData?.category || 'vegetable';
-        const defaultIcon = DEFAULT_CATEGORY_ICONS[category];
-        setSelectedIconKey(defaultIcon);
+        const category = initialData?.category || categories[0]?.id;
+        setSelectedIconKey(DEFAULT_CATEGORY_ICONS.vegetable);
 
         return {
             name: '',
@@ -92,19 +125,13 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
             quantity: 1,
             unit: 'pcs',
             expirationDays: 0,
-            img: {
-                id: '',
-                fileName: `icon:${defaultIcon}`,
-                mimeType: 'image/icon',
-                size: 0,
-                data: `${defaultIcon}`
-            },
-            price: 0,
+            img: defaultImg,
+            price: undefined,
             position: '',
             dateFrom: new Date(),
             iconColor: '#db2777',
         };
-    }, [initialData?.category]);
+    }, [initialData?.category, categories]);
 
     const form = useForm<FormData>({
         resolver: zodResolver(FormSchema),
@@ -112,27 +139,26 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
         mode: 'onSubmit'
     });
     const [open, setOpen] = useState(false)
-
     // Set initial selectedIconKey to match default category
-    useEffect(() => {
-        const defaultCategory = initialData?.category || 'vegetable';
-        const defaultIcon = DEFAULT_CATEGORY_ICONS[defaultCategory];
+    // useEffect(() => {
+    //     const defaultCategory = initialData?.category || 'vegetable';
+    //     const defaultIcon = DEFAULT_CATEGORY_ICONS[defaultCategory];
 
-        if (defaultIcon) {
-            setSelectedIconKey(defaultIcon);
-            // Also ensure the form has the correct default icon
-            if (!form.getValues('img')?.fileName || !form.getValues('img')?.fileName.includes('icon:')) {
-                console.log("Setting form img to default icon:", defaultIcon);
-                form.setValue('img', {
-                    id: '',
-                    fileName: `icon:${defaultIcon}`,
-                    mimeType: 'image/icon',
-                    size: 0,
-                    data: `${defaultIcon}`
-                });
-            }
-        }
-    }, [initialData?.category, form]);
+    //     if (defaultIcon) {
+    //         setSelectedIconKey(defaultIcon);
+    //         // Also ensure the form has the correct default icon
+    //         if (!form.getValues('img')?.fileName || !form.getValues('img')?.fileName.includes('icon:')) {
+    //             console.log("Setting form img to default icon:", defaultIcon);
+    //             form.setValue('img', {
+    //                 id: '',
+    //                 fileName: `icon:${defaultIcon}`,
+    //                 mimeType: 'image/icon',
+    //                 size: 0,
+    //                 data: `${defaultIcon}`
+    //             });
+    //         }
+    //     }
+    // }, [initialData?.category, form]);
 
     // Initialize form with initial data when editing
     useEffect(() => {
@@ -146,13 +172,7 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                     quantity: initialData.quantity,
                     unit: initialData.unit,
                     expirationDays: initialData.expirationDays || 1,
-                    img: initialData.img || {
-                        id: '',
-                        fileName: '',
-                        mimeType: '',
-                        size: 0,
-                        data: ''
-                    },
+                    img: initialData.img || defaultImg,
                     price: initialData.price || 0,
                     position: initialData.position || '',
                     dateFrom: initialData.dateFrom || new Date(),
@@ -179,22 +199,6 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
         }
     }, [initialData, mode, form]);
 
-    // Update selected icon when category changes
-    useEffect(() => {
-        const currentCategory = form.watch('category');
-        if (imageMode === 'icon') {
-            const defaultIcon = DEFAULT_CATEGORY_ICONS[currentCategory];
-            setSelectedIconKey(defaultIcon);
-            form.setValue('img', {
-                id: '',
-                fileName: `icon:${defaultIcon}`,
-                mimeType: 'image/icon',
-                size: 0,
-                data: `${defaultIcon}`
-            });
-        }
-    }, [form.watch('category'), imageMode, form]);
-
     const handleInputModeChange = (newMode: string) => {
         const mode = newMode as InputMode;
         setInputMode(mode);
@@ -205,13 +209,7 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
         } else if (mode === 'manual') {
             const currentImg = form.getValues('img');
             if (!currentImg) {
-                form.setValue('img', {
-                    id: '',
-                    fileName: `icon:${DEFAULT_CATEGORY_ICONS.vegetable}`,
-                    mimeType: 'image/icon',
-                    size: 0,
-                    data: `${DEFAULT_CATEGORY_ICONS.vegetable}`
-                });
+                form.setValue('img', defaultImg);
                 setImageMode('icon');
                 setIconColor('#db2777');
             }
@@ -221,16 +219,8 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
     const handleImageModeChange = (mode: ImageSelectionMode) => {
         setImageMode(mode);
         if (mode === 'icon') {
-            const currentCategory = form.getValues('category');
-            const defaultIcon = DEFAULT_CATEGORY_ICONS[currentCategory];
-            setSelectedIconKey(defaultIcon);
-            form.setValue('img', {
-                id: '',
-                fileName: `icon:${defaultIcon}`,
-                mimeType: 'image/icon',
-                size: 0,
-                data: `${defaultIcon}`
-            });
+            form.setValue('img', defaultImg);
+            // setSelectedIconKey(DEFAULT_CATEGORY_ICONS.vegetable);
             setIconColor('#db2777');
         } else {
             form.setValue('img', {
@@ -302,7 +292,7 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                 recognizedItems.forEach(item => {
                     const inventoryItem: InventoryCreate = {
                         name: item.entity,
-                        category: 'other',
+                        category: categories[0].id || '',
                         quantity: item.quantity || 1,
                         unit: item.unit || 'pcs',
                         expirationDays: item.expirationDays || 0,
@@ -492,8 +482,8 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                                 </FormControl>
                                 <SelectContent>
                                     {categories.map(cat => (
-                                        <SelectItem key={cat} value={cat}>
-                                            {t(`inventory.categories.${cat}`)}
+                                        <SelectItem key={cat.id} value={cat.id || ''}>
+                                            {cat.displayName}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
