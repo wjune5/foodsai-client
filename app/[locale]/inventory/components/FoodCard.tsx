@@ -121,7 +121,7 @@ const FoodCard: React.FC<FoodCardProps> = ({ item, onClick, onDelete, onEdit }) 
         
         {/* Days Left Badge */}
         <div className={`px-2 py-1 rounded-full text-xs font-medium text-white ${dotColor} shadow-sm`}>
-          {status === 'no-date' ? 'No Date' : daysLeft}
+          {status === 'no-date' ? ' ' : daysLeft}
         </div>
       </div>
       {onDelete && (

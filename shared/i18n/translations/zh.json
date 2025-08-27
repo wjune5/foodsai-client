@@ -41,7 +41,8 @@
     "increment": "增加",
     "reset": "重置",
     "uploadImage": "上传图片",
-    "dragAndDrop": "拖拽图片到这里，或点击浏览"
+    "dragAndDrop": "拖拽图片到这里，或点击浏览",
+    "clear": "清除"
   },
   "message": {
     "deleteConfirmation": "您确定要删除 \"{name}\" 吗？此操作无法撤销。"
@@ -155,7 +156,8 @@
     "filterByTag": "按标签筛选",
     "allTags": "所有标签",
     "viewRecipe": "查看食谱",
-    "duplicateRecipe": "复制食谱"
+    "duplicateRecipe": "复制食谱",
+    "searchConsumption": "搜索消费记录..."
   },
   "categories": {
     "title": "分类管理",
@@ -224,6 +226,10 @@
     "nameRequired": "食谱名称为必填项",
     "ingredientsRequired": "至少需要一个食材",
     "instructionsRequired": "至少需要一个制作步骤"
+  },
+  "consumption": {
+    "title": "消耗记录",
+    "noConsumption": "没有消耗记录"
   },
   "favorites": {
     "title": "收藏",

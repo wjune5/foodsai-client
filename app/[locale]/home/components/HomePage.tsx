@@ -29,7 +29,7 @@ import {
 type ChatMessage = { text?: string; imageUrl?: string; role: 'user' | 'bot' };
 
 const HomePageContainer: FC = memo(function HomePageContainer() {
-    const { isGuestMode, isAuthenticated } = useAuth();
+    const { isAuthenticated } = useAuth();
     const [inventorys, setInventorys] = useState<Inventory[]>([]);
     const t = useTranslations();
     const router = useRouter();
@@ -73,7 +73,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
     const handleSendMessage = (msg: string) => {
         if (msg.trim()) {
             setChatMessages(prev => [...prev, { text: msg, role: 'user' }]);
-            // Demo: auto-bot reply after 0.5s
+            // TODO: auto-bot reply after 0.5s
             setTimeout(() => {
                 setChatMessages(prev => [...prev, { text: `Echo: ${msg}`, role: 'bot' }]);
             }, 500);
@@ -82,7 +82,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
 
     const handleSendImage = (imageUrl: string) => {
         setChatMessages(prev => [...prev, { imageUrl, role: 'user' }]);
-        // Demo: auto-bot reply after 0.5s
+        // TODO: auto-bot reply after 0.5s
         setTimeout(() => {
             setChatMessages(prev => [...prev, { text: `I can see your image! That looks interesting.`, role: 'bot' }]);
         }, 500);
@@ -90,24 +90,22 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
 
     // 2. Fetch inventory when mode is ready
     useEffect(() => {
-        if (isGuestMode) {
-            databaseService.getCategories().then(cats => {
-                if (cats.length === 0) {
-                    defaultCategories[locale as keyof typeof defaultCategories].forEach((cat: string, index: number) => {
-                        const newCat: Category = {
-                            name: cat,
-                            displayName: t(`inventory.categories.${cat}`),
-                            sortValue: index
-                        };
-                        databaseService.addCategory(newCat);
-                        cats.push(newCat);
-                    });
-                } 
-                setCategories(cats);
-            });
-            getInventoryItems();
-        }
-    }, [isGuestMode]);
+        databaseService.getCategories().then(cats => {
+            if (cats.length === 0) {
+                defaultCategories[locale as keyof typeof defaultCategories].forEach((cat: string, index: number) => {
+                    const newCat: Category = {
+                        name: cat,
+                        displayName: t(`inventory.categories.${cat}`),
+                        sortValue: index
+                    };
+                    databaseService.addCategory(newCat);
+                    cats.push(newCat);
+                });
+            } 
+            setCategories(cats.sort((a, b) => a.sortValue - b.sortValue));
+        });
+        getInventoryItems();
+    }, []);
     const filteredItems = inventorys
         .filter((item: Inventory) => {
             const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());

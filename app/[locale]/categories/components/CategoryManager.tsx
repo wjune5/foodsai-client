@@ -39,20 +39,20 @@ const CategoryManager: React.FC = () => {
     const loadCategories = async () => {
         try {
             const cats = await databaseService.getCategories();
-            if (cats.length === 0) {
+                if (cats.length === 0) {
                 // Initialize with default categories
                 const defaultCats = defaultCategories[locale as keyof typeof defaultCategories];
                 for (let i = 0; i < defaultCats.length; i++) {
                     const cat = defaultCats[i];
                     const newCat: Omit<Category, 'id' | 'isDefault' | 'icon'> = {
-                        name: cat,
-                        displayName: t(`inventory.categories.${cat}`),
+                            name: cat,
+                            displayName: t(`inventory.categories.${cat}`),
                         sortValue: i,
                         color: getDefaultColor(i),
                         count: 0
-                    };
+                        };
                     await databaseService.addCategory(newCat);
-                }
+                } 
                 // Reload categories after initialization
                 const updatedCats = await databaseService.getCategories();
                 setCategories(updatedCats);
@@ -75,12 +75,12 @@ const CategoryManager: React.FC = () => {
     const handleAddCategory = async (categoryData: CategoryFormData) => {
         try {
             const newCategory = await databaseService.addCategory({
-                ...categoryData,
+            ...categoryData,
                 sortValue: categories.length,
                 count: 0
             });
             setCategories(prev => [...prev, newCategory]);
-            setIsAddDialogOpen(false);
+        setIsAddDialogOpen(false);
         } catch (error) {
             console.error('Failed to add category:', error);
         }
@@ -92,12 +92,12 @@ const CategoryManager: React.FC = () => {
         try {
             await databaseService.updateCategory(selectedCategory.id, categoryData);
             setCategories(prev => prev.map(cat =>
-                cat.id === selectedCategory.id
-                    ? { ...cat, ...categoryData }
-                    : cat
+            cat.id === selectedCategory.id
+                ? { ...cat, ...categoryData }
+                : cat
             ));
-            setIsEditDialogOpen(false);
-            setSelectedCategory(null);
+        setIsEditDialogOpen(false);
+        setSelectedCategory(null);
         } catch (error) {
             console.error('Failed to update category:', error);
         }
@@ -109,8 +109,8 @@ const CategoryManager: React.FC = () => {
         try {
             await databaseService.deleteCategory(selectedCategory.id);
             setCategories(prev => prev.filter(cat => cat.id !== selectedCategory.id));
-            setIsDeleteDialogOpen(false);
-            setSelectedCategory(null);
+        setIsDeleteDialogOpen(false);
+        setSelectedCategory(null);
         } catch (error) {
             console.error('Failed to delete category:', error);
         }
@@ -123,7 +123,6 @@ const CategoryManager: React.FC = () => {
     const handleDragOver = (e: React.DragEvent, index: number) => {
         e.preventDefault();
         if (draggedIndex === null) return;
-
         const newCategories = [...categories];
         const draggedItem = newCategories[draggedIndex];
         newCategories.splice(draggedIndex, 1);
@@ -141,14 +140,7 @@ const CategoryManager: React.FC = () => {
                     ...cat,
                     sortValue: index
                 }));
-                
-                // Update each category in the database
-                for (const category of updatedCategories) {
-                    if (category.id) {
-                        await databaseService.updateCategory(category.id, { sortValue: category.sortValue });
-                    }
-                }
-                
+                databaseService.updateCategoryOrder(updatedCategories);            
                 setCategories(updatedCategories);
             } catch (error) {
                 console.error('Failed to update category order:', error);

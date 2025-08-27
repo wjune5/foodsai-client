@@ -41,7 +41,8 @@
     "increment": "Increment",
     "reset": "Reset",
     "uploadImage": "Upload Image",
-    "dragAndDrop": "Drag and drop an image here, or click to browse"
+    "dragAndDrop": "Drag and drop an image here, or click to browse",
+    "clear": "Clear"
   },
   "message": {
     "deleteConfirmation": "Are you sure you want to delete \"{name}\"? This action cannot be undone."
@@ -90,6 +91,9 @@
     "tryAdjustingFilters": "Try adjusting your filters or add some items to get started.",
     "addFirstItem": "Add First Item",
     "expired": "Expired",
+    "noExpirationDate": "No expiration date",
+    "fresh": "Fresh",
+    "expiringSoon": "Expiring soon",
     "daysLeft": "{days} days left",
     "expiredDays": "Expired {days} days ago",
     "expiryDays": "Expiry Days",
@@ -153,7 +157,9 @@
     "filterByTag": "Filter by tag",
     "allTags": "All Tags",
     "viewRecipe": "View Recipe",
-    "duplicateRecipe": "Duplicate Recipe"
+    "duplicateRecipe": "Duplicate Recipe",
+    "noConsumption": "No consumption history",
+    "searchConsumption": "Search consumption history..."
   },
   "categories": {
     "title": "Categories",
@@ -179,7 +185,7 @@
     }
   },
   "recipe": {
-    "title": "Recipes",
+    "title": "Recipe",
     "name": "Name",
     "description": "Description",
     "searchRecipes": "Search recipes...",
@@ -223,6 +229,11 @@
     "ingredientsRequired": "At least one ingredient is required",
     "instructionsRequired": "At least one instruction is required",
     "minutes": "min"
+  },
+  "consumption": {
+    "title": "Consumption",
+    "noConsumption": "No consumption history",
+    "editConsumption": "Edit Consumption"
   },
   "favorites": {
     "title": "Favorites",

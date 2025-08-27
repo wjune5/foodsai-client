@@ -116,9 +116,9 @@ const FoodDetailsPage: React.FC<FoodDetailsPageProps> = ({ item, onEdit, onDelet
             <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg border ${getStatusColor(status)}`}>
               <Calendar className="w-5 h-5" />
               <span className="font-medium">
-                {status === 'no-date' ? 'No expiration date' : 
-                 status === 'expired' ? 'Expired' : 
-                 status === 'warning' ? 'Expiring soon' : 'Fresh'}
+                {status === 'no-date' ? t('inventory.noExpirationDate') : 
+                 status === 'expired' ? t('inventory.expired') : 
+                 status === 'warning' ? t('inventory.expiringSoon') : t('inventory.fresh')}
               </span>
               {status !== 'no-date' && (
                 <span className="text-sm">({daysLeft})</span>
@@ -130,10 +130,6 @@ const FoodDetailsPage: React.FC<FoodDetailsPageProps> = ({ item, onEdit, onDelet
 
       {/* Basic Information */}
       <div className="card-cute p-6 mb-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <Info className="w-5 h-5" />
-          Basic Information
-        </h2>
         <div className="space-y-4">
           {item.price && (
             <div className="flex justify-between items-center py-2">
@@ -157,7 +153,7 @@ const FoodDetailsPage: React.FC<FoodDetailsPageProps> = ({ item, onEdit, onDelet
             <div className="flex justify-between items-center py-2 border-b border-gray-100">
               <span className="text-gray-600">{t('inventory.expiryDate')}</span>
               <span className="font-medium text-gray-800">
-                {new Date(new Date().getTime() + item.expirationDays * 24 * 60 * 60 * 1000).toLocaleDateString()}
+                {new Date(new Date(item.dateFrom || item.createTime || '').getTime() + item.expirationDays * 24 * 60 * 60 * 1000).toLocaleDateString()}
               </span>
             </div>
           )}

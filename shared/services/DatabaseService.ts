@@ -1,6 +1,6 @@
 import { guestDB } from '../utils/guest_db';
 import { DEFAULT_SETTINGS, GuestUser, UserInfo, UserSettings } from '../entities/user';
-import { Category, Inventory, Recipe } from '../entities/inventory';
+import { Category, Inventory, Recipe, ConsumptionHistory } from '../entities/inventory';
 
 export interface GuestModeState {
   isGuestMode: boolean;
@@ -120,6 +120,14 @@ export class DatabaseService {
     await guestDB.updateCategory(id, updates);
   }
 
+  async updateCategoryOrder(categories: Category[]): Promise<void> {
+    for (const category of categories) {
+      if (category.id) {
+        await guestDB.updateCategory(category.id, { sortValue: category.sortValue });
+      }
+    }
+  }
+
   async deleteCategory(id: string): Promise<void> {
     await guestDB.deleteCategory(id);
   }
@@ -153,6 +161,31 @@ export class DatabaseService {
 
   async deleteRecipe(id: string): Promise<void> {
     await guestDB.deleteRecipe(id);
+  }
+
+  // Guest consumption history operations
+  async addConsumptionHistory(history: Omit<ConsumptionHistory, 'id' | 'createTime' | 'updateTime'>): Promise<ConsumptionHistory> {
+    return await guestDB.addConsumptionHistory(history);
+  }
+
+  async getConsumptionHistory(): Promise<ConsumptionHistory[]> {
+    return await guestDB.getConsumptionHistory();
+  }
+
+  async getConsumptionHistoryByType(type: 'recipe' | 'food'): Promise<ConsumptionHistory[]> {
+    return await guestDB.getConsumptionHistoryByType(type);
+  }
+
+  async getConsumptionHistoryByDateRange(startDate: Date, endDate: Date): Promise<ConsumptionHistory[]> {
+    return await guestDB.getConsumptionHistoryByDateRange(startDate, endDate);
+  }
+
+  async updateConsumptionHistory(id: string, updates: Partial<ConsumptionHistory>): Promise<void> {
+    await guestDB.updateConsumptionHistory(id, updates);
+  }
+
+  async deleteConsumptionHistory(id: string): Promise<void> {
+    await guestDB.deleteConsumptionHistory(id);
   }
 
   // Guest settings operations

@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import toast, { Toaster } from 'react-hot-toast';
+import { resizeFile } from '@/shared/utils/image_util';
 
 interface RecipeFormProps {
   initialData?: Recipe;
@@ -153,13 +154,14 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
     }
   };
 
-  const processImageFile = (file: File) => {
-    if (file.size > 1024 * 1024) { // 1MB limit
-      toast.error('Image size must be less than 1MB');
-      return;
+  const processImageFile = async (file: File) => {
+    let resizedFile = file;
+    while (resizedFile.size > 1024 * 1024) { // 1MB limit
+      toast.custom(<div className="text-orange-500">Image size must be less than 1MB, resizing...</div>);
+      resizedFile = await resizeFile(resizedFile) as File;
     }
 
-    if (!file.type.startsWith('image/')) {
+    if (!resizedFile.type.startsWith('image/')) {
       toast.error('Please select a valid image file');
       return;
     }
@@ -168,14 +170,14 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
     reader.onload = () => {
       const imageData: InventoryImage = {
         id: Date.now().toString(),
-        fileName: file.name,
-        mimeType: file.type,
-        size: file.size,
+        fileName: resizedFile.name,
+        mimeType: resizedFile.type,
+        size: resizedFile.size,
         data: reader.result as string
       };
       form.setValue('img', imageData);
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(resizedFile);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -245,7 +247,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('recipe.name')} *</FormLabel>
+                <FormLabel>{t('recipe.name')}</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
@@ -414,7 +416,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
           <FormItem>
             <FormLabel className="flex items-center gap-1">
               <List className="h-4 w-4" />
-              {t('recipe.ingredients')} *
+              {t('recipe.ingredients')}
             </FormLabel>
             <div className="space-y-2">
               {ingredientFields.map((ingredient, index) => (
@@ -460,7 +462,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
           <FormItem>
             <FormLabel className="flex items-center gap-1">
               <FileText className="h-4 w-4" />
-              {t('recipe.instructions')} *
+              {t('recipe.instructions')}
             </FormLabel>
             <div className="space-y-3">
               {instructionFields.map((instruction, index) => (
