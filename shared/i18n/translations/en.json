@@ -1,6 +1,6 @@
 {
   "LocaleLayout": {
-    "title": "Smart Fridge Organizer 🍎"
+    "title": "Smart Food Organizer 🍎"
   },
   "common": {
     "loading": "Loading...",
@@ -40,10 +40,19 @@
     "itemsCount": "{count} items",
     "increment": "Increment",
     "reset": "Reset",
-    "uploadImage": "Upload Image"
+    "uploadImage": "Upload Image",
+    "dragAndDrop": "Drag and drop an image here, or click to browse",
+    "clear": "Clear"
   },
   "message": {
-    "deleteConfirmation": "Are you sure you want to delete \"{name}\"? This action cannot be undone."
+    "deleteConfirmation": "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
+    "addSuccess": "Added successfully",
+    "duplicateSuccess": "Duplicated successfully",
+    "editSuccess": "Edited successfully",
+    "deleteSuccess": "Deleted successfully",
+    "deleteFailed": "Failed to delete",
+    "duplicateFailed": "Failed to duplicate",
+    "consumeSuccess": "Consumed {quantity} {name} successfully"
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -51,18 +60,15 @@
     "categories": "Categories",
     "recipes": "Recipes",
     "favorites": "Favorites",
-    "profile": "Profile",
     "support": "Support",
     "settings": "Settings",
     "statistics": "Statistics",
     "management": "Management",
     "openMenu": "Open main menu",
     "hometitle": "Butlo",
-    "records": "Records",
-    "guestMode": "Guest Mode"
+    "records": "Records"
   },
   "home": {
-    "title": "Smart Fridge Organizer 🍎",
     "description": "Manage your refrigerator items, track expiration dates, and get AI-powered recipe suggestions",
     "welcome": "Welcome to Smart Fridge",
     "quickActions": "Quick Actions",
@@ -92,11 +98,16 @@
     "tryAdjustingFilters": "Try adjusting your filters or add some items to get started.",
     "addFirstItem": "Add First Item",
     "expired": "Expired",
+    "noExpirationDate": "No expiration date",
+    "fresh": "Fresh",
+    "expiringSoon": "Expiring soon",
     "daysLeft": "{days} days left",
     "expiredDays": "Expired {days} days ago",
     "expiryDays": "Expiry Days",
     "startDate": "Start Date",
     "image": "Image",
+    "perOptQuantity": "Per Operation Quantity",
+    "perOptQuantityDesc": "Amount consumed when using +/- buttons in consume mode",
     "unit": "Unit",
     "price": "Price",
     "position": "Position",
@@ -145,7 +156,11 @@
     "categoryRequired": "Category is required",
     "quantityRequired": "Quantity must be at least 1",
     "unitRequired": "Unit is required",
-    "priceRequired": "Price must be 0 or greater"
+    "priceRequired": "Price must be 0 or greater",
+    "consumeItem": "Consume Item",
+    "available": "Available",
+    "quantityToConsume": "Quantity to Consume",
+    "consume": "Consume"
   },
   "records": {
     "deleteRecipe": "Delete Recipe",
@@ -155,7 +170,9 @@
     "filterByTag": "Filter by tag",
     "allTags": "All Tags",
     "viewRecipe": "View Recipe",
-    "duplicateRecipe": "Duplicate Recipe"
+    "duplicateRecipe": "Duplicate Recipe",
+    "noConsumption": "No consumption history",
+    "searchConsumption": "Search consumption history..."
   },
   "categories": {
     "title": "Categories",
@@ -181,7 +198,7 @@
     }
   },
   "recipe": {
-    "title": "Recipes",
+    "title": "Recipe",
     "name": "Name",
     "description": "Description",
     "searchRecipes": "Search recipes...",
@@ -194,7 +211,6 @@
     "recipeDescription": "Description",
     "ingredients": "Ingredients",
     "instructions": "Instructions",
-    "cookingTime": "Cooking Time",
     "servings": "Servings",
     "difficulty": "Difficulty",
     "tags": "Tags",
@@ -204,6 +220,8 @@
       "medium": "Medium",
       "hard": "Hard"
     },
+    "namePlaceholder": "e.g., Chocolate Chip Cookies",
+    "descriptionPlaceholder": "e.g., A delicious recipe that...",
     "tagPlaceholder": "e.g., vegetarian, spicy",
     "ingredientPlaceholder": "e.g., 2 cups flour",
     "instructionPlaceholder": "e.g., Mix ingredients in a bowl",
@@ -224,6 +242,11 @@
     "ingredientsRequired": "At least one ingredient is required",
     "instructionsRequired": "At least one instruction is required",
     "minutes": "min"
+  },
+  "consumption": {
+    "title": "Consumption",
+    "noConsumption": "No consumption history",
+    "editConsumption": "Edit Consumption"
   },
   "favorites": {
     "title": "Favorites",
@@ -321,7 +344,6 @@
   },
   "user": {
     "title": "User",
-    "profile": "Profile",
     "logout": "Logout",
     "username": "Username",
     "displayName": "Display Name",

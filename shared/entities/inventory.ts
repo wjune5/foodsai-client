@@ -5,6 +5,7 @@ export interface Inventory {
     expirationDays?: number;
     quantity: number;
     originalQuantity: number;
+    perOptQuantity: number;
     unit: string;
     price?: number;
     position?: string;
@@ -17,6 +18,25 @@ export interface Inventory {
     updateTime: Date;
 }
 
+export interface InventoryDetail {
+    id: string;
+    name: string;
+    img?: InventoryImage;
+    expirationDays?: number;
+    quantity: number;
+    originalQuantity: number;
+    perOptQuantity: number;
+    unit: string;
+    price?: number;
+    position?: string;
+    category: CategoryVo;
+    dateFrom?: Date;
+    iconColor?: string;
+    createdBy: string;
+    updatedBy: string;
+    createTime: Date;
+    updateTime: Date;
+}
 export interface InventoryImage {
     id: string;
     fileName: string;
@@ -59,4 +79,24 @@ export interface Category {
     icon?: string;
     isDefault?: boolean;
     sortValue: number;
+    count?: number;
+}
+
+export interface CategoryVo {
+    id: string;
+    name: string;
+    displayName: string;
+}
+
+export interface ConsumptionHistory {
+    id: string;
+    type: 'recipe' | 'food';
+    itemId?: string; // For food consumption, refers to inventory item
+    itemName?: string;
+    quantity: number;
+    unit?: string;
+    consumedAt: Date;
+    notes?: string;
+    createTime: Date;
+    updateTime: Date;
 }

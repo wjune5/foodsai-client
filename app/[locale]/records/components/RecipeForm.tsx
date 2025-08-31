@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import toast, { Toaster } from 'react-hot-toast';
+import { resizeFile } from '@/shared/utils/image_util';
 
 interface RecipeFormProps {
   initialData?: Recipe;
@@ -82,6 +83,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
 
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const {
     fields: ingredientFields,
@@ -148,23 +150,53 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 1024 * 1024) { // 1MB limit
-        toast.error('Image size must be less than 1MB');
-        return;
-      }
+      processImageFile(file);
+    }
+  };
 
-      const reader = new FileReader();
-      reader.onload = () => {
-        const imageData: InventoryImage = {
-          id: Date.now().toString(),
-          fileName: file.name,
-          mimeType: file.type,
-          size: file.size,
-          data: reader.result as string
-        };
-        form.setValue('img', imageData);
+  const processImageFile = async (file: File) => {
+    let resizedFile = file;
+    while (resizedFile.size > 1024 * 1024) { // 1MB limit
+      toast.custom(<div className="text-orange-500">Image size must be less than 1MB, resizing...</div>);
+      resizedFile = await resizeFile(resizedFile) as File;
+    }
+
+    if (!resizedFile.type.startsWith('image/')) {
+      toast.error('Please select a valid image file');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const imageData: InventoryImage = {
+        id: Date.now().toString(),
+        fileName: resizedFile.name,
+        mimeType: resizedFile.type,
+        size: resizedFile.size,
+        data: reader.result as string
       };
-      reader.readAsDataURL(file);
+      form.setValue('img', imageData);
+    };
+    reader.readAsDataURL(resizedFile);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      processImageFile(files[0]);
     }
   };
 
@@ -215,11 +247,11 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('recipe.name')} *</FormLabel>
+                <FormLabel>{t('recipe.name')}</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
-                    placeholder="e.g., Chocolate Chip Cookies"
+                    placeholder={t('recipe.namePlaceholder')}
                   />
                 </FormControl>
               </FormItem>
@@ -235,7 +267,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
                 <FormControl>
                   <Textarea
                     {...field}
-                    placeholder="A delicious recipe that..."
+                    placeholder={t('recipe.descriptionPlaceholder')}
                     className="min-h-[80px]"
                   />
                 </FormControl>
@@ -251,7 +283,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
                 <FormItem>
                   <FormLabel className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
-                    {t('recipe.cookingTime')}
+                    {t('recipe.cookTime')}
                   </FormLabel>
                   <FormControl>
                     <div className="relative">
@@ -296,7 +328,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
               control={form.control}
               name="difficulty"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex-1">
                   <FormLabel>{t('recipe.difficulty')}</FormLabel>
                   <Select
                     value={field.value || ''}
@@ -346,20 +378,35 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
                       </Button>
                     </div>
                   ) : (
-                    <label
-                      htmlFor="image-upload"
-                      className="block border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-gray-400 transition-colors"
+                    <div
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                      className={`block border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                        isDragOver 
+                          ? 'border-blue-400 bg-blue-50' 
+                          : 'border-gray-300 hover:border-gray-400'
+                      }`}
                     >
-                      <Upload className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-                      <p className="text-sm text-gray-600 mb-2">{t('common.uploadImage')}</p>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                        id="image-upload"
-                      />
-                    </label>
+                      <label htmlFor="image-upload" className="cursor-pointer">
+                        <Upload className={`h-8 w-8 mx-auto mb-2 ${
+                          isDragOver ? 'text-blue-400' : 'text-gray-400'
+                        }`} />
+                        <p className="text-sm text-gray-600 mb-2">
+                          {isDragOver ? 'Drop image here' : t('common.uploadImage')}
+                        </p>
+                        <p className="text-xs text-gray-500 mb-2">
+                          {t('common.dragAndDrop')}
+                        </p>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="hidden"
+                          id="image-upload"
+                        />
+                      </label>
+                    </div>
                   )}
                 </div>
               </FormItem>
@@ -369,7 +416,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
           <FormItem>
             <FormLabel className="flex items-center gap-1">
               <List className="h-4 w-4" />
-              {t('recipe.ingredients')} *
+              {t('recipe.ingredients')}
             </FormLabel>
             <div className="space-y-2">
               {ingredientFields.map((ingredient, index) => (
@@ -415,7 +462,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
           <FormItem>
             <FormLabel className="flex items-center gap-1">
               <FileText className="h-4 w-4" />
-              {t('recipe.instructions')} *
+              {t('recipe.instructions')}
             </FormLabel>
             <div className="space-y-3">
               {instructionFields.map((instruction, index) => (

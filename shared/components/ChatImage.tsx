@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/shared/context/AuthContext';
-import { guestModeService } from '@/shared/services/GuestModeService';
+import { databaseService } from '@/shared/services/DatabaseService';
 
 interface ChatImageProps {
   src: string;
@@ -28,7 +28,7 @@ const ChatImage: React.FC<ChatImageProps> = ({ src, alt, className, style, onCli
           if (isGuestMode) {
             // Extract image ID from URL
             const imageId = src.replace('/guest-image/', '');
-            const imageData = await guestModeService.getImageDataUrl(imageId);
+            const imageData = await databaseService.getImageDataUrl(imageId);
             
             if (imageData) {
               setImageSrc(imageData);

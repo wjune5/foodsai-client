@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/shared/context/AuthContext';
-import { guestModeService } from '@/shared/services/GuestModeService';
+import { databaseService } from '@/shared/services/DatabaseService';
 import { API_ENDPOINTS } from '@/shared/constants/api';
 
 export interface UploadResult {

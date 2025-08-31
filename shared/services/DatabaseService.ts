@@ -1,6 +1,6 @@
 import { guestDB } from '../utils/guest_db';
 import { DEFAULT_SETTINGS, GuestUser, UserInfo, UserSettings } from '../entities/user';
-import { Category, Inventory, Recipe } from '../entities/inventory';
+import { Category, Inventory, Recipe, ConsumptionHistory, CategoryVo } from '../entities/inventory';
 
 export interface GuestModeState {
   isGuestMode: boolean;
@@ -8,18 +8,18 @@ export interface GuestModeState {
   isInitialized: boolean;
 }
 
-export class GuestModeService {
-  private static instance: GuestModeService;
+export class DatabaseService {
+  private static instance: DatabaseService;
   private guestUser: GuestUser | null = null;
   private isInitialized = false;
 
   private constructor() {}
 
-  static getInstance(): GuestModeService {
-    if (!GuestModeService.instance) {
-      GuestModeService.instance = new GuestModeService();
+  static getInstance(): DatabaseService {
+    if (!DatabaseService.instance) {
+      DatabaseService.instance = new DatabaseService();
     }
-    return GuestModeService.instance;
+    return DatabaseService.instance;
   }
 
   // Initialize guest mode
@@ -116,6 +116,34 @@ export class GuestModeService {
     return await guestDB.addCategory(category);
   }
 
+  async getCategory(id: string): Promise<Category> {
+    return await guestDB.getCategory(id);
+  }
+
+  async getCategoryVo(id: string): Promise<CategoryVo> {
+    const category = await this.getCategory(id);
+    return {
+      id: category.id || '',
+      name: category.name,
+      displayName: category.displayName
+    };
+  }
+  async updateCategory(id: string, updates: Partial<Category>): Promise<void> {
+    await guestDB.updateCategory(id, updates);
+  }
+
+  async updateCategoryOrder(categories: Category[]): Promise<void> {
+    for (const category of categories) {
+      if (category.id) {
+        await guestDB.updateCategory(category.id, { sortValue: category.sortValue });
+      }
+    }
+  }
+
+  async deleteCategory(id: string): Promise<void> {
+    await guestDB.deleteCategory(id);
+  }
+
   async getInventoryItems(): Promise<Inventory[]> {
     return await guestDB.getInventoryItems();
   }
@@ -145,6 +173,31 @@ export class GuestModeService {
 
   async deleteRecipe(id: string): Promise<void> {
     await guestDB.deleteRecipe(id);
+  }
+
+  // Guest consumption history operations
+  async addConsumptionHistory(history: Omit<ConsumptionHistory, 'id' | 'createTime' | 'updateTime'>): Promise<ConsumptionHistory> {
+    return await guestDB.addConsumptionHistory(history);
+  }
+
+  async getConsumptionHistory(): Promise<ConsumptionHistory[]> {
+    return await guestDB.getConsumptionHistory();
+  }
+
+  async getConsumptionHistoryByType(type: 'recipe' | 'food'): Promise<ConsumptionHistory[]> {
+    return await guestDB.getConsumptionHistoryByType(type);
+  }
+
+  async getConsumptionHistoryByDateRange(startDate: Date, endDate: Date): Promise<ConsumptionHistory[]> {
+    return await guestDB.getConsumptionHistoryByDateRange(startDate, endDate);
+  }
+
+  async updateConsumptionHistory(id: string, updates: Partial<ConsumptionHistory>): Promise<void> {
+    await guestDB.updateConsumptionHistory(id, updates);
+  }
+
+  async deleteConsumptionHistory(id: string): Promise<void> {
+    await guestDB.deleteConsumptionHistory(id);
   }
 
   // Guest settings operations
@@ -265,4 +318,4 @@ export class GuestModeService {
 }
 
 // Export singleton instance
-export const guestModeService = GuestModeService.getInstance(); 
+export const databaseService = DatabaseService.getInstance(); 

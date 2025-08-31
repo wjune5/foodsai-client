@@ -115,11 +115,11 @@ export default function RecipeCard({
         )}
 
         {/* Recipe Details */}
-        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
+        <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
           {recipe.cookingTime && (
             <div className="flex items-center gap-1">
               <Clock className="h-4 w-4" />
-              <span>{recipe.cookingTime} {t('recipe.cookingTimeMinutes')}</span>
+              <span>{recipe.cookingTime} {t('recipe.minutes')}</span>
             </div>
           )}
           {recipe.servings && (
@@ -165,7 +165,7 @@ export default function RecipeCard({
 
         {/* Creation Date */}
         <div className="text-xs text-muted-foreground mt-2">
-          {t('recipe.createdAt')}: {formatDistanceToNow(new Date(recipe.createTime), { addSuffix: true })}
+          {formatDistanceToNow(new Date(recipe.createTime), { addSuffix: true })}
         </div>
       </CardContent>
     </Card>

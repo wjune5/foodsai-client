@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Inventory } from '@/shared/entities/inventory';
+import { Inventory, InventoryDetail } from '@/shared/entities/inventory';
 import { 
   Calendar, 
   Package, 
@@ -20,7 +20,7 @@ import { FoodIconKey, getIconByKey } from '@/shared/constants/food-icons';
 import ChatImage from '@/shared/components/ChatImage';
 
 interface FoodDetailsPageProps {
-  item: Inventory;
+  item: InventoryDetail;
   onEdit: (item: Inventory) => void;
   onDelete: () => void;
 }
@@ -108,7 +108,7 @@ const FoodDetailsPage: React.FC<FoodDetailsPageProps> = ({ item, onEdit, onDelet
               </div>
               <div className="flex items-center gap-2 text-gray-600">
                 <Tag className="w-5 h-5" />
-                <span className="font-medium capitalize">{item.category}</span>
+                <span className="font-medium capitalize">{item.category.displayName}</span>
               </div>
             </div>
 
@@ -116,9 +116,9 @@ const FoodDetailsPage: React.FC<FoodDetailsPageProps> = ({ item, onEdit, onDelet
             <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg border ${getStatusColor(status)}`}>
               <Calendar className="w-5 h-5" />
               <span className="font-medium">
-                {status === 'no-date' ? 'No expiration date' : 
-                 status === 'expired' ? 'Expired' : 
-                 status === 'warning' ? 'Expiring soon' : 'Fresh'}
+                {status === 'no-date' ? t('inventory.noExpirationDate') : 
+                 status === 'expired' ? t('inventory.expired') : 
+                 status === 'warning' ? t('inventory.expiringSoon') : t('inventory.fresh')}
               </span>
               {status !== 'no-date' && (
                 <span className="text-sm">({daysLeft})</span>
@@ -130,12 +130,8 @@ const FoodDetailsPage: React.FC<FoodDetailsPageProps> = ({ item, onEdit, onDelet
 
       {/* Basic Information */}
       <div className="card-cute p-6 mb-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <Info className="w-5 h-5" />
-          Basic Information
-        </h2>
         <div className="space-y-4">
-          {item.price && (
+          {item.price !== undefined && (
             <div className="flex justify-between items-center py-2">
               <span className="text-gray-600">{t('inventory.price')}</span>
               <span className="font-medium text-gray-800">${item.price.toFixed(2)}</span>
@@ -157,7 +153,7 @@ const FoodDetailsPage: React.FC<FoodDetailsPageProps> = ({ item, onEdit, onDelet
             <div className="flex justify-between items-center py-2 border-b border-gray-100">
               <span className="text-gray-600">{t('inventory.expiryDate')}</span>
               <span className="font-medium text-gray-800">
-                {new Date(new Date().getTime() + item.expirationDays * 24 * 60 * 60 * 1000).toLocaleDateString()}
+                {new Date(new Date(item.dateFrom || item.createTime || '').getTime() + item.expirationDays * 24 * 60 * 60 * 1000).toLocaleDateString()}
               </span>
             </div>
           )}
@@ -208,7 +204,7 @@ const FoodDetailsPage: React.FC<FoodDetailsPageProps> = ({ item, onEdit, onDelet
               </div>
               <div>
                 <h3 className="font-semibold text-gray-800">{item.name}</h3>
-                <p className="text-sm text-gray-600">{item.quantity} {item.unit} • {item.category}</p>
+                <p className="text-sm text-gray-600">{item.quantity} {item.unit} • {item.category.displayName}</p>
               </div>
             </div>
             <p className="text-gray-600 text-base leading-relaxed">

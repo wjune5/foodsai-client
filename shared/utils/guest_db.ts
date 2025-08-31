@@ -1,5 +1,5 @@
 import Dexie, { Table } from 'dexie';
-import { Category, Inventory, InventoryImage, Recipe } from '../entities/inventory';
+import { Category, Inventory, InventoryImage, Recipe, ConsumptionHistory } from '../entities/inventory';
 import { GuestUser, UserSettings } from '../entities/user';
 
 // Define the database class
@@ -10,6 +10,7 @@ export class GuestDatabase extends Dexie {
   settings!: Table<UserSettings>;
   images!: Table<InventoryImage>;
   categories!: Table<Category>;
+  consumptionHistory!: Table<ConsumptionHistory>;
   constructor() {
     super('ButloGuestDB');
     
@@ -38,6 +39,18 @@ export class GuestDatabase extends Dexie {
       images: '++id, fileName, mimeType, size, data',
       customIcons: '++id, name, category, createdBy, createdTime, isActive',
       categories: '++id, name, displayName, color, icon, isDefault, sortValue'
+    });
+
+    // Version 4: Add consumption history table
+    this.version(4).stores({
+      users: '++id, username, email',
+      inventoryItems: '++id, name, category, expirationDate, dateFrom, img',
+      recipes: '++id, name, tags, img, description, ingredients, instructions, cookingTime, servings, difficulty',
+      settings: '++id',
+      images: '++id, fileName, mimeType, size, data',
+      customIcons: '++id, name, category, createdBy, createdTime, isActive',
+      categories: '++id, name, displayName, color, icon, isDefault, sortValue',
+      consumptionHistory: '++id, type, itemId, recipeId, consumedAt, createTime'
     });
   }
 
@@ -79,6 +92,10 @@ export class GuestDatabase extends Dexie {
     return await this.categories.toArray();
   }
 
+  async getCategory(id: string): Promise<Category> {
+    return await this.categories.get(id) as Category;
+  }
+
   async addCategory(category: Omit<Category, 'id' | 'isDefault' | 'icon'>): Promise<Category> {
     const newCategory: Category = {
       ...category,
@@ -96,6 +113,45 @@ export class GuestDatabase extends Dexie {
 
   async deleteCategory(id: string): Promise<void> {
     await this.categories.delete(id);
+  }
+
+  // Consumption History management
+  async addConsumptionHistory(history: Omit<ConsumptionHistory, 'id' | 'createTime' | 'updateTime'>): Promise<ConsumptionHistory> {
+    const consumptionHistory: ConsumptionHistory = {
+      ...history,
+      id: crypto.randomUUID(),
+      createTime: new Date(),
+      updateTime: new Date()
+    };
+    
+    await this.consumptionHistory.add(consumptionHistory);
+    return consumptionHistory;
+  }
+
+  async getConsumptionHistory(): Promise<ConsumptionHistory[]> {
+    return await this.consumptionHistory.orderBy('consumedAt').reverse().toArray();
+  }
+
+  async getConsumptionHistoryByType(type: 'recipe' | 'food'): Promise<ConsumptionHistory[]> {
+    return await this.consumptionHistory.where('type').equals(type).sortBy('consumedAt');
+  }
+
+  async getConsumptionHistoryByDateRange(startDate: Date, endDate: Date): Promise<ConsumptionHistory[]> {
+    return await this.consumptionHistory
+      .where('consumedAt')
+      .between(startDate, endDate)
+      .sortBy('consumedAt');
+  }
+
+  async updateConsumptionHistory(id: string, updates: Partial<ConsumptionHistory>): Promise<void> {
+    await this.consumptionHistory.update(id, {
+      ...updates,
+      updateTime: new Date()
+    });
+  }
+
+  async deleteConsumptionHistory(id: string): Promise<void> {
+    await this.consumptionHistory.delete(id);
   }
 
   // Inventory management
@@ -315,12 +371,14 @@ export class GuestDatabase extends Dexie {
 
   // Database utilities
   async clearAllData(): Promise<void> {
-    await this.transaction('rw', [this.users, this.inventoryItems, this.recipes, this.settings, this.images], async () => {
+    await this.transaction('rw', [this.users, this.inventoryItems, this.recipes, this.settings, this.images, this.categories, this.consumptionHistory], async () => {
       await this.users.clear();
       await this.inventoryItems.clear();
       await this.recipes.clear();
       await this.settings.clear();
       await this.images.clear();
+      await this.categories.clear();
+      await this.consumptionHistory.clear();
     });
   }
 

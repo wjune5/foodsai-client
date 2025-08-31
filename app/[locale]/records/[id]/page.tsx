@@ -4,7 +4,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter } from '@/shared/i18n/navigation';
 import { useParams } from 'next/navigation';
 import { Recipe } from '@/shared/entities/inventory';
-import { guestModeService } from '@/shared/services/GuestModeService';
+import { databaseService } from '@/shared/services/DatabaseService';
 import { useTranslations } from 'next-intl';
 import toast from 'react-hot-toast';
 import { Button } from '@/shared/components/ui/button';
@@ -34,7 +34,7 @@ function RecipeDetailPageInner() {
     const loadRecipe = async () => {
       try {
         const recipeId = params.id as string;
-        const recipes = await guestModeService.getRecipes();
+        const recipes = await databaseService.getRecipes();
         const foundRecipe = recipes.find(r => r.id === recipeId);
         
         if (foundRecipe) {
@@ -77,7 +77,7 @@ function RecipeDetailPageInner() {
         img: recipe.img
       };
       
-      await guestModeService.addRecipe(duplicateData);
+      await databaseService.addRecipe(duplicateData);
       toast.success('Recipe duplicated successfully');
       router.push('/records');
     } catch (error) {
@@ -91,7 +91,7 @@ function RecipeDetailPageInner() {
     
     if (window.confirm(t('recipes.confirmDelete'))) {
       try {
-        await guestModeService.deleteRecipe(recipe.id);
+        await databaseService.deleteRecipe(recipe.id);
         toast.success(t('records.recipeDeleted'));
         router.push('/records');
       } catch (error) {

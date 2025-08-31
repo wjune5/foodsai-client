@@ -1,6 +1,6 @@
 {
   "LocaleLayout": {
-    "title": "智能冰箱管理器 🍎"
+    "title": "智能食物管家 🍎"
   },
   "common": {
     "loading": "加载中...",
@@ -39,10 +39,15 @@
     "currency": "货币",
     "itemsCount": "{count} 个物品",
     "increment": "增加",
-    "reset": "重置"
+    "reset": "重置",
+    "uploadImage": "上传图片",
+    "dragAndDrop": "拖拽图片到这里，或点击浏览",
+    "clear": "清除",
+    "all": "全部"
   },
   "message": {
-    "deleteConfirmation": "您确定要删除 \"{name}\" 吗？此操作无法撤销。"
+    "deleteConfirmation": "您确定要删除 \"{name}\" 吗？此操作无法撤销。",
+    "consumeSuccess": "成功消耗了 {quantity} {name}"
   },
   "navigation": {
     "dashboard": "仪表板",
@@ -50,7 +55,6 @@
     "categories": "分类",
     "recipes": "食谱",
     "favorites": "收藏",
-    "profile": "个人资料",
     "support": "支持",
     "settings": "设置",
     "statistics": "统计",
@@ -96,6 +100,8 @@
     "expiryDays": "过期天数",
     "startDate": "开始日期",
     "image": "图片",
+    "perOptQuantity": "每次操作数量",
+    "perOptQuantityDesc": "在消耗模式下使用 +/- 按钮时消耗的数量",
     "unit": "单位",
     "price": "价格",
     "position": "位置",
@@ -144,7 +150,11 @@
     "categoryRequired": "类别是必需的",
     "quantityRequired": "数量必须至少为1",
     "unitRequired": "单位是必需的",
-    "priceRequired": "价格必须大于0"
+    "priceRequired": "价格必须大于0",
+    "consumeItem": "消耗物品",
+    "available": "可用",
+    "quantityToConsume": "消耗数量",
+    "consume": "消耗"
   },
   "records": {
     "deleteRecipe": "删除食谱",
@@ -154,7 +164,8 @@
     "filterByTag": "按标签筛选",
     "allTags": "所有标签",
     "viewRecipe": "查看食谱",
-    "duplicateRecipe": "复制食谱"
+    "duplicateRecipe": "复制食谱",
+    "searchConsumption": "搜索消费记录..."
   },
   "categories": {
     "title": "分类管理",
@@ -182,6 +193,8 @@
   "recipe": {
     "title": "食谱",
     "searchRecipes": "搜索食谱...",
+    "name": "名称",
+    "description": "描述",
     "addRecipe": "添加食谱",
     "editRecipe": "编辑食谱",
     "noRecipes": "未找到食谱",
@@ -193,6 +206,8 @@
     "ingredients": "配料",
     "instructions": "制作步骤",
     "difficulty": "难度",
+    "tags": "标签",
+    "image": "食谱图片",
     "difficultyLevels": {
       "easy": "简单",
       "medium": "中等",
@@ -202,7 +217,9 @@
     "updatedAt": "最后更新",
     "ingredientPlaceholder": "例如：面粉 2 杯",
     "instructionPlaceholder": "例如：在碗中混合食材",
-    "cookingTimeMinutes": "分钟",
+    "minutes": "分钟",
+    "namePlaceholder": "例如：巧克力曲奇",
+    "descriptionPlaceholder": "例如：这是一道美味的巧克力曲奇",
     "tagPlaceholder": "例如：素食、辛辣",
     "addIngredient": "添加食材",
     "addInstruction": "添加步骤",
@@ -217,6 +234,10 @@
     "nameRequired": "食谱名称为必填项",
     "ingredientsRequired": "至少需要一个食材",
     "instructionsRequired": "至少需要一个制作步骤"
+  },
+  "consumption": {
+    "title": "消耗记录",
+    "noConsumption": "没有消耗记录"
   },
   "favorites": {
     "title": "收藏",
@@ -314,7 +335,6 @@
   },
   "user": {
     "title": "用户",
-    "profile": "个人资料",
     "logout": "退出登录",
     "username": "用户名",
     "displayName": "显示名称",

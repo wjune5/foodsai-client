@@ -1,25 +1,27 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Plus, Edit2, Trash2, GripVertical, Tag, AlertTriangle, XIcon } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/Dialog';
 import CategoryForm from './CategoryForm';
 import { categories as defaultCategories } from '@/shared/constants/constants';
 import { Button } from '@/shared/components/ui/button';
+import { useAuth } from '@/shared/context/AuthContext';
+import { databaseService } from '@/shared/services/DatabaseService';
+import { Category } from '@/shared/entities/inventory';
 
-interface Category {
-    id: string;
+interface CategoryFormData {
     name: string;
     displayName: string;
     color: string;
     icon?: string;
-    isDefault: boolean;
-    itemCount: number;
 }
 
 const CategoryManager: React.FC = () => {
     const t = useTranslations();
+    const { isGuestMode } = useAuth();
+    const locale = useLocale();
     const [categories, setCategories] = useState<Category[]>([]);
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -27,25 +29,40 @@ const CategoryManager: React.FC = () => {
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
-    // Initialize categories from localStorage or defaults
+    // Initialize categories
     useEffect(() => {
-        const savedCategories = localStorage.getItem('customCategories');
-        if (savedCategories) {
-            setCategories(JSON.parse(savedCategories));
-        } else {
-            // Initialize with default categories
-            const initialCategories: Category[] = defaultCategories.map((cat, index) => ({
-                id: cat,
-                name: cat,
-                displayName: t(`inventory.categories.${cat}`),
-                color: getDefaultColor(index),
-                isDefault: true,
-                itemCount: 0 // TODO: Get actual count from inventory
-            }));
-            setCategories(initialCategories);
-            localStorage.setItem('customCategories', JSON.stringify(initialCategories));
+        if (isGuestMode) {
+            loadCategories();
         }
-    }, [t]);
+    }, [isGuestMode, locale]);
+
+    const loadCategories = async () => {
+        try {
+            const cats = await databaseService.getCategories();
+                if (cats.length === 0) {
+                // Initialize with default categories
+                const defaultCats = defaultCategories[locale as keyof typeof defaultCategories];
+                for (let i = 0; i < defaultCats.length; i++) {
+                    const cat = defaultCats[i];
+                    const newCat: Omit<Category, 'id' | 'isDefault' | 'icon'> = {
+                            name: cat,
+                            displayName: t(`inventory.categories.${cat}`),
+                        sortValue: i,
+                        color: getDefaultColor(i),
+                        count: 0
+                        };
+                    await databaseService.addCategory(newCat);
+                } 
+                // Reload categories after initialization
+                const updatedCats = await databaseService.getCategories();
+                setCategories(updatedCats);
+            } else {
+                setCategories(cats);
+            }
+        } catch (error) {
+            console.error('Failed to load categories:', error);
+        }
+    };
 
     const getDefaultColor = (index: number) => {
         const colors = [
@@ -55,44 +72,48 @@ const CategoryManager: React.FC = () => {
         return colors[index % colors.length];
     };
 
-    const saveCategories = (newCategories: Category[]) => {
-        setCategories(newCategories);
-        localStorage.setItem('customCategories', JSON.stringify(newCategories));
-        // TODO: Also update the constants file or global state
-    };
-
-    const handleAddCategory = (categoryData: Omit<Category, 'id' | 'isDefault' | 'itemCount'>) => {
-        const newCategory: Category = {
+    const handleAddCategory = async (categoryData: CategoryFormData) => {
+        try {
+            const newCategory = await databaseService.addCategory({
             ...categoryData,
-            id: `custom_${Date.now()}`,
-            isDefault: false,
-            itemCount: 0
-        };
-        const newCategories = [...categories, newCategory];
-        saveCategories(newCategories);
+                sortValue: categories.length,
+                count: 0
+            });
+            setCategories(prev => [...prev, newCategory]);
         setIsAddDialogOpen(false);
+        } catch (error) {
+            console.error('Failed to add category:', error);
+        }
     };
 
-    const handleEditCategory = (categoryData: Omit<Category, 'id' | 'isDefault' | 'itemCount'>) => {
-        if (!selectedCategory) return;
+    const handleEditCategory = async (categoryData: CategoryFormData) => {
+        if (!selectedCategory?.id) return;
 
-        const newCategories = categories.map(cat =>
+        try {
+            await databaseService.updateCategory(selectedCategory.id, categoryData);
+            setCategories(prev => prev.map(cat =>
             cat.id === selectedCategory.id
                 ? { ...cat, ...categoryData }
                 : cat
-        );
-        saveCategories(newCategories);
+            ));
         setIsEditDialogOpen(false);
         setSelectedCategory(null);
+        } catch (error) {
+            console.error('Failed to update category:', error);
+        }
     };
 
-    const handleDeleteCategory = () => {
-        if (!selectedCategory) return;
+    const handleDeleteCategory = async () => {
+        if (!selectedCategory?.id) return;
 
-        const newCategories = categories.filter(cat => cat.id !== selectedCategory.id);
-        saveCategories(newCategories);
+        try {
+            await databaseService.deleteCategory(selectedCategory.id);
+            setCategories(prev => prev.filter(cat => cat.id !== selectedCategory.id));
         setIsDeleteDialogOpen(false);
         setSelectedCategory(null);
+        } catch (error) {
+            console.error('Failed to delete category:', error);
+        }
     };
 
     const handleDragStart = (index: number) => {
@@ -102,7 +123,6 @@ const CategoryManager: React.FC = () => {
     const handleDragOver = (e: React.DragEvent, index: number) => {
         e.preventDefault();
         if (draggedIndex === null) return;
-
         const newCategories = [...categories];
         const draggedItem = newCategories[draggedIndex];
         newCategories.splice(draggedIndex, 1);
@@ -112,9 +132,21 @@ const CategoryManager: React.FC = () => {
         setDraggedIndex(index);
     };
 
-    const handleDragEnd = () => {
+    const handleDragEnd = async () => {
         if (draggedIndex !== null) {
-            localStorage.setItem('customCategories', JSON.stringify(categories));
+            try {
+                // Update sort values for all categories based on new order
+                const updatedCategories = categories.map((cat, index) => ({
+                    ...cat,
+                    sortValue: index
+                }));
+                databaseService.updateCategoryOrder(updatedCategories);            
+                setCategories(updatedCategories);
+            } catch (error) {
+                console.error('Failed to update category order:', error);
+                // Reload categories to revert any partial changes
+                await loadCategories();
+            }
         }
         setDraggedIndex(null);
     };
@@ -167,7 +199,7 @@ const CategoryManager: React.FC = () => {
                                             )}
                                         </div>
                                         <div className="text-sm text-gray-600">
-                                            {t('categories.itemCount', { count: category.itemCount })}
+                                            {t('categories.itemCount', { count: category.count || 0 })}
                                         </div>
                                     </div>
                                 </div>
@@ -255,11 +287,11 @@ const CategoryManager: React.FC = () => {
                                 name: selectedCategory?.displayName || ''
                             })}
                         </p>
-                        {selectedCategory && selectedCategory.itemCount > 0 && (
+                        {selectedCategory && (selectedCategory.count || 0) > 0 && (
                             <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                                 <p className="text-sm text-yellow-800">
                                     {t('categories.deleteWarning', {
-                                        count: selectedCategory.itemCount
+                                        count: selectedCategory.count || 0
                                     })}
                                 </p>
                             </div>

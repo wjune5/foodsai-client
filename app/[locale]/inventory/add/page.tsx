@@ -5,7 +5,7 @@ import useLocalizedPath from '@/shared/hooks/useLocalizedPath';
 import AddInventoryForm from '../components/AddForm';
 import { InventoryCreate } from '../types/interfaces';
 import { useAuth } from '@/shared/context/AuthContext';
-import { guestModeService } from '@/shared/services/GuestModeService';
+import { databaseService } from '@/shared/services/DatabaseService';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
 import { Inventory } from '@/shared/entities/inventory';
@@ -24,7 +24,7 @@ function AddInventoryPageInner() {
     const fetchItem = async () => {
       if (id && isGuestMode) {
         setLoading(true);
-        const found = await guestModeService.getInventoryItem(id);
+        const found = await databaseService.getInventoryItem(id);
         setInitialData(found || null);
         setLoading(false);
       } else if (category) {
@@ -50,7 +50,7 @@ function AddInventoryPageInner() {
     try {
       if (isGuestMode) {
         // Handle guest mode storage
-        await guestModeService.addInventoryItem({
+        await databaseService.addInventoryItem({
           ...item,
           originalQuantity: item.quantity,
           createdBy: 'guest',
@@ -80,7 +80,7 @@ function AddInventoryPageInner() {
   const handleEditItem = async (item: Inventory) => {
     try {
       if (isGuestMode) {
-        await guestModeService.updateInventoryItem(item.id, item);
+        await databaseService.updateInventoryItem(item.id, item);
       } else {
         // TODO: Handle authenticated user API call for update
       }

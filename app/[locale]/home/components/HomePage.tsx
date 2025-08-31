@@ -3,14 +3,14 @@
 import { FC, useEffect, useRef, useState, memo, useMemo } from 'react';
 import Navigation from '@/shared/components/Navigation';
 import { useAuth } from '@/shared/context/AuthContext';
-import { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import { Category, Inventory } from '@/shared/entities/inventory';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { ReduxProvider } from '@/shared/providers/ReduxProvider';
-import { Plus as LucidePlus, ChefHat, MessageCircle, Search, Minus } from 'lucide-react';
+import { Plus as LucidePlus, ChefHat, MessageCircle, Search, Globe, CheckCircle } from 'lucide-react';
 import ChatWindow from '@/shared/components/ChatWindow';
 import Footer from '@/shared/components/Footer';
-import { guestModeService } from '@/shared/services/GuestModeService';
+import { databaseService } from '@/shared/services/DatabaseService';
 import FoodCard from '../../inventory/components/FoodCard';
 import { useRouter } from 'next/navigation';
 import useLocalizedPath from '@/shared/hooks/useLocalizedPath';
@@ -18,11 +18,18 @@ import { Switch } from '@/shared/components/ui/switch';
 import { Input } from '@/shared/components/ui/input';
 import { Button } from '@/shared/components/ui/button';
 import { categories as defaultCategories } from '@/shared/constants/constants';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/shared/components/Dialog';
 
 type ChatMessage = { text?: string; imageUrl?: string; role: 'user' | 'bot' };
 
 const HomePageContainer: FC = memo(function HomePageContainer() {
-    const { isGuestMode, isAuthenticated } = useAuth();
+    const { isAuthenticated } = useAuth();
     const [inventorys, setInventorys] = useState<Inventory[]>([]);
     const t = useTranslations();
     const router = useRouter();
@@ -34,12 +41,41 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
     const [sortBy] = useState('name');
     const [sortOrder] = useState<'asc' | 'desc'>('asc');
     const [consumeEnabled, setConsumeEnabled] = useState(false)
+    const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+    const [selectedQuantity, setSelectedQuantity] = useState<number>(0);
     const chatRef = useRef<HTMLDivElement>(null);
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+    const [showLanguageDialog, setShowLanguageDialog] = useState(false);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const locale = useLocale();
+    // Check if user has already selected a language
+    useEffect(() => {
+        const hasSelectedLanguage = localStorage.getItem('language-selected');
+        if (!hasSelectedLanguage) {
+            setShowLanguageDialog(true);
+        }
+    }, []);
+
+    const handleLanguageSelect = (locale: string) => {
+        localStorage.setItem('language-selected', 'true');
+        setShowLanguageDialog(false);
+
+        // Redirect to the selected language
+        const currentPath = window.location.pathname;
+        const pathWithoutLocale = currentPath.replace(/^\/[a-z]{2}/, '');
+        const newPath = `/${locale}${pathWithoutLocale}`;
+        router.push(newPath);
+    };
+
+    const languages = [
+        { code: 'en', name: 'English' },
+        { code: 'zh', name: '中文' }
+    ];
+
     const handleSendMessage = (msg: string) => {
         if (msg.trim()) {
             setChatMessages(prev => [...prev, { text: msg, role: 'user' }]);
-            // Demo: auto-bot reply after 0.5s
+            // TODO: auto-bot reply after 0.5s
             setTimeout(() => {
                 setChatMessages(prev => [...prev, { text: `Echo: ${msg}`, role: 'bot' }]);
             }, 500);
@@ -48,33 +84,30 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
 
     const handleSendImage = (imageUrl: string) => {
         setChatMessages(prev => [...prev, { imageUrl, role: 'user' }]);
-        // Demo: auto-bot reply after 0.5s
+        // TODO: auto-bot reply after 0.5s
         setTimeout(() => {
             setChatMessages(prev => [...prev, { text: `I can see your image! That looks interesting.`, role: 'bot' }]);
         }, 500);
     };
-    const [categories, setCategories] = useState<Category[]>([]);
 
     // 2. Fetch inventory when mode is ready
     useEffect(() => {
-        if (isGuestMode) {
-            guestModeService.getCategories().then(cats => {
-                if (cats.length === 0) {
-                    defaultCategories.forEach((cat, index) => {
-                        const newCat: Category = {
-                            name: cat,
-                            displayName: t(`inventory.categories.${cat}`),
-                            sortValue: index
-                        };
-                        guestModeService.addCategory(newCat);
-                        cats.push(newCat);
-                    });
-                } 
-                setCategories(cats);
-            });
-            getInventoryItems();
-        }
-    }, [isGuestMode]);
+        databaseService.getCategories().then(cats => {
+            if (cats.length === 0) {
+                defaultCategories[locale as keyof typeof defaultCategories].forEach((cat: string, index: number) => {
+                    const newCat: Category = {
+                        name: cat,
+                        displayName: t(`inventory.categories.${cat}`),
+                        sortValue: index
+                    };
+                    databaseService.addCategory(newCat);
+                    cats.push(newCat);
+                });
+            }
+            setCategories(cats.sort((a, b) => a.sortValue - b.sortValue));
+        });
+        getInventoryItems();
+    }, []);
     const filteredItems = inventorys
         .filter((item: Inventory) => {
             const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -109,31 +142,54 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
         });
 
     const handleDelete = (id: string) => {
-        guestModeService.deleteInventoryItem(id);
+        databaseService.deleteInventoryItem(id);
         getInventoryItems();
     };
 
     const handleConsume = async () => {
-        setConsumeEnabled(!consumeEnabled)
-    };
-
-    const handleEdit = async (item: Inventory) => {
-        const updated = { ...item, quantity: (item.quantity || 1) - 1 };
-        if (updated.quantity > 0) {
-            await guestModeService.updateInventoryItem(item.id, updated);
-        } else {
-            await guestModeService.deleteInventoryItem(item.id);
+        const newConsumeEnabled = !consumeEnabled;
+        setConsumeEnabled(newConsumeEnabled);
+        
+        // If turning off consume mode and we have a selected item, handle the consumption
+        if (!newConsumeEnabled && selectedItemId && selectedQuantity > 0) {
+            const selectedItem = inventorys.find(item => item.id === selectedItemId);
+            if (selectedItem) {
+                await handleEdit(selectedItem, selectedQuantity);
+            }
+            // Reset the selected values
+            setSelectedItemId(null);
+            setSelectedQuantity(0);
         }
+    };
+    
+    const handleConsumeChange = async (id: string, quantity: number) => {
+        setSelectedItemId(id);
+        setSelectedQuantity(quantity);
+    };
+    const handleEdit = async (item: Inventory, quantity: number) => {
+        const updated = { ...item, quantity: (item.quantity || 1) - quantity };
+        if (updated.quantity > 0) {
+            await databaseService.updateInventoryItem(item.id, updated);
+        } else {
+            await databaseService.deleteInventoryItem(item.id);
+        }
+        databaseService.addConsumptionHistory({
+            itemId: item.id,
+            quantity: quantity,
+            consumedAt: new Date(),
+            type: 'food'
+        });
+        toast.success(t('message.consumeSuccess', { name: item.name, quantity: quantity }));
         getInventoryItems();
     };
 
     const getInventoryItems = async () => {
         if (isAuthenticated) {
             // TODO: get inventory items from cloud
-            // const items = await guestModeService.getInventoryItems();
+            // const items = await databaseService.getInventoryItems();
             // setInventory(items);
         } else {
-            const items = await guestModeService.getInventoryItems();
+            const items = await databaseService.getInventoryItems();
             setInventorys(items);
         }
     };
@@ -155,8 +211,8 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                         {categories.map(cat => (
                             <button
                                 key={cat.id}
-                                className={`px-4 py-2 rounded-full border-pink-400 text-sm font-medium transition ${categoryFilter === cat.name ? 'bg-pink-500 text-white' : 'bg-white text-gray-700 hover:bg-pink-100'}`}
-                                onClick={() => setCategoryFilter(cat.name)}
+                                className={`px-4 py-2 rounded-full border-pink-400 text-sm font-medium transition ${categoryFilter === cat.id ? 'bg-pink-500 text-white' : 'bg-white text-gray-700 hover:bg-pink-100'}`}
+                                onClick={() => setCategoryFilter(cat.id || '')}
                             >
                                 {cat.displayName}
                             </button>
@@ -169,11 +225,10 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                         <div className="card-cute overflow-hidden min-h-[72vh]">
                             <div className="px-6 pt-4">
                                 <div className="flex items-center justify-between gap-4">
-                                    <h3 className="text-xl font-semibold text-gray-800">
-                                        {t('inventory.items')} ({filteredItems.length})
-                                    </h3>
-
-                                    <div className="flex items-center gap-3">
+                                    <div className='flex items-center justify-start gap-2'>
+                                        <h3 className="text-xl font-semibold text-gray-800">
+                                            {t('inventory.items')} ({filteredItems.length})
+                                        </h3>
                                         {/* Search Icon & Input */}
                                         <div className="relative flex items-center">
                                             <button
@@ -192,18 +247,21 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                                 style={{ minWidth: isSearchOpen ? '8rem' : 0 }}
                                             />
                                         </div>
-                                        {/* Consume Button */}
-                                        <Switch
-                                            checked={consumeEnabled}
-                                            onCheckedChange={handleConsume}
-                                        />
-                                        {/* Add Button */}
-                                        {filteredItems.length > 0 && (
+                                    </div>
+
+                                    {filteredItems.length > 0 && (
+                                        <div className="flex items-center gap-3">
+                                            <Switch
+                                                checked={consumeEnabled}
+                                                onCheckedChange={handleConsume}
+                                                showCheckIcon={true}
+                                                icon={CheckCircle}
+                                            />
                                             <button onClick={() => router.push(localize(`/inventory/add?category=${categoryFilter}`))} className="btn-cute flex items-center">
                                                 <LucidePlus className="w-4 h-4" />
                                             </button>
-                                        )}
-                                    </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             {filteredItems.length === 0 ? (
@@ -226,7 +284,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                 categoryFilter === 'all' ? (
                                     <div className="flex flex-col gap-4 p-4">
                                         {categories.map(cat => {
-                                            const itemsInCategory = filteredItems.filter(item => item.category === cat.name);
+                                            const itemsInCategory = filteredItems.filter(item => item.category === cat.id);
                                             if (itemsInCategory.length === 0) return null;
                                             return (
                                                 <div key={cat.id} className="flex flex-col gap-2">
@@ -242,7 +300,9 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                                                         console.log('Selected item for recipe:', selectedItem.name);
                                                                     }}
                                                                     onDelete={handleDelete}
-                                                                    onEdit={consumeEnabled?handleEdit:undefined}
+                                                                    onEdit={consumeEnabled ? handleEdit : undefined}
+                                                                    consumeEnabled={consumeEnabled}
+                                                                    onConsume={handleConsumeChange}
                                                                 />
                                                             </div>
                                                         ))}
@@ -261,7 +321,9 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                                         console.log('Selected item for recipe:', selectedItem.name);
                                                     }}
                                                     onDelete={handleDelete}
-                                                    onEdit={consumeEnabled?handleEdit:undefined}
+                                                    onEdit={consumeEnabled ? handleEdit : undefined}
+                                                    consumeEnabled={consumeEnabled}
+                                                    onConsume={handleConsumeChange}
                                                 />
                                             </div>
                                         ))}
@@ -272,7 +334,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                     </div>
                     {isChatOpen && (
                         <div ref={chatRef} className="w-full lg:w-96 max-w-full">
-                            <ChatWindow 
+                            <ChatWindow
                                 onClose={() => setIsChatOpen(false)}
                                 messages={chatMessages}
                                 onSend={handleSendMessage}
@@ -299,6 +361,32 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
             </button>}
 
             <Toaster position="top-right" />
+
+            {/* Language Selection Dialog */}
+            <Dialog open={showLanguageDialog} onOpenChange={setShowLanguageDialog}>
+                <DialogContent className="sm:max-w-md px-8 py-8" showCloseButton={false}>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-center">
+                            <Globe className="h-6 w-6 text-pink-500" />
+                            Choose Your Language
+                        </DialogTitle>
+                        <DialogDescription className="text-center">
+                            Please select your preferred language to continue
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-3 py-4">
+                        {languages.map((language) => (
+                            <button
+                                key={language.code}
+                                onClick={() => handleLanguageSelect(language.code)}
+                                className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:border-pink-300 hover:bg-pink-50 transition-colors"
+                            >
+                                <span className="font-medium text-gray-900">{language.name}</span>
+                            </button>
+                        ))}
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 });
@@ -307,7 +395,7 @@ export default function HomePage() {
     return (
         <ReduxProvider>
             <HomePageContainer />
-            <Footer/>
+            <Footer />
         </ReduxProvider>
     );
 }
