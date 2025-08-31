@@ -3,7 +3,8 @@
 import React, { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import useLocalizedPath from '@/shared/hooks/useLocalizedPath';
-import { Home, Heart, Sparkles, User, ArrowLeft, Tag, Book } from 'lucide-react';
+import { useIsMobile } from '@/shared/hooks/useIsMobile';
+import { Home, Sparkles, User, ArrowLeft, Tag, Book } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useAuth } from '@/shared/context/AuthContext';
@@ -22,10 +23,17 @@ interface TopNavProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 function TopNav({ className, links, ...props }: TopNavProps) {
+  const isMobile = useIsMobile()
+  
+  // Hide TopNav on mobile and tablet devices (same as sidebar logic)
+  if (isMobile) {
+    return null
+  }
+
   return ( 
       <nav
         className={cn(
-          'hidden items-center space-x-6 md:flex lg:space-x-6',
+          'flex items-center space-x-4 lg:space-x-6 mr-6',
           className
         )}
         {...props}
@@ -53,6 +61,8 @@ export default function Navigation() {
   const { isGuestMode, enterGuestMode, isAuthenticated } = useAuth();
   const [offset, setOffset] = React.useState(0);
   const router = useRouter();
+  const isMobile = useIsMobile(); // Move hook call to top level
+  
   // Check if we're on a food item details page
   const isDetailsPage = (pathname.includes('/inventory/') || pathname.includes('/records/')) && pathname.split('/').length > 3;
 
@@ -60,6 +70,7 @@ export default function Navigation() {
     { name: t('navigation.inventory'), href: '/', icon: Home },
     { name: t('navigation.categories'), href: '/categories', icon: Tag },
     { name: t('navigation.records'), href: '/records', icon: Book },
+    { name: t('navigation.icons'), href: '/icons', icon: Book },
     // { name: t('navigation.favorites'), href: '/favorites', icon: Heart }
   ];
 
@@ -104,15 +115,15 @@ export default function Navigation() {
 
       {/* Logo - only show when not on details page */}
       {!isDetailsPage && (
-        <div className="flex items-center">
+        <div className="flex items-center flex-shrink-0">
           <Link href={localize('/')} className="flex items-center space-x-2 group">
             <div className="icon-cute pulse">
               <Sparkles className="w-5 h-5" />
             </div>
-            <span className="text-xl font-bold gradient-text">Foodsai</span>
+            <span className="text-lg sm:text-xl font-bold gradient-text">Foodsai</span>
           </Link>
-          {isGuestMode && (
-            <div className="hidden md:flex items-center ml-4 space-x-2 px-3 py-1 bg-yellow-100 border border-yellow-300 rounded-full" title='💡 Your data is stored locally on this device. Consider creating an account to sync your data across devices.'>
+          {isGuestMode && !isMobile && (
+            <div className="flex items-center ml-4 space-x-2 px-3 py-1 bg-yellow-100 border border-yellow-300 rounded-full" title='💡 Your data is stored locally on this device. Consider creating an account to sync your data across devices.'>
               <User className="w-4 h-4 text-yellow-600" />
               <span className="text-sm font-medium text-yellow-800">Guest Mode</span>
             </div>
@@ -122,14 +133,17 @@ export default function Navigation() {
 
       {/* Right side items */}
       <div className="ml-auto flex items-center space-x-2">
-        {/* Sidebar Trigger */}
-        <SidebarTrigger variant='outline' className='scale-125 sm:scale-100' />
-        <Separator orientation="vertical" className="h-6 sm:hidden" />
-        {/* Desktop Navigation */}
+        {/* Sidebar Trigger - Always visible with proper spacing */}
+        <SidebarTrigger variant='outline' className='scale-110 sm:scale-100 flex-shrink-0 min-w-[40px]' />
+        {/* Separator - Only show on mobile and tablet devices */}
+        {isMobile && <Separator orientation="vertical" className="h-6" />}
+        {/* Desktop Navigation - Only show on large screens to avoid crowding */}
         <TopNav links={navLinks} />
         
         {/* <LanguageSwitcher /> */}
-        <ProfileDropdown />
+        <div className="flex-shrink-0">
+          <ProfileDropdown />
+        </div>
       </div>
     </header>
   );

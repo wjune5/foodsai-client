@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Heart, Settings, User, Sparkles, Tag, Book } from 'lucide-react'
+import { Home, Heart, Settings, User, Sparkles, Tag, Book, PlugIcon } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import useLocalizedPath from '@/shared/hooks/useLocalizedPath'
 import { useAuth } from '@/shared/context/AuthContext'
@@ -59,7 +59,7 @@ export function AppSidebar() {
             </div>
             <span className="text-lg font-bold gradient-text">Foodsai</span>
           </div>
-          <SidebarTrigger className="md:hidden" />
+          <SidebarTrigger className="hidden" />
         </div>
         {isGuestMode && (
           <div className="flex items-center justify-center space-x-2 px-2 py-1 bg-yellow-100 border border-yellow-300 rounded-md w-fit mx-auto" title='💡 Your data is stored locally on this device. Consider creating an account to sync your data across devices.'>
