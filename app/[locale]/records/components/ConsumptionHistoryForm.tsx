@@ -91,8 +91,6 @@ const ConsumptionHistoryForm: React.FC<ConsumptionHistoryFormProps> = ({
         type: initialData.type,
         itemId: initialData.itemId,
         itemName: initialData.itemName,
-        recipeId: initialData.recipeId,
-        recipeName: initialData.recipeName,
         quantity: initialData.quantity,
         unit: initialData.unit,
         consumedAt: initialData.consumedAt,

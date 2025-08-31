@@ -34,6 +34,7 @@ function AddInventoryPageInner() {
           category: category,
           quantity: 1,
           originalQuantity: 1,
+          perOptQuantity: 1,
           unit: 'pcs',
           createdBy: 'guest',
           updatedBy: 'guest',
