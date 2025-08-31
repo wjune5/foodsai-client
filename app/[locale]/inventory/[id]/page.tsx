@@ -3,7 +3,7 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Inventory } from '@/shared/entities/inventory';
+import { Inventory, InventoryDetail } from '@/shared/entities/inventory';
 import { databaseService } from '@/shared/services/DatabaseService';
 import { useAuth } from '@/shared/context/AuthContext';
 import FoodDetailsPage from '../components/FoodDetailsPage';
@@ -17,7 +17,7 @@ export default function FoodItemPage() {
   const t = useTranslations();
   const localize = useLocalizedPath();
   const { isAuthenticated, isGuestMode } = useAuth();
-  const [item, setItem] = useState<Inventory | null>(null);
+  const [item, setItem] = useState<InventoryDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,7 +36,12 @@ export default function FoodItemPage() {
           const items = await databaseService.getInventoryItems();
           const foundItem = items.find((item: Inventory) => item.id === itemId);
           if (foundItem) {
-            setItem(foundItem);
+            const category = await databaseService.getCategoryVo(foundItem.category);
+            if (category) {
+              setItem({...foundItem, category: category});
+            } else {
+              setError('Category not found');
+            }
           } else {
             setError('Item not found');
           }
@@ -56,10 +61,15 @@ export default function FoodItemPage() {
     }
   }, [itemId, isAuthenticated, isGuestMode]);
 
-  const handleEdit = (updatedItem: Inventory) => {
+  const handleEdit = async (updatedItem: Inventory) => {
     if (isGuestMode) {
       databaseService.updateInventoryItem(updatedItem.id, updatedItem);
-      setItem(updatedItem);
+      const category = await databaseService.getCategoryVo(updatedItem.category);
+      if (category.id) {
+        setItem({...updatedItem, category: category});
+      } else {
+        setError('Category not found');
+      }
     }
     // TODO: Handle cloud API update
   };

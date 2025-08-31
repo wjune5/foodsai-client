@@ -7,7 +7,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { Category, Inventory } from '@/shared/entities/inventory';
 import { useLocale, useTranslations } from 'next-intl';
 import { ReduxProvider } from '@/shared/providers/ReduxProvider';
-import { Plus as LucidePlus, ChefHat, MessageCircle, Search, Minus, Globe } from 'lucide-react';
+import { Plus as LucidePlus, ChefHat, MessageCircle, Search, Globe, CheckCircle } from 'lucide-react';
 import ChatWindow from '@/shared/components/ChatWindow';
 import Footer from '@/shared/components/Footer';
 import { databaseService } from '@/shared/services/DatabaseService';
@@ -19,11 +19,11 @@ import { Input } from '@/shared/components/ui/input';
 import { Button } from '@/shared/components/ui/button';
 import { categories as defaultCategories } from '@/shared/constants/constants';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
 } from '@/shared/components/Dialog';
 
 type ChatMessage = { text?: string; imageUrl?: string; role: 'user' | 'bot' };
@@ -41,6 +41,8 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
     const [sortBy] = useState('name');
     const [sortOrder] = useState<'asc' | 'desc'>('asc');
     const [consumeEnabled, setConsumeEnabled] = useState(false)
+    const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+    const [selectedQuantity, setSelectedQuantity] = useState<number>(0);
     const chatRef = useRef<HTMLDivElement>(null);
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
     const [showLanguageDialog, setShowLanguageDialog] = useState(false);
@@ -57,7 +59,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
     const handleLanguageSelect = (locale: string) => {
         localStorage.setItem('language-selected', 'true');
         setShowLanguageDialog(false);
-        
+
         // Redirect to the selected language
         const currentPath = window.location.pathname;
         const pathWithoutLocale = currentPath.replace(/^\/[a-z]{2}/, '');
@@ -101,7 +103,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                     databaseService.addCategory(newCat);
                     cats.push(newCat);
                 });
-            } 
+            }
             setCategories(cats.sort((a, b) => a.sortValue - b.sortValue));
         });
         getInventoryItems();
@@ -145,9 +147,25 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
     };
 
     const handleConsume = async () => {
-        setConsumeEnabled(!consumeEnabled)
+        const newConsumeEnabled = !consumeEnabled;
+        setConsumeEnabled(newConsumeEnabled);
+        
+        // If turning off consume mode and we have a selected item, handle the consumption
+        if (!newConsumeEnabled && selectedItemId && selectedQuantity > 0) {
+            const selectedItem = inventorys.find(item => item.id === selectedItemId);
+            if (selectedItem) {
+                await handleEdit(selectedItem, selectedQuantity);
+            }
+            // Reset the selected values
+            setSelectedItemId(null);
+            setSelectedQuantity(0);
+        }
     };
-
+    
+    const handleConsumeChange = async (id: string, quantity: number) => {
+        setSelectedItemId(id);
+        setSelectedQuantity(quantity);
+    };
     const handleEdit = async (item: Inventory, quantity: number) => {
         const updated = { ...item, quantity: (item.quantity || 1) - quantity };
         if (updated.quantity > 0) {
@@ -207,11 +225,10 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                         <div className="card-cute overflow-hidden min-h-[72vh]">
                             <div className="px-6 pt-4">
                                 <div className="flex items-center justify-between gap-4">
-                                    <h3 className="text-xl font-semibold text-gray-800">
-                                        {t('inventory.items')} ({filteredItems.length})
-                                    </h3>
-
-                                    <div className="flex items-center gap-3">
+                                    <div className='flex items-center justify-start gap-2'>
+                                        <h3 className="text-xl font-semibold text-gray-800">
+                                            {t('inventory.items')} ({filteredItems.length})
+                                        </h3>
                                         {/* Search Icon & Input */}
                                         <div className="relative flex items-center">
                                             <button
@@ -230,18 +247,21 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                                 style={{ minWidth: isSearchOpen ? '8rem' : 0 }}
                                             />
                                         </div>
-                                        {/* Consume Button */}
-                                        <Switch
-                                            checked={consumeEnabled}
-                                            onCheckedChange={handleConsume}
-                                        />
-                                        {/* Add Button */}
-                                        {filteredItems.length > 0 && (
+                                    </div>
+
+                                    {filteredItems.length > 0 && (
+                                        <div className="flex items-center gap-3">
+                                            <Switch
+                                                checked={consumeEnabled}
+                                                onCheckedChange={handleConsume}
+                                                showCheckIcon={true}
+                                                icon={CheckCircle}
+                                            />
                                             <button onClick={() => router.push(localize(`/inventory/add?category=${categoryFilter}`))} className="btn-cute flex items-center">
                                                 <LucidePlus className="w-4 h-4" />
                                             </button>
-                                        )}
-                                    </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             {filteredItems.length === 0 ? (
@@ -280,8 +300,9 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                                                         console.log('Selected item for recipe:', selectedItem.name);
                                                                     }}
                                                                     onDelete={handleDelete}
-                                                                    onEdit={consumeEnabled?handleEdit:undefined}
+                                                                    onEdit={consumeEnabled ? handleEdit : undefined}
                                                                     consumeEnabled={consumeEnabled}
+                                                                    onConsume={handleConsumeChange}
                                                                 />
                                                             </div>
                                                         ))}
@@ -294,15 +315,16 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                     <div className="flex flex-wrap gap-4 p-4">
                                         {filteredItems.map((item: Inventory) => (
                                             <div key={item.id} className="flex items-center">
-                                                                                                                <FoodCard
-                                                                    item={item}
-                                                                    onClick={(selectedItem) => {
-                                                                        console.log('Selected item for recipe:', selectedItem.name);
-                                                                    }}
-                                                                    onDelete={handleDelete}
-                                                                    onEdit={consumeEnabled?handleEdit:undefined}
-                                                                    consumeEnabled={consumeEnabled}
-                                                                />
+                                                <FoodCard
+                                                    item={item}
+                                                    onClick={(selectedItem) => {
+                                                        console.log('Selected item for recipe:', selectedItem.name);
+                                                    }}
+                                                    onDelete={handleDelete}
+                                                    onEdit={consumeEnabled ? handleEdit : undefined}
+                                                    consumeEnabled={consumeEnabled}
+                                                    onConsume={handleConsumeChange}
+                                                />
                                             </div>
                                         ))}
                                     </div>
@@ -312,7 +334,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                     </div>
                     {isChatOpen && (
                         <div ref={chatRef} className="w-full lg:w-96 max-w-full">
-                            <ChatWindow 
+                            <ChatWindow
                                 onClose={() => setIsChatOpen(false)}
                                 messages={chatMessages}
                                 onSend={handleSendMessage}
@@ -373,7 +395,7 @@ export default function HomePage() {
     return (
         <ReduxProvider>
             <HomePageContainer />
-            <Footer/>
+            <Footer />
         </ReduxProvider>
     );
 }

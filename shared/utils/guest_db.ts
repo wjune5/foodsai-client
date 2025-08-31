@@ -92,6 +92,10 @@ export class GuestDatabase extends Dexie {
     return await this.categories.toArray();
   }
 
+  async getCategory(id: string): Promise<Category> {
+    return await this.categories.get(id) as Category;
+  }
+
   async addCategory(category: Omit<Category, 'id' | 'isDefault' | 'icon'>): Promise<Category> {
     const newCategory: Category = {
       ...category,

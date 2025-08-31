@@ -100,6 +100,8 @@
     "expiryDays": "过期天数",
     "startDate": "开始日期",
     "image": "图片",
+    "perOptQuantity": "每次操作数量",
+    "perOptQuantityDesc": "在消耗模式下使用 +/- 按钮时消耗的数量",
     "unit": "单位",
     "price": "价格",
     "position": "位置",

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Inventory } from '@/shared/entities/inventory';
+import { Inventory, InventoryDetail } from '@/shared/entities/inventory';
 import { 
   Calendar, 
   Package, 
@@ -20,7 +20,7 @@ import { FoodIconKey, getIconByKey } from '@/shared/constants/food-icons';
 import ChatImage from '@/shared/components/ChatImage';
 
 interface FoodDetailsPageProps {
-  item: Inventory;
+  item: InventoryDetail;
   onEdit: (item: Inventory) => void;
   onDelete: () => void;
 }
@@ -108,7 +108,7 @@ const FoodDetailsPage: React.FC<FoodDetailsPageProps> = ({ item, onEdit, onDelet
               </div>
               <div className="flex items-center gap-2 text-gray-600">
                 <Tag className="w-5 h-5" />
-                <span className="font-medium capitalize">{item.category}</span>
+                <span className="font-medium capitalize">{item.category.displayName}</span>
               </div>
             </div>
 
@@ -131,7 +131,7 @@ const FoodDetailsPage: React.FC<FoodDetailsPageProps> = ({ item, onEdit, onDelet
       {/* Basic Information */}
       <div className="card-cute p-6 mb-6">
         <div className="space-y-4">
-          {item.price && (
+          {item.price !== undefined && (
             <div className="flex justify-between items-center py-2">
               <span className="text-gray-600">{t('inventory.price')}</span>
               <span className="font-medium text-gray-800">${item.price.toFixed(2)}</span>
@@ -204,7 +204,7 @@ const FoodDetailsPage: React.FC<FoodDetailsPageProps> = ({ item, onEdit, onDelet
               </div>
               <div>
                 <h3 className="font-semibold text-gray-800">{item.name}</h3>
-                <p className="text-sm text-gray-600">{item.quantity} {item.unit} • {item.category}</p>
+                <p className="text-sm text-gray-600">{item.quantity} {item.unit} • {item.category.displayName}</p>
               </div>
             </div>
             <p className="text-gray-600 text-base leading-relaxed">

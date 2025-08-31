@@ -55,6 +55,7 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
         table: string;
         entity: string;
         quantity?: number;
+        perOptQuantity?: number;
         unit?: string;
         description?: string;
         expirationDays?: number;
@@ -64,7 +65,8 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
     const FormSchema = z.object({
         name: z.string().min(1, t('inventory.nameRequired')),
         category: z.string().min(1, t('inventory.categoryRequired')),
-        quantity: z.coerce.number().min(1, t('inventory.quantityRequired')),
+        quantity: z.coerce.number().min(0, t('inventory.quantityRequired')),
+        perOptQuantity: z.coerce.number(),
         unit: z.string().min(1, t('inventory.unitRequired')),
         expirationDays: z.number().min(-365).optional(),
         img: z.object({
@@ -111,7 +113,7 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                 databaseService.addCategory(newCat);
                 cats.push(newCat);
             });
-        } 
+        }
         return cats.sort((a, b) => a.sortValue - b.sortValue);
     }
 
@@ -123,6 +125,7 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
             name: '',
             category: category,
             quantity: 1,
+            perOptQuantity: 1,
             unit: 'pcs',
             expirationDays: 0,
             img: defaultImg,
@@ -170,6 +173,7 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                     name: initialData.name,
                     category: initialData.category,
                     quantity: initialData.quantity,
+                    perOptQuantity: initialData.perOptQuantity || 1,
                     unit: initialData.unit,
                     expirationDays: initialData.expirationDays || 1,
                     img: initialData.img || defaultImg,
@@ -267,6 +271,7 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                     table: 'inventory',
                     entity: item.name,
                     quantity: item.quantity || 1,
+                    perOptQuantity: item.perOptQuantity || 1,
                     unit: item.unit || 'pcs',
                     description: item.category || 'other',
                     expirationDays: item.expiration_days || 0
@@ -294,6 +299,7 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                         name: item.entity,
                         category: categories[0].id || '',
                         quantity: item.quantity || 1,
+                        perOptQuantity: item.perOptQuantity || 1,
                         unit: item.unit || 'pcs',
                         expirationDays: item.expirationDays || 0,
                         img: form.getValues('img') || {
@@ -462,7 +468,9 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                                 <Stepper
                                     value={field.value}
                                     onChange={field.onChange}
-                                    min={1}
+                                    min={0}
+                                    step={1}
+                                    precision={1}
                                 />
                             </FormControl>
                         </FormItem>
@@ -692,7 +700,7 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                         <FormItem className="flex-1">
                             <FormLabel>{t('inventory.expiryDays')}</FormLabel>
                             <FormControl>
-                                <Stepper value={field.value} onChange={field.onChange} min={-1} />
+                                <Stepper value={field.value} onChange={field.onChange} min={-1} step={1} precision={0} />
                             </FormControl>
                         </FormItem>
                     )}
@@ -711,6 +719,27 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                                 {...field}
                             />
                         </FormControl>
+                    </FormItem>
+                )}
+            />
+            <FormField
+                control={form.control}
+                name="perOptQuantity"
+                render={({ field }) => (
+                    <FormItem className="flex-1">
+                        <FormLabel>{t('inventory.perOptQuantity')}</FormLabel>
+                        <FormControl>
+                            <Stepper
+                                value={field.value}
+                                onChange={field.onChange}
+                                min={0}
+                                step={1}
+                                precision={1}
+                            />
+                        </FormControl>
+                        <p className="text-xs text-gray-500 mt-1">
+                            {t('inventory.perOptQuantityDesc')}
+                        </p>
                     </FormItem>
                 )}
             />

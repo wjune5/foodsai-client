@@ -106,6 +106,8 @@
     "expiryDays": "Expiry Days",
     "startDate": "Start Date",
     "image": "Image",
+    "perOptQuantity": "Per Operation Quantity",
+    "perOptQuantityDesc": "Amount consumed when using +/- buttons in consume mode",
     "unit": "Unit",
     "price": "Price",
     "position": "Position",

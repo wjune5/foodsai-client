@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Inventory } from '@/shared/entities/inventory';
 import { Trash2, Dot, AlertTriangle, Calendar, Package, Info, Pencil, XIcon, Minus, Plus, Check } from 'lucide-react';
+import { Stepper } from '@/shared/components/stepper';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/Dialog';
-import AddInventoryForm from './AddForm';
-import { DialogClose } from '@/shared/components/Dialog';
 import { useRouter } from 'next/navigation';
 import useLocalizedPath from '@/shared/hooks/useLocalizedPath';
 import { calculateDaysLeft } from '@/shared/utils/date_util';
@@ -17,14 +16,15 @@ interface FoodCardProps {
   onDelete?: (id: string) => void;
   onEdit?: (item: Inventory, quantity: number) => void;
   consumeEnabled?: boolean;
+  onConsume?: (id: string, quantity: number) => void;
 }
 
-const FoodCard: React.FC<FoodCardProps> = ({ item, onClick, onDelete, onEdit, consumeEnabled }) => {
+const FoodCard: React.FC<FoodCardProps> = ({ item, onClick, onDelete, onEdit, consumeEnabled, onConsume }) => {
   const t = useTranslations();
   const router = useRouter();
   const localize = useLocalizedPath();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [quantity, setQuantity] = useState(item.quantity);
+  const [quantity, setQuantity] = useState(0);
 
   const { daysLeft, dotColor, status } = calculateDaysLeft(item.dateFrom || item.createTime, item.expirationDays);
 
@@ -52,23 +52,16 @@ const FoodCard: React.FC<FoodCardProps> = ({ item, onClick, onDelete, onEdit, co
     setShowDeleteDialog(false);
   };
 
-  const handleIncrement = () => {
-    if (quantity < item.quantity) {
-      setQuantity(prev => prev + 1);
-    }
-  };
 
-  const handleDecrement = () => {
-    if (quantity > 1) {
-      setQuantity(prev => prev - 1);
-    }
-  };
-
+  const handleQuantityChange = (value: number) => {
+    setQuantity(value);
+    onConsume?.(item.id, value);
+  }
   const handleConfirm = () => {
     if (onEdit) {
       onEdit(item, quantity);
     }
-    setQuantity(item.quantity);
+    setQuantity(0);
   };
 
   // Render image or icon
@@ -125,12 +118,12 @@ const FoodCard: React.FC<FoodCardProps> = ({ item, onClick, onDelete, onEdit, co
                 /* Stepper Mode */
         <div className="bg-white rounded-2xl shadow-md border border-pink-200 p-4 min-w-[280px] relative">
           {/* Check Button - Top Right */}
-          <button
+          {/* <button
             onClick={handleConfirm}
             className="absolute top-3 right-3 w-8 h-8 bg-pink-600 hover:bg-pink-700 text-white rounded-full flex items-center justify-center transition-colors shadow-sm"
           >
             <Check className="w-4 h-4" />
-          </button>
+          </button> */}
 
           {/* Item Info */}
           <div className="flex items-center gap-3 mb-4 pr-10">
@@ -143,66 +136,57 @@ const FoodCard: React.FC<FoodCardProps> = ({ item, onClick, onDelete, onEdit, co
             </div>
           </div>
           
-          {/* Quantity Stepper */}
-          <div className="flex items-center justify-center gap-3">
-            <button
-              onClick={handleDecrement}
-              disabled={quantity <= 1}
-              className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <Minus className="w-3 h-3" />
-            </button>
-            
-            <div className="flex items-center gap-1 min-w-[60px] justify-center">
-              <span className="text-lg font-bold text-gray-800">{quantity}</span>
-              <span className="text-xs text-gray-600">{item.unit}</span>
-            </div>
-            
-            <button
-              onClick={handleIncrement}
-              disabled={quantity >= item.quantity}
-              className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <Plus className="w-3 h-3" />
-            </button>
-          </div>
+                     {/* Quantity Stepper */}
+           <div className="flex items-center justify-center gap-3">
+             <div className="text-center text-sm font-medium text-gray-800">{t('inventory.consume')}</div>
+             <div className="flex items-center gap-1">
+               <Stepper
+                 value={quantity}
+                 onChange={handleQuantityChange}
+                 min={0}
+                 max={item.quantity}
+                 step={item.quantity < item.perOptQuantity? item.quantity : item.perOptQuantity || 1}
+                 precision={1}
+                 className="w-24"
+               />
+               <span className="text-xs text-gray-600">{item.unit}</span>
+             </div>
+           </div>
         </div>
       ) : (
-        <>
-          <div
-            className="inline-flex items-center gap-2 px-3 py-2 bg-white rounded-full shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200 cursor-pointer max-w-xs"
-            onClick={handleClick}
-            title={onEdit ? `${t('inventory.consume')} ${item.name}` : `Select ${item.name} for recipe generation`}
-          >
-            {/* Image or Icon */}
-            {renderItemImage()}
-            
-            {/* Name */}
-            <span className="font-medium text-sm text-gray-800 truncate flex-1">
-              {item.name}
-            </span>
-            
-            {/* Quantity */}
-            <div className="flex items-center gap-1 text-xs text-gray-600">
-              <Dot className="w-3 h-3" />
-              <span>{item.quantity}{item.unit}</span>
-            </div>
-            
-            {/* Days Left Badge */}
-            <div className={`px-2 py-1 rounded-full text-xs font-medium text-white ${dotColor} shadow-sm`}>
-              {status === 'no-date' ? ' ' : daysLeft}
-            </div>
+        <div
+          className="inline-flex items-center gap-2 px-3 py-2 bg-white rounded-full shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200 cursor-pointer max-w-xs"
+          onClick={handleClick}
+          title={onEdit ? `${t('inventory.consume')} ${item.name}` : `Select ${item.name} for recipe generation`}
+        >
+          {/* Image or Icon */}
+          {renderItemImage()}
+          
+          {/* Name */}
+          <span className="font-medium text-sm text-gray-800 truncate flex-1">
+            {item.name}
+          </span>
+          
+          {/* Quantity */}
+          <div className="flex items-center gap-1 text-xs text-gray-600">
+            <Dot className="w-3 h-3" />
+            <span>{item.quantity}{item.unit}</span>
+          </div>
+          
+          {/* Days Left Badge */}
+          <div className={`px-2 py-1 rounded-full text-xs font-medium text-white ${dotColor} shadow-sm`}>
+            {status === 'no-date' ? ' ' : daysLeft}
           </div>
           {onDelete && (
             <button
               onClick={handleDeleteClick}
-              className="absolute -top-1 -right-1 p-1 bg-red-500 text-white rounded-full opacity-100 hover:bg-red-600 shadow-sm"
+              className="absolute -top-1 -right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-600 shadow-sm transition-opacity"
               title={`${t('common.delete')} ${item.name}`}
             >
               <Trash2 className="w-3 h-3" />
             </button>
           )}
-        </>
+        </div>
       )}
       
       {/* Delete Confirmation Dialog */}
