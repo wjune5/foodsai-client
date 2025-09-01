@@ -8,7 +8,7 @@ export interface CustomIcon {
     svgContent: string; // Sanitized SVG content
     builtIn: boolean,
     createdBy: string;
-    createTime: Date;
-    updateTime: Date;
+    createTime?: Date;
+    updateTime?: Date;
     isActive: boolean;
   }
