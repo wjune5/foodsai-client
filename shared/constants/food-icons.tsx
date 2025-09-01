@@ -41,7 +41,7 @@ export const DEFAULT_FOOD_ICONS: CustomIcon[] = [
     svgContent: 'apple',
     builtIn: true,
     createdBy: 'system',
-    createTime: new Date('2024-01-01'),
+    createTime: new Date('2025-09-01'),
     isActive: true
   },
   {
@@ -51,7 +51,7 @@ export const DEFAULT_FOOD_ICONS: CustomIcon[] = [
     svgContent: 'banana',
     builtIn: true,
     createdBy: 'system',
-    createTime: new Date('2024-01-01'),
+    createTime: new Date('2025-09-01'),
     isActive: true
   },
   {
@@ -61,7 +61,7 @@ export const DEFAULT_FOOD_ICONS: CustomIcon[] = [
     svgContent: 'cherry',
     builtIn: true,
     createdBy: 'system',
-    createTime: new Date('2024-01-01'),
+    createTime: new Date('2025-09-01'),
     isActive: true
   },
   
@@ -73,7 +73,7 @@ export const DEFAULT_FOOD_ICONS: CustomIcon[] = [
     svgContent: 'carrot',
     builtIn: true,
     createdBy: 'system',
-    createTime: new Date('2024-01-01'),
+    createTime: new Date('2025-09-01'),
     isActive: true
   },
   {
@@ -83,7 +83,7 @@ export const DEFAULT_FOOD_ICONS: CustomIcon[] = [
     svgContent: 'salad',
     builtIn: true,
     createdBy: 'system',
-    createTime: new Date('2024-01-01'),
+    createTime: new Date('2025-09-01'),
     isActive: true
   },
   
@@ -95,7 +95,7 @@ export const DEFAULT_FOOD_ICONS: CustomIcon[] = [
     svgContent: 'milk',
     builtIn: true,
     createdBy: 'system',
-    createTime: new Date('2024-01-01'),
+    createTime: new Date('2025-09-01'),
     isActive: true
   },
   {
@@ -105,7 +105,7 @@ export const DEFAULT_FOOD_ICONS: CustomIcon[] = [
     svgContent: 'egg',
     builtIn: true,
     createdBy: 'system',
-    createTime: new Date('2024-01-01'),
+    createTime: new Date('2025-09-01'),
     isActive: true
   },
   
@@ -117,7 +117,7 @@ export const DEFAULT_FOOD_ICONS: CustomIcon[] = [
     svgContent: 'beef',
     builtIn: true,
     createdBy: 'system',
-    createTime: new Date('2024-01-01'),
+    createTime: new Date('2025-09-01'),
     isActive: true
   },
   {
@@ -127,7 +127,7 @@ export const DEFAULT_FOOD_ICONS: CustomIcon[] = [
     svgContent: 'fish',
     builtIn: true,
     createdBy: 'system',
-    createTime: new Date('2024-01-01'),
+    createTime: new Date('2025-09-01'),
     isActive: true
   },
   
@@ -139,7 +139,7 @@ export const DEFAULT_FOOD_ICONS: CustomIcon[] = [
     svgContent: 'wheat',
     builtIn: true,
     createdBy: 'system',
-    createTime: new Date('2024-01-01'),
+    createTime: new Date('2025-09-01'),
     isActive: true
   },
   {
@@ -149,7 +149,7 @@ export const DEFAULT_FOOD_ICONS: CustomIcon[] = [
     svgContent: 'pizza',
     builtIn: true,
     createdBy: 'system',
-    createTime: new Date('2024-01-01'),
+    createTime: new Date('2025-09-01'),
     isActive: true
   },
   
@@ -161,7 +161,7 @@ export const DEFAULT_FOOD_ICONS: CustomIcon[] = [
     svgContent: 'coffee',
     builtIn: true,
     createdBy: 'system',
-    createTime: new Date('2024-01-01'),
+    createTime: new Date('2025-09-01'),
     isActive: true
   },
   {
@@ -171,7 +171,7 @@ export const DEFAULT_FOOD_ICONS: CustomIcon[] = [
     svgContent: 'wine',
     builtIn: true,
     createdBy: 'system',
-    createTime: new Date('2024-01-01'),
+    createTime: new Date('2025-09-01'),
     isActive: true
   },
   
@@ -183,7 +183,7 @@ export const DEFAULT_FOOD_ICONS: CustomIcon[] = [
     svgContent: 'cookie',
     builtIn: true,
     createdBy: 'system',
-    createTime: new Date('2024-01-01'),
+    createTime: new Date('2025-09-01'),
     isActive: true
   },
   {
@@ -193,7 +193,7 @@ export const DEFAULT_FOOD_ICONS: CustomIcon[] = [
     svgContent: 'ice-cream',
     builtIn: true,
     createdBy: 'system',
-    createTime: new Date('2024-01-01'),
+    createTime: new Date('2025-09-01'),
     isActive: true
   },
   
@@ -205,7 +205,7 @@ export const DEFAULT_FOOD_ICONS: CustomIcon[] = [
     svgContent: 'sandwich',
     builtIn: true,
     createdBy: 'system',
-    createTime: new Date('2024-01-01'),
+    createTime: new Date('2025-09-01'),
     isActive: true
   },
   {
@@ -215,7 +215,7 @@ export const DEFAULT_FOOD_ICONS: CustomIcon[] = [
     svgContent: 'soup',
     builtIn: true,
     createdBy: 'system',
-    createTime: new Date('2024-01-01'),
+    createTime: new Date('2025-09-01'),
     isActive: true
   },
 ];
