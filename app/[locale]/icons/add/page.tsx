@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Save, X, Upload } from 'lucide-react';
@@ -14,7 +14,7 @@ import { databaseService } from '@/shared/services/DatabaseService';
 import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
 
-export default function AddIconPage() {
+function AddIconPageContent() {
   const t = useTranslations();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -145,10 +145,14 @@ export default function AddIconPage() {
   // Render SVG preview
   const renderSvgPreview = (svg: string) => {
     return (
-      <div 
-        className="w-16 h-16 flex items-center justify-center border rounded-lg bg-gray-50"
-        dangerouslySetInnerHTML={{ __html: svg }}
-      />
+      <div className="w-16 h-16 flex items-center justify-center border rounded-lg bg-gray-50 overflow-hidden">
+        <div 
+          className="w-full h-full flex items-center justify-center svg-container"
+          dangerouslySetInnerHTML={{ 
+            __html: svg.replace(/width="[^"]*"/, 'width="100%"').replace(/height="[^"]*"/, 'height="100%"')
+          }} 
+        />
+      </div>
     );
   };
 
@@ -164,6 +168,14 @@ export default function AddIconPage() {
 
   return (
     <div className="container mx-auto p-6 max-w-2xl">
+      <style jsx>{`
+        .svg-container svg {
+          max-width: 100%;
+          max-height: 100%;
+          width: auto;
+          height: auto;
+        }
+      `}</style>
       <Toaster position="top-right" />
       
       <div className="flex items-center gap-4 mb-6">
@@ -270,5 +282,19 @@ export default function AddIconPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function AddIconPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto p-6 max-w-2xl">
+        <div className="text-center py-12">
+          <div className="text-lg">Loading...</div>
+        </div>
+      </div>
+    }>
+      <AddIconPageContent />
+    </Suspense>
   );
 }
