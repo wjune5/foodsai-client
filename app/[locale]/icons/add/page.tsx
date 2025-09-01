@@ -11,7 +11,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { FOOD_ICONS } from '@/shared/constants/food-icons';
 import { databaseService } from '@/shared/services/DatabaseService';
-import { CustomIcon } from '@/shared/entities/inventory';
 import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
 
@@ -124,9 +123,11 @@ export default function AddIconPage() {
         toast.success(t('icons.updated'));
       } else {
         await databaseService.addCustomIcon({
+          id: '',
           name: formData.name,
           svgContent: formData.svgContent,
           category: formData.category,
+          builtIn: false,
           isActive: true
         });
         toast.success(t('icons.created'));
