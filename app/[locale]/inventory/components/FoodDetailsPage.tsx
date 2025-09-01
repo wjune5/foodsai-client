@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Inventory, InventoryDetail } from '@/shared/entities/inventory';
 import { 
@@ -16,7 +16,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import useLocalizedPath from '@/shared/hooks/useLocalizedPath';
 import { calculateDaysLeft } from '@/shared/utils/date_util';
-import { FoodIconKey, getIconByKey } from '@/shared/constants/food-icons';
+import { FoodIconKey, getIconDataByKey, IconData } from '@/shared/constants/food-icons';
 import ChatImage from '@/shared/components/ChatImage';
 
 interface FoodDetailsPageProps {
@@ -30,8 +30,21 @@ const FoodDetailsPage: React.FC<FoodDetailsPageProps> = ({ item, onEdit, onDelet
   const router = useRouter();
   const localize = useLocalizedPath();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [iconData, setIconData] = useState<IconData | undefined>(undefined);
 
   const { daysLeft, status } = calculateDaysLeft(item.dateFrom || item.createTime, item.expirationDays);
+
+  // Load icon data asynchronously
+  useEffect(() => {
+    const loadIconData = async () => {
+      if (item.img?.mimeType === 'image/icon') {
+        const iconKey = item.img.data as FoodIconKey;
+        const icon = await getIconDataByKey(iconKey);
+        setIconData(icon);
+      }
+    };
+    loadIconData();
+  }, [item.img]);
 
   const handleEdit = (updatedItem: Inventory) => {
     onEdit(updatedItem);
@@ -57,12 +70,10 @@ const FoodDetailsPage: React.FC<FoodDetailsPageProps> = ({ item, onEdit, onDelet
 
   const renderImage = () => {
     if (item.img?.mimeType === 'image/icon') {
-      const iconKey = item.img.data as FoodIconKey;
-      const iconData = getIconByKey(iconKey);
       if (iconData) {
           const IconComponent = iconData.icon;
           return (
-              <div className="flex items-center justify-center w-48 h-48 bg-pink-100 rounded-lg border-2 border-pink-200">
+              <div className="flex items-center justify-center w-48 h-48 bg-pink-100 rounded-lg">
                   <IconComponent className="w-full h-full" style={{ color: item.iconColor }} />
               </div>
           );

@@ -45,17 +45,6 @@ export interface InventoryImage {
     data: string;
 }
 
-// Define custom icon interface for user-uploaded SVG icons
-export interface CustomIcon {
-  id: string;
-  name: string;
-  category: string;
-  svgContent: string; // Sanitized SVG content
-  createdBy: string;
-  createdTime: Date;
-  isActive: boolean;
-}
-
 export interface Recipe {
     id: string;
     name: string;
@@ -72,7 +61,7 @@ export interface Recipe {
 }
 
 export interface Category {
-    id?: string;
+    id: string;
     name: string;
     displayName: string;
     color?: string;

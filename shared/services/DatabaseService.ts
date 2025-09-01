@@ -1,6 +1,8 @@
 import { guestDB } from '../utils/guest_db';
 import { DEFAULT_SETTINGS, GuestUser, UserInfo, UserSettings } from '../entities/user';
 import { Category, Inventory, Recipe, ConsumptionHistory, CategoryVo } from '../entities/inventory';
+import { CustomIcon } from '../entities/setting';
+import { categories as defaultCategories } from '@/shared/constants/constants';
 
 export interface GuestModeState {
   isGuestMode: boolean;
@@ -108,11 +110,31 @@ export class DatabaseService {
     return await guestDB.addInventoryItem(item);
   }
 
-  async getCategories(): Promise<Category[]> {
-    return await guestDB.getCategories();
+  async getCategories(locale: string): Promise<Category[]> {
+    const cats = await guestDB.getCategories();
+    if (cats.length === 0) {
+      const defaultCats = defaultCategories[locale as keyof typeof defaultCategories] || defaultCategories.en;
+      
+      const categoryPromises = defaultCats.map(async (cat: string, index: number) => {
+          const newCat: Category = {
+            id: index.toString(),
+            name: cat,
+            displayName: cat,
+            sortValue: index
+          };
+          await this.addCategory(newCat);
+          return newCat;
+      });
+      
+      const newCategories = await Promise.all(categoryPromises);
+      cats.push(...newCategories);
+    }
+    
+    const sortedCats = cats.sort((a, b) => a.sortValue - b.sortValue);
+    return sortedCats;
   }
 
-  async addCategory(category: Omit<Category, 'id' | 'isDefault' | 'icon'>): Promise<Category> {
+  async addCategory(category: Omit<Category, 'isDefault' | 'icon'>): Promise<Category> {
     return await guestDB.addCategory(category);
   }
 
@@ -308,6 +330,55 @@ export class DatabaseService {
       recipeCount,
       settingsCount
     };
+  }
+
+  // Custom icon operations
+  async addCustomIcon(icon: Omit<CustomIcon, 'createTime' | 'createdBy' | 'updateTime'>): Promise<CustomIcon> {
+    if (!this.guestUser) {
+      throw new Error('No guest user found');
+    }
+    
+    const iconData: CustomIcon = {
+      ...icon,
+      createdBy: this.guestUser.id.toString(),
+      createTime: new Date(),
+      updateTime: new Date()
+    };
+    
+    return await guestDB.addCustomIcon(iconData);
+  }
+
+  async getCustomIcons(): Promise<CustomIcon[]> {
+    const icons = await guestDB.getCustomIcons();
+    if (icons.length > 0) {
+      // Use Promise.all to wait for all category lookups to complete
+      await Promise.all(icons.map(async icon => {
+        try {
+          const category = await this.getCategory(icon.category);
+          icon.categoryName = category.displayName;
+        } catch (error) {
+          console.error(`Failed to get category for icon ${icon.id}:`, error);
+          icon.categoryName = icon.category; // Fallback to category ID
+        }
+      }));
+    }
+    return icons;
+  }
+
+  async getCustomIcon(id: string): Promise<CustomIcon | undefined> {
+    return await guestDB.getCustomIcon(id);
+  }
+
+  async updateCustomIcon(id: string, updates: Partial<CustomIcon>): Promise<void> {
+    await guestDB.updateCustomIcon(id, updates);
+  }
+
+  async deleteCustomIcon(id: string): Promise<void> {
+    await guestDB.deleteCustomIcon(id);
+  }
+
+  async getCustomIconsByCategory(category: string): Promise<CustomIcon[]> {
+    return await guestDB.getCustomIconsByCategory(category);
   }
 
   // Reset guest mode (for testing or user request)

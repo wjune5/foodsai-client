@@ -16,6 +16,7 @@
     "sort": "排序",
     "close": "关闭",
     "back": "返回",
+    "saving": "保存中...",
     "backToInventory": "返回库存",
     "next": "下一步",
     "previous": "上一步",
@@ -43,7 +44,9 @@
     "uploadImage": "上传图片",
     "dragAndDrop": "拖拽图片到这里，或点击浏览",
     "clear": "清除",
-    "all": "全部"
+    "all": "全部",
+    "or": "或",
+    "more": "更多"
   },
   "message": {
     "deleteConfirmation": "您确定要删除 \"{name}\" 吗？此操作无法撤销。",
@@ -62,7 +65,9 @@
     "openMenu": "打开主菜单",
     "hometitle": "Butlo",
     "guestMode": "访客模式",
-    "records": "记录"
+    "records": "记录",
+    "icons": "图标",
+    "customize": "自定义"
   },
   "home": {
     "title": "智能冰箱管理器 🍎",
@@ -341,5 +346,48 @@
     "email": "邮箱",
     "password": "密码",
     "confirmPassword": "确认密码"
+  },
+  "icons": {
+    "title": "自定义图标",
+    "addIcon": "添加图标",
+    "editIcon": "编辑图标",
+    "deleteIcon": "删除图标",
+    "import": "导入",
+    "export": "导出",
+    "filterByCategory": "按类别筛选",
+    "allCategories": "所有类别",
+    "noCustomIcons": "暂无自定义图标",
+    "createFirstIcon": "创建您的第一个图标",
+    "iconKey": "图标键值",
+    "iconLabel": "标签",
+    "iconCategory": "类别",
+    "defaultColor": "默认颜色",
+    "svgFile": "SVG文件",
+    "preview": "预览",
+    "uploadSvg": "上传SVG文件（最大1MB）",
+    "selectCategory": "选择类别",
+    "msg": {
+      "nameRequired": "名称是必填项",
+      "categoryRequired": "类别是必填项",
+      "svgContentRequired": "SVG内容是必填项",
+      "svgTooLarge": "SVG文件必须小于1MB",
+      "duplicateKey": "图标键值已存在，请选择不同的键值。",
+      "invalidSvg": "无效的SVG内容",
+      "fillAllFields": "请填写所有必填字段",
+      "selectSvgFile": "请选择SVG文件",
+      "invalidSvgFormat": "无效的SVG文件格式",
+      "confirmDelete": "确定要删除这个图标吗？",
+      "importSuccess": "图标导入成功！",
+      "invalidJsonFile": "无效的JSON文件",
+      "enterIconName": "输入图标名称",
+      "deleteSuccess": "图标删除成功",
+      "exportSuccess": "图标导出成功"
+    },
+    "created": "创建时间",
+    "category": "类别",
+    "totalIcons": "总图标数",
+    "filteredIcons": "筛选后图标数",
+    "categoriesUsed": "使用的类别数",
+    "noIconsInCategory": "此类别中没有图标"
   }
 } 

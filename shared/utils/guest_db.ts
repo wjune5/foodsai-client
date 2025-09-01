@@ -1,5 +1,6 @@
 import Dexie, { Table } from 'dexie';
 import { Category, Inventory, InventoryImage, Recipe, ConsumptionHistory } from '../entities/inventory';
+import { CustomIcon } from '../entities/setting';
 import { GuestUser, UserSettings } from '../entities/user';
 
 // Define the database class
@@ -11,6 +12,7 @@ export class GuestDatabase extends Dexie {
   images!: Table<InventoryImage>;
   categories!: Table<Category>;
   consumptionHistory!: Table<ConsumptionHistory>;
+  customIcons!: Table<CustomIcon>;
   constructor() {
     super('ButloGuestDB');
     
@@ -96,13 +98,12 @@ export class GuestDatabase extends Dexie {
     return await this.categories.get(id) as Category;
   }
 
-  async addCategory(category: Omit<Category, 'id' | 'isDefault' | 'icon'>): Promise<Category> {
-    const newCategory: Category = {
-      ...category,
-      id: crypto.randomUUID(),
-    };
-    await this.categories.add(newCategory);
-    return newCategory;
+  async addCategory(category: Omit<Category, 'isDefault' | 'icon'>): Promise<Category> {
+    if (!category.id) {
+      category.id = crypto.randomUUID()
+    }
+    await this.categories.add(category);
+    return category;
   }
 
   async updateCategory(id: string, updates: Partial<Category>): Promise<void> {
@@ -369,9 +370,45 @@ export class GuestDatabase extends Dexie {
     return await this.images.toArray();
   }
 
+  // Custom icon operations
+  async addCustomIcon(icon: CustomIcon): Promise<CustomIcon> {
+    if (!icon.id) {
+      icon.id = crypto.randomUUID();
+    }
+    const id = await this.customIcons.add(icon as CustomIcon);
+    
+    return (await this.customIcons.get(id))!;
+  }
+
+  async getCustomIcons(): Promise<CustomIcon[]> {
+    return await this.customIcons.filter(icon => icon.isActive).sortBy('updateTime');
+  }
+
+  async getCustomIcon(id: string): Promise<CustomIcon | undefined> {
+    return await this.customIcons.get(id);
+  }
+
+  async updateCustomIcon(id: string, updates: Partial<CustomIcon>): Promise<void> {
+    await this.customIcons.update(id, {
+      ...updates,
+      updateTime: new Date()
+    });
+  }
+
+  async deleteCustomIcon(id: string): Promise<void> {
+    // Soft delete by setting isActive to false
+    await this.customIcons.update(id, { isActive: false });
+  }
+
+  async getCustomIconsByCategory(category: string): Promise<CustomIcon[]> {
+    return await this.customIcons
+      .filter(icon => icon.category === category && icon.isActive)
+      .toArray();
+  }
+
   // Database utilities
   async clearAllData(): Promise<void> {
-    await this.transaction('rw', [this.users, this.inventoryItems, this.recipes, this.settings, this.images, this.categories, this.consumptionHistory], async () => {
+    await this.transaction('rw', [this.users, this.inventoryItems, this.recipes, this.settings, this.images, this.categories, this.consumptionHistory, this.customIcons], async () => {
       await this.users.clear();
       await this.inventoryItems.clear();
       await this.recipes.clear();
@@ -379,6 +416,7 @@ export class GuestDatabase extends Dexie {
       await this.images.clear();
       await this.categories.clear();
       await this.consumptionHistory.clear();
+      await this.customIcons.clear();
     });
   }
 

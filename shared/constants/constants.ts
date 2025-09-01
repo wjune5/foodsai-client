@@ -24,8 +24,8 @@ export const welcomes = {
 }
 
 export const categories = {
-    "en": ['vegetable', 'dairy', 'meat', 'fruit', 'grain', 'other'],
-    "zh": ['蔬菜', '乳制品', '肉类', '水果', '谷物', '其他']
+    "en": ['vegetable', 'dairy', 'meat', 'fruit', 'grain', 'beverages', 'snacks', 'other'],
+    "zh": ['蔬菜', '乳制品', '肉类', '水果', '谷物', '饮料', '零食', '其他']
 };
 export const units = ['pcs', 'g', 'kg', 'ml', 'l', 'pack', 'box', 'other'];
 
