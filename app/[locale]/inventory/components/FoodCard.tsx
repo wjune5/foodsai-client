@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Inventory } from '@/shared/entities/inventory';
 import { Trash2, Dot, AlertTriangle, Calendar, Package, Info, Pencil, XIcon, Minus, Plus, Check } from 'lucide-react';
@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/compo
 import { useRouter } from 'next/navigation';
 import useLocalizedPath from '@/shared/hooks/useLocalizedPath';
 import { calculateDaysLeft } from '@/shared/utils/date_util';
-import { getIconByKey, DEFAULT_CATEGORY_ICONS, FoodIconKey } from '@/shared/constants/food-icons';
+import { getIconDataByKey, DEFAULT_CATEGORY_ICONS, FoodIconKey, IconData } from '@/shared/constants/food-icons';
 import ChatImage from '@/shared/components/ChatImage';
 
 interface FoodCardProps {
@@ -25,8 +25,32 @@ const FoodCard: React.FC<FoodCardProps> = ({ item, onClick, onDelete, onEdit, co
   const localize = useLocalizedPath();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [quantity, setQuantity] = useState(0);
+  const [iconData, setIconData] = useState<IconData | undefined>(undefined);
+  const [defaultIconData, setDefaultIconData] = useState<IconData | undefined>(undefined);
 
   const { daysLeft, dotColor, status } = calculateDaysLeft(item.dateFrom || item.createTime, item.expirationDays);
+
+  // Load icon data asynchronously
+  useEffect(() => {
+    const loadIconData = async () => {
+      if (item.img && item.img.mimeType === 'image/icon') {
+        const iconKey = item.img.fileName.replace('icon:', '') as FoodIconKey;
+        const icon = await getIconDataByKey(iconKey);
+        setIconData(icon);
+      }
+    };
+    loadIconData();
+  }, [item.img]);
+
+  // Load default category icon
+  useEffect(() => {
+    const loadDefaultIcon = async () => {
+      const defaultIconKey = DEFAULT_CATEGORY_ICONS[item.category] || DEFAULT_CATEGORY_ICONS.other;
+      const icon = await getIconDataByKey(defaultIconKey);
+      setDefaultIconData(icon);
+    };
+    loadDefaultIcon();
+  }, [item.category]);
 
   const handleClick = () => {
     if (onEdit && !consumeEnabled) {
@@ -69,8 +93,6 @@ const FoodCard: React.FC<FoodCardProps> = ({ item, onClick, onDelete, onEdit, co
     if (item.img) {
       if (item.img.mimeType === 'image/icon') {
         // System icon
-        const iconKey = item.img.fileName.replace('icon:', '') as FoodIconKey;
-        const iconData = getIconByKey(iconKey);
         if (iconData) {
           const IconComponent = iconData.icon;
           return (
@@ -92,10 +114,8 @@ const FoodCard: React.FC<FoodCardProps> = ({ item, onClick, onDelete, onEdit, co
     }
 
     // Fallback to default category icon
-    const defaultIconKey = DEFAULT_CATEGORY_ICONS[item.category] || DEFAULT_CATEGORY_ICONS.other;
-    const iconData = getIconByKey(defaultIconKey);
-    if (iconData) {
-      const IconComponent = iconData.icon;
+    if (defaultIconData) {
+      const IconComponent = defaultIconData.icon;
       return (
         <div className="w-10 h-10 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center">
           <IconComponent className="w-5 h-5 text-gray-600" />

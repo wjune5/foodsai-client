@@ -38,23 +38,24 @@ const CategoryManager: React.FC = () => {
 
     const loadCategories = async () => {
         try {
-            const cats = await databaseService.getCategories();
+            const cats = await databaseService.getCategories(locale);
                 if (cats.length === 0) {
                 // Initialize with default categories
                 const defaultCats = defaultCategories[locale as keyof typeof defaultCategories];
                 for (let i = 0; i < defaultCats.length; i++) {
                     const cat = defaultCats[i];
-                    const newCat: Omit<Category, 'id' | 'isDefault' | 'icon'> = {
+                    const newCat: Omit<Category, 'isDefault' | 'icon'> = {
+                            id: '',
                             name: cat,
                             displayName: t(`inventory.categories.${cat}`),
-                        sortValue: i,
-                        color: getDefaultColor(i),
-                        count: 0
+                            sortValue: i,
+                            color: getDefaultColor(i),
+                            count: 0
                         };
                     await databaseService.addCategory(newCat);
                 } 
                 // Reload categories after initialization
-                const updatedCats = await databaseService.getCategories();
+                const updatedCats = await databaseService.getCategories(locale);
                 setCategories(updatedCats);
             } else {
                 setCategories(cats);
@@ -75,7 +76,8 @@ const CategoryManager: React.FC = () => {
     const handleAddCategory = async (categoryData: CategoryFormData) => {
         try {
             const newCategory = await databaseService.addCategory({
-            ...categoryData,
+                ...categoryData,
+                id: '',
                 sortValue: categories.length,
                 count: 0
             });

@@ -1,12 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { categories as defaultCategories, units } from '@/shared/constants/constants';
+import { units } from '@/shared/constants/constants';
 import { Upload, ImageIcon, Palette, Camera, Edit3, CalendarIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { InventoryCreate } from '../types/interfaces'
 import { Category, Inventory } from '@/shared/entities/inventory';
-import { ALL_FOOD_ICONS, getIconByKey, DEFAULT_CATEGORY_ICONS, FoodIconKey } from '@/shared/constants/food-icons';
+import { getAllIcons, getIconDataByKey, getIconsByCategory, DEFAULT_CATEGORY_ICONS, DEFAULT_FOOD_ICONS, FoodIconKey, IconData } from '@/shared/constants/food-icons';
 import { useImageUpload } from '@/shared/hooks/useImageUpload';
 import ChatImage from '@/shared/components/ChatImage';
 import {
@@ -29,8 +29,9 @@ import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
-import { Toaster } from 'react-hot-toast';
 import { databaseService } from '@/shared/services/DatabaseService';
+import { Toaster } from 'react-hot-toast';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/shared/components/ui/collapsible';
 
 type ImageSelectionMode = 'icon' | 'upload';
 type InputMode = 'photo' | 'manual';
@@ -61,6 +62,8 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
         expirationDays?: number;
     }>>([]);
     const [iconColor, setIconColor] = useState<string>('#db2777');
+    const [allIcons, setAllIcons] = useState<IconData[]>([]);
+    const [previewIconData, setPreviewIconData] = useState<IconData | undefined>(undefined);
 
     const FormSchema = z.object({
         name: z.string().min(1, t('inventory.nameRequired')),
@@ -85,12 +88,6 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
     type FormData = z.infer<typeof FormSchema>;
     const [categories, setCategories] = useState<Category[]>([]);
 
-    useEffect(() => {
-        loadCategories().then(cats => {
-            setCategories(cats);
-        });
-    }, []);
-
     const defaultImg = useMemo(() => {
         return {
             id: '',
@@ -101,25 +98,8 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
         };
     }, []);
 
-    const loadCategories = async () => {
-        const cats = await databaseService.getCategories();
-        if (cats.length === 0) {
-            defaultCategories[locale as keyof typeof defaultCategories].forEach((cat: string, index: number) => {
-                const newCat: Category = {
-                    name: cat,
-                    displayName: t(`inventory.categories.${cat}`),
-                    sortValue: index
-                };
-                databaseService.addCategory(newCat);
-                cats.push(newCat);
-            });
-        }
-        return cats.sort((a, b) => a.sortValue - b.sortValue);
-    }
-
     const defaultFormData = useMemo(() => {
-        const category = initialData?.category || categories[0]?.id;
-        setSelectedIconKey(DEFAULT_CATEGORY_ICONS.vegetable);
+        const category = initialData?.category != 'all' ? initialData?.category : categories[0]?.id;
 
         return {
             name: '',
@@ -141,27 +121,78 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
         defaultValues: defaultFormData,
         mode: 'onSubmit'
     });
-    const [open, setOpen] = useState(false)
-    // Set initial selectedIconKey to match default category
-    // useEffect(() => {
-    //     const defaultCategory = initialData?.category || 'vegetable';
-    //     const defaultIcon = DEFAULT_CATEGORY_ICONS[defaultCategory];
 
-    //     if (defaultIcon) {
-    //         setSelectedIconKey(defaultIcon);
-    //         // Also ensure the form has the correct default icon
-    //         if (!form.getValues('img')?.fileName || !form.getValues('img')?.fileName.includes('icon:')) {
-    //             console.log("Setting form img to default icon:", defaultIcon);
-    //             form.setValue('img', {
-    //                 id: '',
-    //                 fileName: `icon:${defaultIcon}`,
-    //                 mimeType: 'image/icon',
-    //                 size: 0,
-    //                 data: `${defaultIcon}`
-    //             });
-    //         }
-    //     }
-    // }, [initialData?.category, form]);
+    useEffect(() => {
+        databaseService.getCategories(locale).then(cats => {
+            setCategories(cats);
+            // Set initial category and load icons for that category
+            const initialCategory = cats[0].id || '';
+            loadIconsByCategory(initialCategory);
+            form.setValue('category', initialCategory);
+        });
+    }, [locale]);
+
+    const loadIconsByCategory = async (category: string) => {
+        try {
+            const icons = await getIconsByCategory(category);
+            setAllIcons(icons);
+            if (icons && icons.length > 0 && icons[0]) {
+                setSelectedIconKey(icons[0].key as FoodIconKey);
+            } else {
+                setSelectedIconKey(DEFAULT_CATEGORY_ICONS.vegetable);
+            }
+        } catch (error) {
+            console.error('Failed to load icons for category:', category, error);
+            // Fallback to all icons
+            const allIcons = await getAllIcons();
+            setAllIcons(allIcons);
+            if (allIcons && allIcons.length > 0 && allIcons[0]) {
+                setSelectedIconKey(allIcons[0].key as FoodIconKey);
+            } else {
+                setSelectedIconKey(DEFAULT_CATEGORY_ICONS.vegetable);
+            }
+        }
+    };
+
+    const loadAllIcons = async () => {
+        try {
+            const icons = await getAllIcons();
+            setAllIcons(icons);
+        } catch (error) {
+            console.error('Failed to load icons:', error);
+            // Fallback to base icons only
+            const fallbackIcons: IconData[] = DEFAULT_FOOD_ICONS.map((icon: any) => ({
+                key: icon.id,
+                label: icon.name,
+                icon: () => <div>Icon</div>,
+                isCustom: false,
+                svg: icon.svgContent
+            }));
+            setAllIcons(fallbackIcons);
+        }
+    };
+
+    // Initialize selectedIconKey
+    useEffect(() => {
+        setSelectedIconKey(DEFAULT_CATEGORY_ICONS.vegetable);
+    }, []);
+    // Load preview icon data when image mode or selected icon changes
+    useEffect(() => {
+        const loadPreviewIcon = async () => {
+            const currentImg = form.watch('img');
+            if (imageMode === 'icon' && currentImg?.mimeType === 'image/icon') {
+                const iconKey = currentImg.fileName.replace('icon:', '') as FoodIconKey;
+                const icon = await getIconDataByKey(iconKey);
+                if (icon) {
+                    setPreviewIconData(icon);
+                }
+            } else {
+                setPreviewIconData(undefined);
+            }
+        };
+        loadPreviewIcon();
+    }, [imageMode, form.watch('img')]);
+    const [open, setOpen] = useState(false)
 
     // Initialize form with initial data when editing
     useEffect(() => {
@@ -412,10 +443,8 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
         const currentImg = form.watch('img');
 
         if (imageMode === 'icon' && currentImg?.mimeType === 'image/icon') {
-            const iconKey = currentImg.fileName.replace('icon:', '') as FoodIconKey;
-            const iconData = getIconByKey(iconKey);
-            if (iconData) {
-                const IconComponent = iconData.icon;
+            if (previewIconData) {
+                const IconComponent = previewIconData.icon;
                 return (
                     <div className="flex items-center justify-center w-16 h-16 bg-pink-100 rounded-lg border-2 border-pink-200">
                         <IconComponent className="w-8 h-8" style={{ color: iconColor }} />
@@ -482,7 +511,10 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                     render={({ field }) => (
                         <FormItem className="flex-1">
                             <FormLabel>{t('inventory.category')}</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select onValueChange={(value) => {
+                                field.onChange(value);
+                                loadIconsByCategory(value);
+                            }} value={field.value}>
                                 <FormControl>
                                     <SelectTrigger className="w-full">
                                         <SelectValue placeholder={t('inventory.category')} />
@@ -549,20 +581,17 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                                                 <SelectTrigger className="w-full">
                                                     <SelectValue>
                                                         <div className="flex items-center gap-2">
-                                                            {selectedIconData && (
-                                                                <selectedIconData.icon className="w-4 h-4" style={{ color: iconColor }} />
-                                                            )}
+                                                            {selectedIconData && renderIcon(selectedIconData, "w-4 h-4", iconColor)}
                                                             <span>{selectedIconData?.label}</span>
                                                         </div>
                                                     </SelectValue>
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {ALL_FOOD_ICONS.map((iconData) => {
-                                                        const IconComponent = iconData.icon;
+                                                    {allIcons.map((iconData) => {
                                                         return (
                                                             <SelectItem key={iconData.key} value={iconData.key}>
                                                                 <div className="flex items-center gap-2">
-                                                                    <IconComponent className="w-4 h-4" style={{ color: iconColor }} />
+                                                                    {renderIcon(iconData, "w-4 h-4", iconColor)}
                                                                     <span>{iconData.label}</span>
                                                                 </div>
                                                             </SelectItem>
@@ -722,31 +751,71 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                     </FormItem>
                 )}
             />
-            <FormField
-                control={form.control}
-                name="perOptQuantity"
-                render={({ field }) => (
-                    <FormItem className="flex-1">
-                        <FormLabel>{t('inventory.perOptQuantity')}</FormLabel>
-                        <FormControl>
-                            <Stepper
-                                value={field.value}
-                                onChange={field.onChange}
-                                min={0}
-                                step={1}
-                                precision={1}
-                            />
-                        </FormControl>
-                        <p className="text-xs text-gray-500 mt-1">
-                            {t('inventory.perOptQuantityDesc')}
-                        </p>
-                    </FormItem>
-                )}
-            />
-        </div>
+            <Collapsible>
+                <CollapsibleTrigger>
+                    <FormLabel>{t('common.more')}</FormLabel>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                    <FormField
+                        control={form.control}
+                        name="perOptQuantity"
+                        render={({ field }) => (
+                            <FormItem className="flex-1">
+                                <FormLabel>{t('inventory.perOptQuantity')}</FormLabel>
+                                <FormControl>
+                                    <Stepper
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                        min={0}
+                                        step={1}
+                                        precision={1}
+                                    />
+                                </FormControl>
+                                <p className="text-xs text-gray-500 mt-1">
+                                    {t('inventory.perOptQuantityDesc')}
+                                </p>
+                            </FormItem>
+                        )}
+                    />
+                </CollapsibleContent>
+            </Collapsible>
+        </div >
     );
 
-    const selectedIconData = getIconByKey(selectedIconKey);
+    const selectedIconData = allIcons.find(icon => icon.key === selectedIconKey);
+
+    // Refresh icons when this component receives focus (in case icons were added from another tab)
+    useEffect(() => {
+        const handleFocus = () => {
+            loadAllIcons();
+        };
+
+        window.addEventListener('focus', handleFocus);
+        return () => window.removeEventListener('focus', handleFocus);
+    }, []);
+
+    // Helper component to render icon (custom SVG or Lucide React icon)
+    const renderIcon = (iconData: IconData, className: string = "w-4 h-4", color?: string) => {
+        if (iconData.isCustom && iconData.svg) {
+            // For custom SVG icons
+            let modifiedSvg = iconData.svg;
+            if (color && color !== '#000000') {
+                modifiedSvg = iconData.svg.replace(/fill="[^"]*"/g, `fill="${color}"`);
+                modifiedSvg = modifiedSvg.replace(/stroke="[^"]*"/g, `stroke="${color}"`);
+            }
+            return (
+                <div
+                    className={className}
+                    dangerouslySetInnerHTML={{ __html: modifiedSvg }}
+                />
+            );
+        } else {
+            // console.log(iconData)
+            // For Lucide React icons
+            const IconComponent = iconData.icon;
+            return <IconComponent className={className} style={{ color }} />;
+        }
+    };
 
     return (
         <>

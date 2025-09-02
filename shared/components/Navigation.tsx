@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import useLocalizedPath from '@/shared/hooks/useLocalizedPath';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
-import { Home, Sparkles, User, ArrowLeft, Tag, Book } from 'lucide-react';
+import { Home, Sparkles, User, ArrowLeft, Tag, Book, Settings } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useAuth } from '@/shared/context/AuthContext';
@@ -12,8 +12,18 @@ import { ProfileDropdown } from './ProfileDropdown';
 import { Separator } from './Separator';
 import { cn } from '@/lib/utils';
 import { SidebarTrigger } from './ui/sidebar';
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from './ui/navigation-menu';
 
-interface TopNavProps extends React.HTMLAttributes<HTMLElement> {
+interface TopNavProps {
+  className?: string;
   links: {
     title: string
     href: string
@@ -22,36 +32,70 @@ interface TopNavProps extends React.HTMLAttributes<HTMLElement> {
   }[]
 }
 
-function TopNav({ className, links, ...props }: TopNavProps) {
+function TopNav({ className, links }: TopNavProps) {
   const isMobile = useIsMobile()
-  
+  const t = useTranslations();
+  const localize = useLocalizedPath();
+
   // Hide TopNav on mobile and tablet devices (same as sidebar logic)
   if (isMobile) {
     return null
   }
 
-  return ( 
-      <nav
-        className={cn(
-          'flex items-center space-x-4 lg:space-x-6 mr-6',
-          className
-        )}
-        {...props}
-      >
+    return (
+    <NavigationMenu className={cn('mr-6', className)} viewport={false}>
+      <NavigationMenuList>
         {links.map(({ title, href, isActive, disabled }) => (
-          <Link
-            key={`${title}-${href}`}
-            href={href}
-            className={cn(
-              'hover:text-primary text-sm font-medium transition-colors',
-              isActive ? '' : 'text-muted-foreground'
-            )}
-          >
-            {title}
-          </Link>
+          <NavigationMenuItem key={`${title}-${href}`}>
+            <NavigationMenuLink asChild>
+              <Link 
+                href={href} 
+                className={cn(
+                  navigationMenuTriggerStyle(),
+                  isActive ? 'bg-accent text-accent-foreground' : ''
+                )}
+              >
+                {title}
+              </Link>
+            </NavigationMenuLink>
+          </NavigationMenuItem>
         ))}
-      </nav>
-  )
+        
+        {/* Customize Dropdown */}
+        <NavigationMenuItem>
+          <NavigationMenuTrigger>
+            {t('navigation.customize')}
+          </NavigationMenuTrigger>
+          <NavigationMenuContent>
+            <ul className="grid w-[180px]">
+              <li>
+                <NavigationMenuLink asChild>
+                  <Link 
+                    href={localize('/categories')}
+                    className="flex-row items-center gap-2"
+                  >
+                    <Tag className="w-4 h-4" />
+                    {t('navigation.categories')}
+                  </Link>
+                </NavigationMenuLink>
+              </li>
+              <li>
+                <NavigationMenuLink asChild>
+                  <Link 
+                    href={localize('/icons')}
+                    className="flex-row items-center gap-2"
+                  >
+                    <Book className="w-4 h-4" />
+                    {t('navigation.icons')}
+                  </Link>
+                </NavigationMenuLink>
+              </li>
+            </ul>
+          </NavigationMenuContent>
+        </NavigationMenuItem>
+      </NavigationMenuList>
+         </NavigationMenu>
+   )
 }
 
 export default function Navigation() {
@@ -62,15 +106,13 @@ export default function Navigation() {
   const [offset, setOffset] = React.useState(0);
   const router = useRouter();
   const isMobile = useIsMobile(); // Move hook call to top level
-  
+
   // Check if we're on a food item details page
   const isDetailsPage = (pathname.includes('/inventory/') || pathname.includes('/records/')) && pathname.split('/').length > 3;
 
   const navigation = [
     { name: t('navigation.inventory'), href: '/', icon: Home },
-    { name: t('navigation.categories'), href: '/categories', icon: Tag },
     { name: t('navigation.records'), href: '/records', icon: Book },
-    { name: t('navigation.icons'), href: '/icons', icon: Book },
     // { name: t('navigation.favorites'), href: '/favorites', icon: Heart }
   ];
 
@@ -90,7 +132,7 @@ export default function Navigation() {
   }, [])
   useEffect(() => {
     if (!isAuthenticated && !isGuestMode) {
-        enterGuestMode();
+      enterGuestMode();
     }
   }, [isGuestMode]);
   return (
@@ -103,13 +145,13 @@ export default function Navigation() {
       {/* Back Button - left of sidebar trigger */}
       {isDetailsPage && (
         <>
-          <button 
-            onClick={() => router.back()} 
+          <button
+            onClick={() => router.back()}
             className="flex items-center text-pink-600 hover:text-pink-800 font-medium transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          
+
         </>
       )}
 
@@ -139,7 +181,7 @@ export default function Navigation() {
         {isMobile && <Separator orientation="vertical" className="h-6" />}
         {/* Desktop Navigation - Only show on large screens to avoid crowding */}
         <TopNav links={navLinks} />
-        
+
         {/* <LanguageSwitcher /> */}
         <div className="flex-shrink-0">
           <ProfileDropdown />

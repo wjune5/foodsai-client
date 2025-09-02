@@ -17,7 +17,6 @@ import useLocalizedPath from '@/shared/hooks/useLocalizedPath';
 import { Switch } from '@/shared/components/ui/switch';
 import { Input } from '@/shared/components/ui/input';
 import { Button } from '@/shared/components/ui/button';
-import { categories as defaultCategories } from '@/shared/constants/constants';
 import {
     Dialog,
     DialogContent,
@@ -92,19 +91,10 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
 
     // 2. Fetch inventory when mode is ready
     useEffect(() => {
-        databaseService.getCategories().then(cats => {
-            if (cats.length === 0) {
-                defaultCategories[locale as keyof typeof defaultCategories].forEach((cat: string, index: number) => {
-                    const newCat: Category = {
-                        name: cat,
-                        displayName: t(`inventory.categories.${cat}`),
-                        sortValue: index
-                    };
-                    databaseService.addCategory(newCat);
-                    cats.push(newCat);
-                });
-            }
+        databaseService.getCategories(locale).then(cats => {
             setCategories(cats.sort((a, b) => a.sortValue - b.sortValue));
+        }).catch(error => {
+            console.error('Error fetching categories:', error);
         });
         getInventoryItems();
     }, []);
