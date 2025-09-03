@@ -3,6 +3,7 @@ import { DEFAULT_SETTINGS, GuestUser, UserInfo, UserSettings } from '../entities
 import { Category, Inventory, Recipe, ConsumptionHistory, CategoryVo } from '../entities/inventory';
 import { CustomIcon } from '../entities/setting';
 import { categories as defaultCategories } from '@/shared/constants/constants';
+import { API_ENDPOINTS } from '../constants/api';
 
 export interface GuestModeState {
   isGuestMode: boolean;
@@ -111,6 +112,7 @@ export class DatabaseService {
   }
 
   async getCategories(locale: string): Promise<Category[]> {
+    // await fetch(API_ENDPOINTS.CATEGORY);
     const cats = await guestDB.getCategories();
     if (cats.length === 0) {
       const defaultCats = defaultCategories[locale as keyof typeof defaultCategories] || defaultCategories.en;

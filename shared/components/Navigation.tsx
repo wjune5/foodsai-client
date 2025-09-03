@@ -71,6 +71,17 @@ function TopNav({ className, links }: TopNavProps) {
               <li>
                 <NavigationMenuLink asChild>
                   <Link 
+                    href={localize('/guide')}
+                    className="flex-row items-center gap-2"
+                  >
+                    <Book className="w-4 h-4" />
+                    {t('navigation.guide')}
+                  </Link>
+                </NavigationMenuLink>
+              </li>
+              <li>
+                <NavigationMenuLink asChild>
+                  <Link 
                     href={localize('/categories')}
                     className="flex-row items-center gap-2"
                   >

@@ -10,13 +10,7 @@ import { Button } from '@/shared/components/ui/button';
 import { useAuth } from '@/shared/context/AuthContext';
 import { databaseService } from '@/shared/services/DatabaseService';
 import { Category } from '@/shared/entities/inventory';
-
-interface CategoryFormData {
-    name: string;
-    displayName: string;
-    color: string;
-    icon?: string;
-}
+import { CategoryFormData } from '../type/interface';
 
 const CategoryManager: React.FC = () => {
     const t = useTranslations();

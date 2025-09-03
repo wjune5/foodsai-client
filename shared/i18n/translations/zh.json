@@ -67,7 +67,8 @@
     "guestMode": "访客模式",
     "records": "记录",
     "icons": "图标",
-    "customize": "自定义"
+    "customize": "自定义",
+    "guide": "指南"
   },
   "home": {
     "title": "智能冰箱管理器 🍎",
@@ -81,7 +82,12 @@
     "expiringSoon": "即将过期",
     "noItems": "您的冰箱中还没有物品",
     "addFirstItem": "添加您的第一个物品开始使用",
-    "openChat": "打开聊天"
+    "openChat": "打开聊天",
+    "gettingStarted": {
+      "title": "开始使用FoodSAI",
+      "description": "设置分类和图标来有效组织您的食品库存",
+      "action": "查看设置指南"
+    }
   },
   "inventory": {
     "title": "食品库存",
@@ -389,5 +395,136 @@
     "filteredIcons": "筛选后图标数",
     "categoriesUsed": "使用的类别数",
     "noIconsInCategory": "此类别中没有图标"
+  },
+  "guide": {
+    "title": "设置指南",
+    "subtitle": "学习如何设置分类和图标来有效组织您的食品库存",
+    "steps": {
+      "step1": {
+        "title": "设置分类",
+        "subtitle": "组织您的食品项目"
+      },
+      "step2": {
+        "title": "自定义图标",
+        "subtitle": "使其视觉上吸引人"
+      },
+      "nextStep": "下一步：自定义图标",
+      "previousStep": "上一步：分类",
+      "startUsingApp": "开始使用应用"
+    },
+    "categories": {
+      "title": "分类",
+      "overviewTitle": "分类概览",
+      "overviewDescription": "查看您当前的所有分类及其设置",
+      "noCategories": "尚未创建分类",
+      "createFirstCategory": "创建第一个分类",
+      "sortOrder": "排序",
+      "hasIcon": "有图标",
+      "dragToReorder": "拖拽分类卡片重新排序",
+      "saveOrder": "保存排序",
+      "addCategory": "添加分类",
+      "setupTitle": "设置分类",
+      "setupDescription": "按照以下步骤创建和组织您的食品分类",
+      "step1": {
+        "title": "创建您的第一个分类",
+        "description": "从创建基本分类开始，如'水果'、'蔬菜'或'乳制品'。这将帮助您组织食品项目。",
+        "action": "前往分类"
+      },
+      "step2": {
+        "title": "自定义分类设置",
+        "description": "设置分类名称、颜色和排序顺序。您还可以添加描述使分类更有意义。",
+        "action": "管理分类"
+      },
+      "step3": {
+        "title": "为分类分配图标",
+        "description": "为每个分类选择或创建自定义图标，使其更具视觉吸引力且易于识别。",
+        "action": "自定义图标"
+      },
+      "benefitsTitle": "使用分类的好处",
+      "benefit1": {
+        "title": "更好的组织",
+        "description": "将相似项目分组以便于管理"
+      },
+      "benefit2": {
+        "title": "快速筛选",
+        "description": "通过按分类筛选更快找到项目"
+      },
+      "benefit3": {
+        "title": "智能洞察",
+        "description": "获取您最常见食品类型的分析"
+      },
+      "benefit4": {
+        "title": "改进规划",
+        "description": "根据分类需求规划膳食和购物"
+      }
+    },
+    "icons": {
+      "title": "图标",
+      "setupTitle": "自定义图标",
+      "setupDescription": "学习如何使用自定义图标个性化您的食品库存",
+      "step1": {
+        "title": "选择默认图标",
+        "description": "从我们预建的图标库开始，包括常见食品项目和分类。"
+      },
+      "step2": {
+        "title": "创建自定义图标",
+        "description": "设计您自己的SVG图标或上传现有图标以匹配您的个人风格。"
+      },
+      "step3": {
+        "title": "将图标分配给分类",
+        "description": "将您的自定义图标链接到特定分类，以获得一致的视觉体验。"
+      },
+      "featuresTitle": "图标功能",
+      "feature1": {
+        "title": "SVG支持",
+        "description": "高质量、可缩放的图标，在任何尺寸下都很好看"
+      },
+      "feature2": {
+        "title": "易于自定义",
+        "description": "创建、编辑和管理图标的简单界面"
+      },
+      "feature3": {
+        "title": "分类集成",
+        "description": "无缝连接图标与您的食品分类"
+      },
+      "overviewTitle": "图标概览",
+      "overviewDescription": "探索和自定义您的图标集合",
+      "overviewSubtitle": "自定义您的视觉体验",
+      "overviewText": "浏览我们丰富的图标库，创建自定义图标，并将它们分配给您的分类，以获得个性化的食品库存体验。",
+      "browseIcons": "浏览图标",
+      "customizeIcons": "自定义图标",
+      "defaultIconsTitle": "默认食品图标",
+      "defaultIconsDescription": "这些内置图标默认可用，可以立即与您的分类一起使用",
+      "clickToView": "点击任何图标导航到图标管理页面",
+      "viewAllIcons": "查看所有图标"
+    },
+    "quickActions": {
+      "title": "快速操作",
+      "manageCategories": "管理分类",
+      "customizeIcons": "自定义图标",
+      "addFirstItem": "添加第一个项目"
+    },
+    "tips": {
+      "title": "专业提示",
+      "tip1": {
+        "title": "从简单开始",
+        "content": "从5-7个基本分类开始，根据需要扩展"
+      },
+      "tip2": {
+        "title": "使用一致的命名",
+        "content": "保持分类名称简短且描述性强"
+      },
+      "tip3": {
+        "title": "颜色协调",
+        "content": "为相关分类使用相似的颜色"
+      }
+    },
+    "progress": {
+      "title": "您的进度",
+      "categories": "分类设置",
+      "icons": "图标自定义",
+      "ready": "就绪",
+      "startUsing": "开始使用应用"
+    }
   }
 } 

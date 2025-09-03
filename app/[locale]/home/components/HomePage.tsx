@@ -7,7 +7,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { Category, Inventory } from '@/shared/entities/inventory';
 import { useLocale, useTranslations } from 'next-intl';
 import { ReduxProvider } from '@/shared/providers/ReduxProvider';
-import { Plus as LucidePlus, ChefHat, MessageCircle, Search, Globe, CheckCircle } from 'lucide-react';
+import { Plus as LucidePlus, ChefHat, MessageCircle, Search, Globe, CheckCircle, BookOpen } from 'lucide-react';
 import ChatWindow from '@/shared/components/ChatWindow';
 import Footer from '@/shared/components/Footer';
 import { databaseService } from '@/shared/services/DatabaseService';
@@ -188,6 +188,33 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
         <div className="min-h-[calc(100vh-66px)] bg-pink-50 pb-12">
             <Navigation />
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {/* Guide Link for New Users */}
+                {categories.length === 0 && (
+                    <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                                    <BookOpen className="w-5 h-5 text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-gray-800">
+                                        {t('home.gettingStarted.title')}
+                                    </h3>
+                                    <p className="text-sm text-gray-600">
+                                        {t('home.gettingStarted.description')}
+                                    </p>
+                                </div>
+                            </div>
+                            <Button
+                                onClick={() => router.push(localize('/guide'))}
+                                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
+                            >
+                                {t('home.gettingStarted.action')}
+                            </Button>
+                        </div>
+                    </div>
+                )}
+                
                 {/* Integrated Category Picker & Search */}
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
                     {/* Category Picker */}
@@ -259,16 +286,26 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                     <ChefHat className="w-16 h-16 text-gray-400 mb-4" />
                                     <h3 className="text-xl font-semibold text-gray-700 mb-2">{t('inventory.noItems')}</h3>
                                     <p className="text-gray-500 mb-6">{t('inventory.tryAdjustingFilters')}</p>
-                                    <Button
-                                        size="xl"
-                                        onClick={() => router.push(localize(`/inventory/add?category=${categoryFilter}`))}
-                                        className="btn-cute flex-col items-center"
-                                    >
-                                        <span className="flex justify-center w-full">
-                                            <LucidePlus className="w-6 h-6" />
-                                        </span>
-                                        {t('inventory.addFirstItem')}
-                                    </Button>
+                                    <div className="flex flex-col gap-3">
+                                        <Button
+                                            size="xl"
+                                            onClick={() => router.push(localize(`/inventory/add?category=${categoryFilter}`))}
+                                            className="btn-cute flex-col items-center"
+                                        >
+                                            <span className="flex justify-center w-full">
+                                                <LucidePlus className="w-6 h-6" />
+                                            </span>
+                                            {t('inventory.addFirstItem')}
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            onClick={() => router.push(localize('/guide'))}
+                                            className="text-gray-600 hover:text-gray-800"
+                                        >
+                                            <BookOpen className="w-4 h-4 mr-2" />
+                                            {t('home.gettingStarted.action')}
+                                        </Button>
+                                    </div>
                                 </div>
                             ) : (
                                 categoryFilter === 'all' ? (

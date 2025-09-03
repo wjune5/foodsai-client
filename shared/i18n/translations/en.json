@@ -72,7 +72,8 @@
     "hometitle": "Butlo",
     "records": "Records",
     "icons": "Icons",
-    "customize": "Customize"
+    "customize": "Customize",
+    "guide": "Guide"
   },
   "home": {
     "description": "Manage your refrigerator items, track expiration dates, and get AI-powered recipe suggestions",
@@ -85,7 +86,12 @@
     "expiringSoon": "Expiring Soon",
     "noItems": "No items in your fridge yet",
     "addFirstItem": "Add your first item to get started",
-    "openChat": "Open Chat"
+    "openChat": "Open Chat",
+    "gettingStarted": {
+      "title": "Getting Started with FoodSAI",
+      "description": "Set up categories and icons to organize your food inventory effectively",
+      "action": "View Setup Guide"
+    }
   },
   "inventory": {
     "title": "Food Inventory",
@@ -394,5 +400,127 @@
     "filteredIcons": "Filtered Icons", 
     "categoriesUsed": "Categories Used",
     "noIconsInCategory": "No icons in this category"
+  },
+  "guide": {
+    "title": "Setup Guide",
+    "subtitle": "Learn how to set up categories and icons to organize your food inventory effectively",
+    "steps": {
+      "previousStep": "Previous: Categories",
+      "startUsingApp": "Start Using App"
+    },
+    "categories": {
+      "title": "Categories",
+      "overviewTitle": "Categories Overview",
+      "overviewDescription": "View all your current categories and their settings",
+      "noCategories": "No categories created yet",
+      "createFirstCategory": "Create First Category",
+      "sortOrder": "Sort Order",
+      "hasIcon": "Has Icon",
+      "dragToReorder": "Drag category cards to reorder",
+      "saveOrder": "Save Order",
+      "addCategory": "Add Category",
+      "setupTitle": "Setting Up Categories",
+      "setupDescription": "Follow these steps to create and organize your food categories",
+      "step1": {
+        "title": "Create Your First Category",
+        "description": "Start by creating a basic category like 'Fruits', 'Vegetables', or 'Dairy'. This will help you organize your food items.",
+        "action": "Go to Categories"
+      },
+      "step2": {
+        "title": "Customize Category Settings",
+        "description": "Set the category name, color, and sorting order. You can also add descriptions to make categories more meaningful.",
+        "action": "Manage Categories"
+      },
+      "step3": {
+        "title": "Assign Icons to Categories",
+        "description": "Choose or create custom icons for each category to make them visually appealing and easy to identify.",
+        "action": "Customize Icons"
+      },
+      "benefitsTitle": "Benefits of Using Categories",
+      "benefit1": {
+        "title": "Better Organization",
+        "description": "Group similar items together for easier management"
+      },
+      "benefit2": {
+        "title": "Quick Filtering",
+        "description": "Find items faster by filtering by category"
+      },
+      "benefit3": {
+        "title": "Smart Insights",
+        "description": "Get analytics on your most common food types"
+      },
+      "benefit4": {
+        "title": "Improved Planning",
+        "description": "Plan meals and shopping based on category needs"
+      }
+    },
+    "icons": {
+      "title": "Icons",
+      "setupTitle": "Customizing Icons",
+      "setupDescription": "Learn how to personalize your food inventory with custom icons",
+      "step1": {
+        "title": "Choose Default Icons",
+        "description": "Start with our pre-built icon library that includes common food items and categories."
+      },
+      "step2": {
+        "title": "Create Custom Icons",
+        "description": "Design your own SVG icons or upload existing ones to match your personal style."
+      },
+      "step3": {
+        "title": "Assign Icons to Categories",
+        "description": "Link your custom icons to specific categories for a cohesive visual experience."
+      },
+      "featuresTitle": "Icon Features",
+      "feature1": {
+        "title": "SVG Support",
+        "description": "High-quality, scalable icons that look great at any size"
+      },
+      "feature2": {
+        "title": "Easy Customization",
+        "description": "Simple interface to create, edit, and manage your icons"
+      },
+      "feature3": {
+        "title": "Category Integration",
+        "description": "Seamlessly connect icons with your food categories"
+      },
+      "overviewTitle": "Icons Overview",
+      "overviewDescription": "Explore and customize your icon collection",
+      "overviewSubtitle": "Customize Your Visual Experience",
+      "overviewText": "Browse through our extensive icon library, create custom icons, and assign them to your categories for a personalized food inventory experience.",
+      "browseIcons": "Browse Icons",
+      "customizeIcons": "Customize Icons",
+      "defaultIconsTitle": "Default Food Icons",
+      "defaultIconsDescription": "These built-in icons are available by default and can be used immediately with your categories",
+      "clickToView": "Click on any icon to navigate to the icons management page",
+      "viewAllIcons": "View All Icons"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "manageCategories": "Manage Categories",
+      "customizeIcons": "Customize Icons",
+      "addFirstItem": "Add First Item"
+    },
+    "tips": {
+      "title": "Pro Tips",
+      "tip1": {
+        "title": "Start Simple",
+        "content": "Begin with 5-7 basic categories and expand as needed"
+      },
+      "tip2": {
+        "title": "Use Consistent Naming",
+        "content": "Keep category names short and descriptive"
+      },
+      "tip3": {
+        "title": "Color Coordination",
+        "content": "Use similar colors for related categories"
+      }
+    },
+    "progress": {
+      "title": "Your Progress",
+      "categories": "Categories Setup",
+      "icons": "Icons Customization",
+      "ready": "Ready",
+      "startUsing": "Start Using App"
+    }
   }
 } 

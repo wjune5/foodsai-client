@@ -2,6 +2,8 @@ export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export const API_ENDPOINTS = {
   INVENTORY: `${API_BASE_URL}/inventory`,
+  CATEGORY: `${API_BASE_URL}/category`,
+  ICON: `${API_BASE_URL}/icon`,
   // authentication apis
   AUTH: `${API_BASE_URL}/auth`,
   AUTH_LOGIN: `${API_BASE_URL}/auth/login`,
