@@ -57,7 +57,8 @@
     "deleteSuccess": "Deleted successfully",
     "deleteFailed": "Failed to delete",
     "duplicateFailed": "Failed to duplicate",
-    "consumeSuccess": "Consumed {quantity} {name} successfully"
+    "consumeSuccess": "Consumed {quantity} {name} successfully",
+    "bulkConsumeError": "Failed to consume some items"
   },
   "navigation": {
     "dashboard": "Dashboard",

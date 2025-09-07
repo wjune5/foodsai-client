@@ -51,7 +51,8 @@
   },
   "message": {
     "deleteConfirmation": "您确定要删除 \"{name}\" 吗？此操作无法撤销。",
-    "consumeSuccess": "成功消耗了 {quantity} {name}"
+    "consumeSuccess": "成功消耗了 {quantity} {name}",
+    "bulkConsumeError": "部分物品消耗失败"
   },
   "navigation": {
     "dashboard": "仪表板",

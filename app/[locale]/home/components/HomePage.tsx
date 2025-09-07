@@ -40,8 +40,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
     const [sortBy] = useState('name');
     const [sortOrder] = useState<'asc' | 'desc'>('asc');
     const [consumeEnabled, setConsumeEnabled] = useState(false)
-    const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
-    const [selectedQuantity, setSelectedQuantity] = useState<number>(0);
+    const [selectedItems, setSelectedItems] = useState<Map<string, number>>(new Map());
     const chatRef = useRef<HTMLDivElement>(null);
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
     const [showLanguageDialog, setShowLanguageDialog] = useState(false);
@@ -140,21 +139,46 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
         const newConsumeEnabled = !consumeEnabled;
         setConsumeEnabled(newConsumeEnabled);
         
-        // If turning off consume mode and we have a selected item, handle the consumption
-        if (!newConsumeEnabled && selectedItemId && selectedQuantity > 0) {
-            const selectedItem = inventorys.find(item => item.id === selectedItemId);
-            if (selectedItem) {
-                await handleEdit(selectedItem, selectedQuantity);
-            }
-            // Reset the selected values
-            setSelectedItemId(null);
-            setSelectedQuantity(0);
+        // If turning off consume mode and we have selected items, handle the consumption
+        if (!newConsumeEnabled && selectedItems.size > 0) {
+            await handleBulkConsume();
         }
     };
     
     const handleConsumeChange = async (id: string, quantity: number) => {
-        setSelectedItemId(id);
-        setSelectedQuantity(quantity);
+        setSelectedItems(prev => {
+            const newMap = new Map(prev);
+            if (quantity > 0) {
+                newMap.set(id, quantity);
+            } else {
+                newMap.delete(id);
+            }
+            return newMap;
+        });
+    };
+
+    const handleBulkConsume = async () => {
+        const consumptionPromises: Promise<void>[] = [];
+        const itemCount = selectedItems.size;
+        
+        for (const [itemId, quantity] of selectedItems) {
+            const item = inventorys.find(inv => inv.id === itemId);
+            if (item && quantity > 0) {
+                consumptionPromises.push(handleEdit(item, quantity));
+            }
+        }
+        
+        try {
+            await Promise.all(consumptionPromises);
+            setSelectedItems(new Map());
+        } catch (error) {
+            console.error('Error during bulk consumption:', error);
+            toast.error(t('message.bulkConsumeError'));
+        }
+    };
+
+    const clearSelection = () => {
+        setSelectedItems(new Map());
     };
     const handleEdit = async (item: Inventory, quantity: number) => {
         const updated = { ...item, quantity: (item.quantity || 1) - quantity };
@@ -293,6 +317,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                                                     onEdit={consumeEnabled ? handleEdit : undefined}
                                                                     consumeEnabled={consumeEnabled}
                                                                     onConsume={handleConsumeChange}
+                                                                    selectedQuantity={selectedItems.get(item.id) || 0}
                                                                 />
                                                             </div>
                                                         ))}
@@ -314,6 +339,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                                     onEdit={consumeEnabled ? handleEdit : undefined}
                                                     consumeEnabled={consumeEnabled}
                                                     onConsume={handleConsumeChange}
+                                                    selectedQuantity={selectedItems.get(item.id) || 0}
                                                 />
                                             </div>
                                         ))}

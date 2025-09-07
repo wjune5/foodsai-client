@@ -17,18 +17,24 @@ interface FoodCardProps {
   onEdit?: (item: Inventory, quantity: number) => void;
   consumeEnabled?: boolean;
   onConsume?: (id: string, quantity: number) => void;
+  selectedQuantity?: number;
 }
 
-const FoodCard: React.FC<FoodCardProps> = ({ item, onClick, onDelete, onEdit, consumeEnabled, onConsume }) => {
+const FoodCard: React.FC<FoodCardProps> = ({ item, onClick, onDelete, onEdit, consumeEnabled, onConsume, selectedQuantity = 0 }) => {
   const t = useTranslations();
   const router = useRouter();
   const localize = useLocalizedPath();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [quantity, setQuantity] = useState(0);
+  const [quantity, setQuantity] = useState(selectedQuantity);
   const [iconData, setIconData] = useState<IconData | undefined>(undefined);
   const [defaultIconData, setDefaultIconData] = useState<IconData | undefined>(undefined);
 
   const { daysLeft, dotColor, status } = calculateDaysLeft(item.dateFrom || item.createTime, item.expirationDays);
+
+  // Sync selectedQuantity prop with local state
+  useEffect(() => {
+    setQuantity(selectedQuantity);
+  }, [selectedQuantity]);
 
   // Load icon data asynchronously
   useEffect(() => {
@@ -136,14 +142,17 @@ const FoodCard: React.FC<FoodCardProps> = ({ item, onClick, onDelete, onEdit, co
       {/* Card - Normal or Stepper mode */}
       {consumeEnabled ? (
                 /* Stepper Mode */
-        <div className="bg-white rounded-2xl shadow-md border border-pink-200 p-4 min-w-[280px] relative">
-          {/* Check Button - Top Right */}
-          {/* <button
-            onClick={handleConfirm}
-            className="absolute top-3 right-3 w-8 h-8 bg-pink-600 hover:bg-pink-700 text-white rounded-full flex items-center justify-center transition-colors shadow-sm"
-          >
-            <Check className="w-4 h-4" />
-          </button> */}
+        <div className={`bg-white rounded-2xl shadow-md border p-4 min-w-[280px] relative transition-all ${
+          quantity > 0 
+            ? 'border-pink-500 bg-pink-50 shadow-lg' 
+            : 'border-pink-200'
+        }`}>
+          {/* Selection Indicator - Top Right */}
+          {quantity > 0 && (
+            <div className="absolute top-3 right-3 w-6 h-6 bg-pink-600 text-white rounded-full flex items-center justify-center shadow-sm">
+              <Check className="w-3 h-3" />
+            </div>
+          )}
 
           {/* Item Info */}
           <div className="flex items-center gap-3 mb-4 pr-10">
