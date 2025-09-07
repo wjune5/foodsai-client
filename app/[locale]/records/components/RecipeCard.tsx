@@ -164,7 +164,7 @@ export default function RecipeCard({
         </div>
 
         {/* Creation Date */}
-        <div className="text-xs text-muted-foreground mt-2">
+        <div className="text-xs text-muted-foreground mt-1">
           {formatDistanceToNow(new Date(recipe.createTime), { addSuffix: true })}
         </div>
       </CardContent>

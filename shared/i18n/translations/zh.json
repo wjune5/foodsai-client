@@ -46,7 +46,8 @@
     "clear": "清除",
     "all": "全部",
     "or": "或",
-    "more": "更多"
+    "more": "更多",
+    "none": "无"
   },
   "message": {
     "deleteConfirmation": "您确定要删除 \"{name}\" 吗？此操作无法撤销。",

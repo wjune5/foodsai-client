@@ -30,7 +30,6 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import toast, { Toaster } from 'react-hot-toast';
-import { resizeFile } from '@/shared/utils/image_util';
 import Resizer from 'react-image-file-resizer';
 import { useImageUpload } from '@/shared/hooks/useImageUpload';
 
@@ -88,6 +87,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
   const [newTag, setNewTag] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
   const [imageData, setImageData] = useState<InventoryImage | undefined>(undefined);
+  const [showImagePreview, setShowImagePreview] = useState(false);
 
   const {
     fields: ingredientFields,
@@ -437,7 +437,8 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
                       <img
                         src={currentImageData.data}
                         alt="Recipe"
-                        className="w-full h-48 object-cover rounded-lg border border-gray-200"
+                        className="w-full h-48 object-cover rounded-lg border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => setShowImagePreview(true)}
                       />
                       <Button
                         type="button"
@@ -651,6 +652,31 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
           </div>
         </form>
       </Form>
+      
+      {/* Image Preview Modal */}
+      {showImagePreview && imageData && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={() => setShowImagePreview(false)}
+        >
+          <div className="relative max-w-4xl max-h-[90vh] p-4">
+            <img
+              src={imageData.data}
+              alt="Recipe Preview"
+              className="max-w-full max-h-full object-contain rounded-lg"
+            />
+            <Button
+              type="button"
+              variant="destructive"
+              size="icon"
+              className="absolute top-2 right-2"
+              onClick={() => setShowImagePreview(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </>
   );
 };

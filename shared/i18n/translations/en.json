@@ -46,7 +46,8 @@
     "dragAndDrop": "Drag and drop an image here, or click to browse",
     "clear": "Clear",
     "or": "Or",
-    "more": "More"
+    "more": "More",
+    "none": "None"
   },
   "message": {
     "deleteConfirmation": "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
@@ -231,7 +232,6 @@
     "tagPlaceholder": "e.g., vegetarian, spicy",
     "ingredientPlaceholder": "e.g., 2 cups flour",
     "instructionPlaceholder": "e.g., Mix ingredients in a bowl",
-    "cookingTimeMinutes": "minutes",
     "createdAt": "Created",
     "updatedAt": "Last updated",
     "addIngredient": "Add Ingredient",
