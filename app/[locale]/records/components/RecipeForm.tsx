@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Recipe, InventoryImage } from '@/shared/entities/inventory';
@@ -31,6 +31,8 @@ import {
 import { useTranslations } from 'next-intl';
 import toast, { Toaster } from 'react-hot-toast';
 import { resizeFile } from '@/shared/utils/image_util';
+import Resizer from 'react-image-file-resizer';
+import { useImageUpload } from '@/shared/hooks/useImageUpload';
 
 interface RecipeFormProps {
   initialData?: Recipe;
@@ -41,6 +43,7 @@ interface RecipeFormProps {
 
 const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mode = 'add' }) => {
   const t = useTranslations();
+  const { uploadImage, isUploading } = useImageUpload();
 
   const recipeSchema = z.object({
     name: z.string().min(1, t('recipe.nameRequired')),
@@ -84,6 +87,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
+  const [imageData, setImageData] = useState<InventoryImage | undefined>(undefined);
 
   const {
     fields: ingredientFields,
@@ -122,10 +126,12 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
         img: initialData.img,
       });
       setTags(initialData.tags || []);
+      setImageData(initialData.img);
     }
   }, [initialData, form]);
 
   const onSubmit = (data: RecipeFormData) => {
+    console.log(data)
     const recipeData = {
       name: data.name.trim(),
       description: data.description?.trim() || undefined,
@@ -147,37 +153,99 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      processImageFile(file);
-    }
-  };
-
-  const processImageFile = async (file: File) => {
-    let resizedFile = file;
-    while (resizedFile.size > 1024 * 1024) { // 1MB limit
-      toast.custom(<div className="text-orange-500">Image size must be less than 1MB, resizing...</div>);
-      resizedFile = await resizeFile(resizedFile) as File;
-    }
-
-    if (!resizedFile.type.startsWith('image/')) {
+  const processImageFile = async (file: File, field?: any) => {
+    if (!file.type.startsWith('image/')) {
       toast.error('Please select a valid image file');
       return;
     }
-
+    
+    let currentFile = file;
+    let resizedBase64: string | null = null;
+    let maxSize = 1024; // Start with 1024px
+    // Keep resizing until file size is under 1MB
+    while (currentFile.size > 1024 * 1024) { // 1MB limit
+      toast.custom(<div className="text-orange-500">Image size must be less than 1MB, resizing...</div>);
+      
+      // Create a custom resize function with current maxSize
+      resizedBase64 = await new Promise<string>((resolve) => {
+        Resizer.imageFileResizer(
+          currentFile,
+          maxSize,
+          maxSize,
+          "JPEG",
+          90, // Lower quality for smaller file size
+          0,
+          (uri) => {
+            resolve(uri as string);
+          },
+          "base64"
+        );
+      });
+      
+      // Convert base64 back to File to check size
+      const response = await fetch(resizedBase64);
+      const blob = await response.blob();
+      currentFile = new File([blob], currentFile.name, { type: 'image/jpeg' });
+    }
+    
+    // If we have a resized base64 string, use it directly
+    if (resizedBase64) {
+      const imageData: InventoryImage = {
+        id: Date.now().toString(),
+        fileName: currentFile.name,
+        mimeType: 'image/jpeg', // Resized files are always JPEG
+        size: resizedBase64.length, // Approximate size
+        data: resizedBase64
+      };
+      console.log('Setting resized image data:', imageData);
+      setImageData(imageData);
+      if (field) {
+        field.onChange(imageData);
+      } else {
+        form.setValue('img', imageData, { shouldValidate: true, shouldDirty: true });
+      }
+      return;
+    }
+    
+    // If no resizing was needed, use FileReader with the original file
     const reader = new FileReader();
     reader.onload = () => {
       const imageData: InventoryImage = {
         id: Date.now().toString(),
-        fileName: resizedFile.name,
-        mimeType: resizedFile.type,
-        size: resizedFile.size,
+        fileName: currentFile.name,
+        mimeType: currentFile.type,
+        size: currentFile.size,
         data: reader.result as string
       };
-      form.setValue('img', imageData);
+      console.log('Setting original image data:', imageData);
+      setImageData(imageData);
+      if (field) {
+        field.onChange(imageData);
+      } else {
+        form.setValue('img', imageData, { shouldValidate: true, shouldDirty: true });
+      }
     };
-    reader.readAsDataURL(resizedFile);
+    reader.readAsDataURL(currentFile);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field?: any) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      processImageFile(file, field);
+      // Create a local preview URL so the image shows immediately
+      const localPreviewUrl = URL.createObjectURL(file);
+
+      const result = await uploadImage(file);
+      if (result.success) {
+          form.setValue('img', {
+              id: 'local',
+              fileName: result.imageUrl || file.name,
+              mimeType: file.type || 'image/jpeg',
+              size: file.size || 0,
+              data: localPreviewUrl
+          });
+      }
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -190,13 +258,13 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
     setIsDragOver(false);
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = (e: React.DragEvent, field?: any) => {
     e.preventDefault();
     setIsDragOver(false);
     
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) {
-      processImageFile(files[0]);
+      processImageFile(files[0], field);
     }
   };
 
@@ -350,20 +418,24 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
             />
           </div>
 
-          <FormField
+          <Controller
             control={form.control}
             name="img"
-            render={({ field }) => (
+            render={({ field }) => {
+              // Use field.value if available, otherwise fall back to state
+              const currentImageData = field.value || imageData;
+              
+              return (
               <FormItem>
                 <FormLabel className="flex items-center gap-1">
                   <Upload className="h-4 w-4" />
                   {t('recipe.image')}
                 </FormLabel>
                 <div className="space-y-3">
-                  {field.value ? (
+                  {currentImageData ? (
                     <div className="relative">
                       <img
-                        src={field.value.data}
+                        src={currentImageData.data}
                         alt="Recipe"
                         className="w-full h-48 object-cover rounded-lg border border-gray-200"
                       />
@@ -372,7 +444,10 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
                         variant="destructive"
                         size="icon"
                         className="absolute top-2 right-2"
-                        onClick={() => form.setValue('img', undefined)}
+                        onClick={() => {
+                          setImageData(undefined);
+                          field.onChange(undefined);
+                        }}
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -381,7 +456,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
                     <div
                       onDragOver={handleDragOver}
                       onDragLeave={handleDragLeave}
-                      onDrop={handleDrop}
+                      onDrop={(e) => handleDrop(e, field)}
                       className={`block border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
                         isDragOver 
                           ? 'border-blue-400 bg-blue-50' 
@@ -401,7 +476,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
                         <input
                           type="file"
                           accept="image/*"
-                          onChange={handleImageUpload}
+                          onChange={(e) => handleImageUpload(e, field)}
                           className="hidden"
                           id="image-upload"
                         />
@@ -410,7 +485,8 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
                   )}
                 </div>
               </FormItem>
-            )}
+              );
+            }}
           />
 
           <FormItem>
