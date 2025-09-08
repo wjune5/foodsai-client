@@ -6,11 +6,10 @@ import { Recipe, ConsumptionHistory } from '@/shared/entities/inventory';
 import { databaseService } from '@/shared/services/DatabaseService';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/components/ui/tabs';
-import { Plus, Search, Filter, ChefHat, History } from 'lucide-react';
+import { Plus, Search, ChefHat, History } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { toast, Toaster } from 'sonner';
+import { toast } from 'sonner';
 import RecipeCard from './components/RecipeCard';
 import ConsumptionHistoryList from './components/ConsumptionHistoryList';
 
@@ -163,7 +162,7 @@ export default function RecipesPage() {
                   ))}
                 </SelectContent>
               </Select> */}
-              {activeTab === 'recipes' && (
+              {activeTab === 'recipes' && recipes.length != 0 && (
                 <Button onClick={handleAddRecipe}>
                   <Plus className="h-4 w-4" />
                   <span className="hidden md:block">{t('recipe.title')}</span>
