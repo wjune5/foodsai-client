@@ -61,18 +61,18 @@ export default function FoodItemPage() {
     }
   }, [itemId, isAuthenticated, isGuestMode]);
 
-  const handleEdit = async (updatedItem: Inventory) => {
-    if (isGuestMode) {
-      databaseService.updateInventoryItem(updatedItem.id, updatedItem);
-      const category = await databaseService.getCategoryVo(updatedItem.category);
-      if (category.id) {
-        setItem({...updatedItem, category: category});
-      } else {
-        setError('Category not found');
-      }
-    }
-    // TODO: Handle cloud API update
-  };
+  // const handleEdit = async (updatedItem: Inventory) => {
+  //   if (isGuestMode) {
+  //     databaseService.updateInventoryItem(updatedItem.id, updatedItem);
+  //     const category = await databaseService.getCategoryVo(updatedItem.category);
+  //     if (category.id) {
+  //       setItem({...updatedItem, category: category});
+  //     } else {
+  //       setError('Category not found');
+  //     }
+  //   }
+  //   // TODO: Handle cloud API update
+  // };
 
   const handleDelete = () => {
     if (isGuestMode) {
@@ -128,7 +128,6 @@ export default function FoodItemPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <FoodDetailsPage
           item={item}
-          onEdit={handleEdit}
           onDelete={handleDelete}
         />
       </div>

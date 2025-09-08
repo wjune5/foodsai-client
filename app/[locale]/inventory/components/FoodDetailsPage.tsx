@@ -1,27 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Inventory, InventoryDetail } from '@/shared/entities/inventory';
-import { 
-  Calendar, 
-  Package, 
-  Info, 
-  Pencil, 
-  Trash2, 
-  AlertTriangle,
+import {
+  Calendar,
+  Package,
+  Pencil,
+  Trash2,
   Tag,
   ImageIcon,
+  Edit,
 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/Dialog';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import useLocalizedPath from '@/shared/hooks/useLocalizedPath';
 import { calculateDaysLeft } from '@/shared/utils/date_util';
 import { FoodIconKey, getIconDataByKey, IconData } from '@/shared/constants/food-icons';
 import ChatImage from '@/shared/components/ChatImage';
+import DeleteDialog from '@/shared/components/DeleteDialog';
+import { Button } from '@/shared/components/ui/button';
 
 interface FoodDetailsPageProps {
   item: InventoryDetail;
-  onEdit: (item: Inventory) => void;
+  onEdit?: (item: Inventory) => void;
   onDelete: () => void;
 }
 
@@ -46,10 +45,6 @@ const FoodDetailsPage: React.FC<FoodDetailsPageProps> = ({ item, onEdit, onDelet
     loadIconData();
   }, [item.img]);
 
-  const handleEdit = (updatedItem: Inventory) => {
-    onEdit(updatedItem);
-  };
-
   const handleConfirmDelete = () => {
     onDelete();
     setShowDeleteDialog(false);
@@ -71,26 +66,26 @@ const FoodDetailsPage: React.FC<FoodDetailsPageProps> = ({ item, onEdit, onDelet
   const renderImage = () => {
     if (item.img?.mimeType === 'image/icon') {
       if (iconData) {
-          const IconComponent = iconData.icon;
-          return (
-              <div className="flex items-center justify-center w-48 h-48 bg-pink-100 rounded-lg">
-                  <IconComponent className="w-full h-full" style={{ color: item.iconColor }} />
-              </div>
-          );
+        const IconComponent = iconData.icon;
+        return (
+          <div className="flex items-center justify-center w-48 h-48 bg-pink-100 rounded-lg">
+            <IconComponent className="w-full h-full" style={{ color: item.iconColor }} />
+          </div>
+        );
       }
     } else if (item.img?.mimeType === 'image/jpeg') {
-        return (
-            <ChatImage
-                src={item.img.data}
-                alt="Preview"
-                className="w-48 h-48 object-cover rounded-lg border-2 border-pink-200"
-            />
-        );
+      return (
+        <ChatImage
+          src={item.img.data}
+          alt="Preview"
+          className="w-48 h-48 object-cover rounded-lg border-2 border-pink-200"
+        />
+      );
     }
     return (
-        <div className="flex items-center justify-center w-48 h-48 bg-gray-100 rounded-lg border-2 border-gray-200">
-            <ImageIcon className="w-full h-full text-gray-400" />
-        </div>
+      <div className="flex items-center justify-center w-48 h-48 bg-gray-100 rounded-lg border-2 border-gray-200">
+        <ImageIcon className="w-full h-full text-gray-400" />
+      </div>
     );
   }
   return (
@@ -127,9 +122,9 @@ const FoodDetailsPage: React.FC<FoodDetailsPageProps> = ({ item, onEdit, onDelet
             <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg border ${getStatusColor(status)}`}>
               <Calendar className="w-5 h-5" />
               <span className="font-medium">
-                {status === 'no-date' ? t('inventory.noExpirationDate') : 
-                 status === 'expired' ? t('inventory.expired') : 
-                 status === 'warning' ? t('inventory.expiringSoon') : t('inventory.fresh')}
+                {status === 'no-date' ? t('inventory.noExpirationDate') :
+                  status === 'expired' ? t('inventory.expired') :
+                    status === 'warning' ? t('inventory.expiringSoon') : t('inventory.fresh')}
               </span>
               {status !== 'no-date' && (
                 <span className="text-sm">({daysLeft})</span>
@@ -168,77 +163,41 @@ const FoodDetailsPage: React.FC<FoodDetailsPageProps> = ({ item, onEdit, onDelet
               </span>
             </div>
           )}
-          
+
+        </div>
+      </div>
+      {/* Action Buttons */}
+      <div className="flex items-center justify-end">
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              router.push(localize('/inventory/add') + `?id=${item.id}`);
+            }}
+            className="flex items-center gap-2"
+          >
+            <Edit className="h-4 w-4" />
+            {t('common.edit')}
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setShowDeleteDialog(true)}
+            className="flex items-center gap-2"
+          >
+            <Trash2 className="h-4 w-4" />
+            {t('common.delete')}
+          </Button>
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex justify-center gap-4">
-        <button
-          onClick={() => {
-            router.push(localize('/inventory/add') + `?id=${item.id}`);
-          }}
-          className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
-        >
-          <Pencil className="w-4 h-4" />
-          {t('common.edit')}
-        </button>
-        <button
-          onClick={() => setShowDeleteDialog(true)}
-          className="flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium"
-        >
-          <Trash2 className="w-4 h-4" />
-          {t('common.delete')}
-        </button>
-      </div>
-
       {/* Delete Confirmation Dialog */}
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent className="p-6">
-          <DialogHeader className="mb-6">
-            <DialogTitle className="flex items-center gap-2 text-xl">
-              <AlertTriangle className="w-6 h-6 text-red-500" />
-              {t('common.delete')} {item.name}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-6">
-            <div className="flex items-center gap-4 p-4 bg-red-50 rounded-lg border border-red-200">
-              <div className="w-16 h-16 rounded-lg overflow-hidden border border-red-200">
-                <Image
-                  src={item.img?.data || 'https://waapple.org/wp-content/uploads/2021/06/Variety_Cosmic-Crisp-transparent-658x677.png'}
-                  alt={item.name}
-                  width={64}
-                  height={64}
-                  className="object-cover"
-                  unoptimized
-                />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-800">{item.name}</h3>
-                <p className="text-sm text-gray-600">{item.quantity} {item.unit} • {item.category.displayName}</p>
-              </div>
-            </div>
-            <p className="text-gray-600 text-base leading-relaxed">
-              Are you sure you want to delete this item? This action cannot be undone and will permanently remove "{item.name}" from your inventory.
-            </p>
-            <div className="flex gap-4 justify-end pt-4">
-              <button
-                onClick={() => setShowDeleteDialog(false)}
-                className="flex items-center justify-center px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-              >
-                {t('common.cancel')}
-              </button>
-              <button
-                onClick={handleConfirmDelete}
-                className="flex items-center justify-center px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium"
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                {t('common.delete')}
-              </button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <DeleteDialog
+        showDeleteDialog={showDeleteDialog}
+        setShowDeleteDialog={setShowDeleteDialog}
+        confirmDelete={handleConfirmDelete}
+      />
     </div>
   );
 };

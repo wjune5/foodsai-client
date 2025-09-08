@@ -15,8 +15,7 @@ import { DEFAULT_FOOD_ICONS, ICON_COMPONENT_MAP } from '@/shared/constants/food-
 import { CustomIcon } from '@/shared/entities/setting';
 import { Category } from '@/shared/entities/inventory';
 import { databaseService } from '@/shared/services/DatabaseService';
-import toast from 'react-hot-toast';
-import { Toaster } from 'react-hot-toast';
+import { toast } from 'sonner';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -327,7 +326,6 @@ export default function IconsPage() {
           height: auto;
         }
       `}</style>
-      <Toaster position="top-right" />
 
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">{t('icons.title')}</h1>

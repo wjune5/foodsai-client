@@ -651,7 +651,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
 
           {/* Form Actions */}
           <div className="flex gap-3 pt-6 border-t border-gray-200">
-            <Button type="submit" className="flex-1">
+            <Button type="submit" className="flex-1" data-form-submit="true">
               {t('common.save')}
             </Button>
           </div>

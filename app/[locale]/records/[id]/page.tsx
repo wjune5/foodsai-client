@@ -12,17 +12,17 @@ import { Badge } from '@/shared/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { 
   Edit, 
-  Copy, 
   Trash2, 
   Clock, 
   Users, 
   ChefHat,
-  ArrowLeft,
   Hash,
   List,
   FileText,
-  X
+  X,
+  Pencil
 } from 'lucide-react';
+import DeleteDialog from '@/shared/components/DeleteDialog';
 
 function RecipeDetailPageInner() {
   const t = useTranslations();
@@ -30,6 +30,7 @@ function RecipeDetailPageInner() {
   const params = useParams();
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [showImagePreview, setShowImagePreview] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -63,18 +64,23 @@ function RecipeDetailPageInner() {
     router.push(`/records/form?id=${recipe?.id}`);
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
+    if (!recipe) return;
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = async () => {
     if (!recipe) return;
     
-    if (window.confirm(t('recipes.confirmDelete'))) {
-      try {
-        await databaseService.deleteRecipe(recipe.id);
-        toast.success(t('message.deleteSuccess'));
-        router.push('/records');
-      } catch (error) {
-        console.error('Error deleting recipe:', error);
-        toast.error(t('message.deleteFailed'));
-      }
+    try {
+      await databaseService.deleteRecipe(recipe.id);
+      toast.success(t('message.deleteSuccess'));
+      router.push('/records');
+    } catch (error) {
+      console.error('Error deleting recipe:', error);
+      toast.error(t('message.deleteFailed'));
+    } finally {
+      setShowDeleteDialog(false);
     }
   };
 
@@ -214,7 +220,6 @@ function RecipeDetailPageInner() {
               </Card>
             </div>
 
-            {/* Header with Actions */}
             <div className="flex items-center justify-end mt-8 pt-6 border-t border-gray-200">
               <div className="flex gap-2">
                 <Button
@@ -265,6 +270,12 @@ function RecipeDetailPageInner() {
           </div>
         </div>
       )}
+
+      <DeleteDialog
+        showDeleteDialog={showDeleteDialog}
+        setShowDeleteDialog={setShowDeleteDialog}
+        confirmDelete={confirmDelete}
+      />
     </div>
   );
 }

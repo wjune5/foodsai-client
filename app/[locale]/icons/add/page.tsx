@@ -11,8 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { FOOD_ICONS } from '@/shared/constants/food-icons';
 import { databaseService } from '@/shared/services/DatabaseService';
-import toast from 'react-hot-toast';
-import { Toaster } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 function AddIconPageContent() {
   const t = useTranslations();
@@ -176,7 +175,6 @@ function AddIconPageContent() {
           height: auto;
         }
       `}</style>
-      <Toaster position="top-right" />
       
       <div className="flex items-center gap-4 mb-6">
         <Button

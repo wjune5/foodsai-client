@@ -54,7 +54,7 @@ export default function RecipeCard({
           <CardTitle className="text-lg font-semibold line-clamp-2 group-hover:text-primary transition-colors">
             {recipe.name}
           </CardTitle>
-          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex gap-1 opacity-0 group-hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto sm:pointer-events-none sm:group-hover:pointer-events-auto">
             <Button
               variant="ghost"
               size="icon"
