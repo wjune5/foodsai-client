@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { Recipe } from '@/shared/entities/inventory';
 import { databaseService } from '@/shared/services/DatabaseService';
 import { useTranslations } from 'next-intl';
-import toast from 'react-hot-toast';
+import { toast, Toaster } from 'sonner';
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';

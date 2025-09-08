@@ -29,7 +29,7 @@ import {
   List
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import toast, { Toaster } from 'react-hot-toast';
+import {toast, Toaster } from 'sonner';
 import Resizer from 'react-image-file-resizer';
 import { useImageUpload } from '@/shared/hooks/useImageUpload';
 
@@ -164,7 +164,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
     let maxSize = 1024; // Start with 1024px
     // Keep resizing until file size is under 1MB
     while (currentFile.size > 1024 * 1024) { // 1MB limit
-      toast.custom(<div className="text-orange-500">Image size must be less than 1MB, resizing...</div>);
+      toast.warning('Image size must be less than 1MB, resizing...');
       
       // Create a custom resize function with current maxSize
       resizedBase64 = await new Promise<string>((resolve) => {
@@ -300,16 +300,21 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
 
   return (
     <>
-      <Toaster position="top-right" />
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
-          Object.entries(errors).forEach(([fieldName, error]) => {
-            toast.error(`${error?.message}`, {
-              duration: 4000,
-              position: 'top-right',
+        <form 
+          onSubmit={form.handleSubmit(onSubmit, (errors) => {
+            Object.entries(errors).forEach(([fieldName, error]) => {
+              toast.error(`${error?.message}`, {
+                duration: 4000,
             });
           });
-        })} className="space-y-4">
+        })}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+              e.preventDefault();
+            }
+          }}
+          className="space-y-4">
           <FormField
             control={form.control}
             name="name"

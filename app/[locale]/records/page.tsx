@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/components/ui/tabs';
 import { Plus, Search, Filter, ChefHat, History } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import toast from 'react-hot-toast';
+import { toast, Toaster } from 'sonner';
 import RecipeCard from './components/RecipeCard';
 import ConsumptionHistoryList from './components/ConsumptionHistoryList';
 

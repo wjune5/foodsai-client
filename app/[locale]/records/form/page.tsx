@@ -6,7 +6,7 @@ import { useRouter } from '@/shared/i18n/navigation';
 import { Recipe } from '@/shared/entities/inventory';
 import { databaseService } from '@/shared/services/DatabaseService';
 import { useTranslations } from 'next-intl';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import RecipeForm from '../components/RecipeForm';
 
 function RecipeFormPageInner() {

@@ -9,6 +9,7 @@ import { routing } from "@/shared/i18n/routing";
 import { ReactNode } from "react";
 import { SidebarProvider } from "@/shared/components/ui/sidebar";
 import { AppSidebar } from "@/shared/components/AppSidebar";
+import { Toaster } from "sonner";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -66,6 +67,7 @@ export default async function LocaleLayout({children, params}: Props) {
               </div>
             </SidebarProvider>
           </AuthProvider>
+          <Toaster richColors position="top-right" duration={1000} />
         </NextIntlClientProvider>
       </body>
     </html>

@@ -3,7 +3,7 @@
 import { FC, useEffect, useRef, useState, memo, useMemo } from 'react';
 import Navigation from '@/shared/components/Navigation';
 import { useAuth } from '@/shared/context/AuthContext';
-import toast, { Toaster } from 'react-hot-toast';
+import { toast, Toaster } from 'sonner';
 import { Category, Inventory } from '@/shared/entities/inventory';
 import { useLocale, useTranslations } from 'next-intl';
 import { ReduxProvider } from '@/shared/providers/ReduxProvider';
@@ -376,7 +376,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                 <MessageCircle className="w-5 h-5 mr-2" />
             </button>}
 
-            <Toaster position="top-right" />
+            <Toaster />
 
             {/* Language Selection Dialog */}
             <Dialog open={showLanguageDialog} onOpenChange={setShowLanguageDialog}>

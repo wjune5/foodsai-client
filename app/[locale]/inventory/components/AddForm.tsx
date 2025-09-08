@@ -28,9 +28,8 @@ import { useSys } from '@/shared/hooks/useSys';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { format } from 'date-fns';
-import toast from 'react-hot-toast';
+import { toast, Toaster } from 'sonner';
 import { databaseService } from '@/shared/services/DatabaseService';
-import { Toaster } from 'react-hot-toast';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/shared/components/ui/collapsible';
 
 type ImageSelectionMode = 'icon' | 'upload';
@@ -550,7 +549,7 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                                         }`}
                                 >
                                     <Palette className="w-4 h-4" />
-                                    <span className="text-sm font-medium">{t('inventory.systemIcons')}</span>
+                                    <span className="text-sm font-medium">{t('navigation.icons')}</span>
                                 </button>
                                 <button
                                     type="button"
@@ -696,7 +695,7 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                                             )}
                                         >
                                             {field.value ? (
-                                                format(field.value, "PPP")
+                                                format(field.value, "MM-dd-yyyy")
                                             ) : (
                                                 <span>Pick a date</span>
                                             )}
@@ -729,7 +728,7 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                         <FormItem className="flex-1">
                             <FormLabel>{t('inventory.expiryDays')}</FormLabel>
                             <FormControl>
-                                <Stepper value={field.value} onChange={field.onChange} min={-1} step={1} precision={0} />
+                                <Stepper value={field.value} onChange={field.onChange} min={-1} max={1000} step={1} precision={0} />
                             </FormControl>
                         </FormItem>
                     )}
@@ -768,7 +767,7 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                                         onChange={field.onChange}
                                         min={0}
                                         step={1}
-                                        precision={1}
+                                        precision={2}
                                     />
                                 </FormControl>
                                 <p className="text-xs text-gray-500 mt-1">
@@ -819,7 +818,7 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
 
     return (
         <>
-            <Toaster position="top-right" />
+            <Toaster />
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
                     Object.entries(errors).forEach(([fieldName, error]) => {
@@ -828,7 +827,11 @@ const AddInventoryForm: React.FC<AddInventoryProps> = ({ onAdd, onEdit, initialD
                             position: 'top-right',
                         });
                     });
-                })} className="flex flex-col">
+                })} onKeyDown={(e) => {
+                    if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+                      e.preventDefault();
+                    }
+                  }} className="flex flex-col">
                     {mode === 'add' ? (
                         <Tabs value={inputMode} onValueChange={handleInputModeChange} className="w-full">
                             <TabsList className="grid w-full grid-cols-2">
