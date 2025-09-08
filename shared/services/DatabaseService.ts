@@ -190,6 +190,7 @@ export class DatabaseService {
   }
 
   async updateRecipe(id: string, updates: Partial<Recipe>): Promise<void> {
+    console.log('Updating recipe:', id, updates);
     await guestDB.updateRecipe(id, updates);
   }
 

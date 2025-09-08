@@ -49,11 +49,11 @@ function RecipeFormPageInner() {
   const handleAddRecipe = async (recipeData: Omit<Recipe, 'id' | 'createTime' | 'updateTime'>) => {
     try {
       await databaseService.addRecipe(recipeData);
-      toast.success(t('records.recipeAdded'));
+      toast.success(t('message.addSuccess'));
       router.push('/records');
     } catch (error) {
       console.error('Error adding recipe:', error);
-      toast.error('Failed to add recipe');
+      toast.error(t('message.addFailed'));
     }
   };
 
@@ -61,12 +61,12 @@ function RecipeFormPageInner() {
     try {
       if (recipe) {
         await databaseService.updateRecipe(recipe.id, recipeData);
-        toast.success(t('records.recipeUpdated'));
+        toast.success(t('message.updateSuccess'));
         router.push('/records');
       }
     } catch (error) {
       console.error('Error updating recipe:', error);
-      toast.error('Failed to update recipe');
+      toast.error(t('message.updateFailed'));
     }
   };
 

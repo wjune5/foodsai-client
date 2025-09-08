@@ -184,7 +184,7 @@ export default function IconsPage() {
           svgContent: data.svgContent,
           category: data.category,
         });
-        toast.success(t('message.editSuccess'));
+        toast.success(t('message.updateSuccess'));
       } else {
         await databaseService.addCustomIcon({
           id: '',

@@ -48,13 +48,13 @@ export default function RecipeCard({
   };
 
   return (
-    <Card className="group hover:shadow-lg transition-all duration-200 cursor-pointer" onClick={() => onView(recipe)}>
+    <Card className="group hover:shadow-lg transition-all duration-200 cursor-pointer relative" onClick={() => onView(recipe)}>
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
+        <div>
           <CardTitle className="text-lg font-semibold line-clamp-2 group-hover:text-primary transition-colors">
             {recipe.name}
           </CardTitle>
-          <div className="flex gap-1 opacity-0 group-hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto sm:pointer-events-none sm:group-hover:pointer-events-auto">
+          <div className="absolute top-0 right-2 flex gap-1 opacity-0 group-hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto sm:pointer-events-none sm:group-hover:pointer-events-auto">
             <Button
               variant="ghost"
               size="icon"
@@ -90,12 +90,6 @@ export default function RecipeCard({
             </Button>
           </div>
         </div>
-        
-        {recipe.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-            {recipe.description}
-          </p>
-        )}
       </CardHeader>
 
       <CardContent className="pt-0">
@@ -143,7 +137,7 @@ export default function RecipeCard({
 
         {/* Tags */}
         {recipe.tags && recipe.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-3">
+          <div className="flex flex-wrap gap-1 mb-1">
             {recipe.tags.slice(0, 3).map((tag, index) => (
               <Badge key={index} variant="outline" className="text-xs">
                 {tag}

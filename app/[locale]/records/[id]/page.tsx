@@ -10,11 +10,11 @@ import { toast, Toaster } from 'sonner';
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { 
-  Edit, 
-  Trash2, 
-  Clock, 
-  Users, 
+import {
+  Edit,
+  Trash2,
+  Clock,
+  Users,
   ChefHat,
   Hash,
   List,
@@ -39,7 +39,7 @@ function RecipeDetailPageInner() {
         const recipeId = params.id as string;
         const recipes = await databaseService.getRecipes();
         const foundRecipe = recipes.find(r => r.id === recipeId);
-        
+
         if (foundRecipe) {
           setRecipe(foundRecipe);
         } else {
@@ -71,7 +71,7 @@ function RecipeDetailPageInner() {
 
   const confirmDelete = async () => {
     if (!recipe) return;
-    
+
     try {
       await databaseService.deleteRecipe(recipe.id);
       toast.success(t('message.deleteSuccess'));
@@ -120,7 +120,7 @@ function RecipeDetailPageInner() {
                 <ChefHat className="h-8 w-8 text-pink-600" />
                 <h1 className="text-3xl font-bold text-gray-900">{recipe.name}</h1>
               </div>
-              
+
               {recipe.description && (
                 <p className="text-lg text-gray-600 leading-relaxed">{recipe.description}</p>
               )}
@@ -133,49 +133,43 @@ function RecipeDetailPageInner() {
                     <span className="text-sm font-medium">{recipe.cookingTime} {t('recipe.minutes')}</span>
                   </div>
                 )}
-                
+
                 {recipe.servings && (
                   <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg">
                     <Users className="h-4 w-4 text-gray-500" />
                     <span className="text-sm font-medium">{recipe.servings} {t('recipe.servings')}</span>
                   </div>
                 )}
-                
+
                 {recipe.difficulty && (
                   <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg">
                     <span className="text-sm font-medium">{t(`recipe.difficultyLevels.${recipe.difficulty}`)}</span>
                   </div>
                 )}
               </div>
-
-              {/* Tags */}
-              {recipe.tags && recipe.tags.length > 0 && (
-                <div className="mt-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Hash className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm font-medium text-gray-700">{t('recipe.tags')}</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {recipe.tags.map((tag, index) => (
-                      <Badge key={index} variant="secondary">{tag}</Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Recipe Image */}
             {recipe.img && (
               <div className="mb-6">
-                <img 
-                  src={recipe.img.data} 
+                <img
+                  src={recipe.img.data}
                   alt={recipe.name}
                   className="w-full h-64 object-cover rounded-lg border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
                   onClick={() => setShowImagePreview(true)}
                 />
               </div>
             )}
-
+            {/* Tags */}
+            {recipe.tags && recipe.tags.length > 0 && (
+              <div className="mb-4">
+                <div className="flex flex-wrap gap-2">
+                  {recipe.tags.map((tag, index) => (
+                    <Badge key={index} variant="outline">{tag}</Badge>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Ingredients */}
               <Card>
@@ -245,10 +239,10 @@ function RecipeDetailPageInner() {
           </div>
         </div>
       </main>
-      
+
       {/* Image Preview Modal */}
       {showImagePreview && recipe.img && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
           onClick={() => setShowImagePreview(false)}
         >

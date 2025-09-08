@@ -47,12 +47,8 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
   const recipeSchema = z.object({
     name: z.string().min(1, t('recipe.nameRequired')),
     description: z.string().optional(),
-    ingredients: z.array(z.object({
-      value: z.string()
-    })).min(1, t('recipe.ingredientsRequired')).optional(),
-    instructions: z.array(z.object({
-      value: z.string()
-    })).min(1, t('recipe.instructionsRequired')).optional(),
+    ingredients: z.array(z.string()).optional(),
+    instructions: z.array(z.string()).optional(),
     cookingTime: z.coerce.number().min(1),
     servings: z.coerce.number().min(1),
     difficulty: z.enum(['easy', 'medium', 'hard']),
@@ -73,8 +69,8 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
     defaultValues: {
       name: '',
       description: '',
-      ingredients: [{ value: '' }],
-      instructions: [{ value: '' }],
+      ingredients: [''],
+      instructions: [''],
       cookingTime: 10,
       servings: 1,
       difficulty: 'easy',
@@ -83,29 +79,15 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
     },
   });
 
-  const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
   const [imageData, setImageData] = useState<InventoryImage | undefined>(undefined);
   const [showImagePreview, setShowImagePreview] = useState(false);
 
-  const {
-    fields: ingredientFields,
-    append: appendIngredient,
-    remove: removeIngredient,
-  } = useFieldArray({
-    control: form.control,
-    name: 'ingredients',
-  });
-
-  const {
-    fields: instructionFields,
-    append: appendInstruction,
-    remove: removeInstruction,
-  } = useFieldArray({
-    control: form.control,
-    name: 'instructions',
-  });
+  // Watch the fields to get real-time updates
+  const watchedTags = form.watch('tags') || [];
+  const watchedIngredients = form.watch('ingredients') || [];
+  const watchedInstructions = form.watch('instructions') || [];
 
   // Initialize form with recipe data
   useEffect(() => {
@@ -114,18 +96,17 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
         name: initialData.name,
         description: initialData.description || '',
         ingredients: initialData.ingredients.length > 0
-          ? initialData.ingredients.map(ing => ({ value: ing }))
-          : [{ value: '' }],
+          ? initialData.ingredients
+          : [''],
         instructions: initialData.instructions.length > 0
-          ? initialData.instructions.map(inst => ({ value: inst }))
-          : [{ value: '' }],
+          ? initialData.instructions
+          : [''],
         cookingTime: initialData.cookingTime,
         servings: initialData.servings,
         difficulty: initialData.difficulty as 'easy' | 'medium' | 'hard' | undefined,
         tags: initialData.tags || [],
         img: initialData.img,
       });
-      setTags(initialData.tags || []);
       setImageData(initialData.img);
     }
   }, [initialData, form]);
@@ -135,14 +116,14 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
     const recipeData = {
       name: data.name.trim(),
       description: data.description?.trim() || undefined,
-      ingredients: data.ingredients?.map(ing => ing.value.trim())
+      ingredients: data.ingredients?.map(ing => ing.trim())
         .filter(ing => ing.length > 0) || [],
-      instructions: data.instructions?.map(inst => inst.value.trim())
+      instructions: data.instructions?.map(inst => inst.trim())
         .filter(inst => inst.length > 0) || [],
       cookingTime: data.cookingTime,
       servings: data.servings,
       difficulty: data.difficulty,
-      tags: tags,
+      tags: data.tags,
       img: data.img,
     };
 
@@ -197,7 +178,6 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
         size: resizedBase64.length, // Approximate size
         data: resizedBase64
       };
-      console.log('Setting resized image data:', imageData);
       setImageData(imageData);
       if (field) {
         field.onChange(imageData);
@@ -217,7 +197,6 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
         size: currentFile.size,
         data: reader.result as string
       };
-      console.log('Setting original image data:', imageData);
       setImageData(imageData);
       if (field) {
         field.onChange(imageData);
@@ -269,33 +248,41 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
   };
 
   const addIngredient = () => {
-    appendIngredient({ value: '' });
+    const currentIngredients = form.getValues('ingredients') || [];
+    form.setValue('ingredients', [...currentIngredients, ''], { shouldValidate: true, shouldDirty: true });
   };
 
   const removeIngredientItem = (index: number) => {
-    if (ingredientFields.length > 1) {
-      removeIngredient(index);
+    const currentIngredients = form.getValues('ingredients') || [];
+    if (currentIngredients.length > 1) {
+      const newIngredients = currentIngredients.filter((_, i) => i !== index);
+      form.setValue('ingredients', newIngredients, { shouldValidate: true, shouldDirty: true });
     }
   };
 
   const addInstruction = () => {
-    appendInstruction({ value: '' });
+    const currentInstructions = form.getValues('instructions') || [];
+    form.setValue('instructions', [...currentInstructions, ''], { shouldValidate: true, shouldDirty: true });
   };
 
   const removeInstructionItem = (index: number) => {
-    if (instructionFields.length > 1) {
-      removeInstruction(index);
+    const currentInstructions = form.getValues('instructions') || [];
+    if (currentInstructions.length > 1) {
+      const newInstructions = currentInstructions.filter((_, i) => i !== index);
+      form.setValue('instructions', newInstructions, { shouldValidate: true, shouldDirty: true });
     }
   };
 
   const addTag = (tag: string) => {
-    if (!tags.includes(tag)) {
-      setTags([...tags, tag]);
+    const currentTags = form.getValues('tags') || [];
+    if (!currentTags.includes(tag)) {
+      form.setValue('tags', [...currentTags, tag], { shouldValidate: true, shouldDirty: true });
     }
   };
 
   const removeTag = (tagToRemove: string) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
+    const currentTags = form.getValues('tags') || [];
+    form.setValue('tags', currentTags.filter(tag => tag !== tagToRemove), { shouldValidate: true, shouldDirty: true });
   };
 
   return (
@@ -501,11 +488,11 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
               {t('recipe.ingredients')}
             </FormLabel>
             <div className="space-y-2">
-              {ingredientFields.map((ingredient, index) => (
+              {watchedIngredients.map((ingredient, index) => (
                 <FormField
-                  key={ingredient.id}
+                  key={index}
                   control={form.control}
-                  name={`ingredients.${index}.value`}
+                  name={`ingredients.${index}`}
                   render={({ field }) => (
                     <FormItem>
                       <div className="flex gap-2">
@@ -520,7 +507,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
                           variant="outline"
                           size="icon"
                           onClick={() => removeIngredientItem(index)}
-                          disabled={ingredientFields.length === 1}
+                          disabled={watchedIngredients.length === 1}
                         >
                           <Minus className="h-4 w-4" />
                         </Button>
@@ -547,11 +534,11 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
               {t('recipe.instructions')}
             </FormLabel>
             <div className="space-y-3">
-              {instructionFields.map((instruction, index) => (
+              {watchedInstructions.map((instruction, index) => (
                 <FormField
-                  key={instruction.id}
+                  key={index}
                   control={form.control}
-                  name={`instructions.${index}.value`}
+                  name={`instructions.${index}`}
                   render={({ field }) => (
                     <FormItem>
                       <div className="flex gap-2 items-start">
@@ -572,7 +559,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
                           variant="outline"
                           size="icon"
                           onClick={() => removeInstructionItem(index)}
-                          disabled={instructionFields.length === 1}
+                          disabled={watchedInstructions.length === 1}
                           className="mt-2 flex-shrink-0"
                         >
                           <Minus className="h-4 w-4" />
@@ -606,10 +593,10 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
                   placeholder={t('recipe.tagPlaceholder')}
-                  onKeyPress={(e) => {
+                  onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
-                      if (newTag.trim() && !tags.includes(newTag.trim())) {
+                      if (newTag.trim() && !watchedTags.includes(newTag.trim())) {
                         addTag(newTag.trim());
                         setNewTag('');
                       }
@@ -620,20 +607,20 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onAdd, onEdit, initialData, mod
                   type="button"
                   variant="outline"
                   onClick={() => {
-                    if (newTag.trim() && !tags.includes(newTag.trim())) {
+                    if (newTag.trim() && !watchedTags.includes(newTag.trim())) {
                       addTag(newTag.trim());
                       setNewTag('');
                     }
                   }}
-                  disabled={!newTag.trim() || tags.includes(newTag.trim())}
+                  disabled={!newTag.trim() || watchedTags.includes(newTag.trim())}
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
-              {tags.length > 0 && (
+              {watchedTags.length > 0 && (
                 <div className="flex flex-wrap gap-2">
-                  {tags.map((tag, index) => (
-                    <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                  {watchedTags.map((tag, index) => (
+                    <Badge key={index} variant="outline" className="flex items-center gap-1">
                       {tag}
                       <button
                         type="button"
