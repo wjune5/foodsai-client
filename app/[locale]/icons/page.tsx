@@ -2,23 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { Plus, Trash2, Upload, Save, X, Grid3X3, List } from 'lucide-react';
+import { Plus, Trash2, Upload, Grid3X3, List } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
-import { Label } from '@/shared/components/ui/label';
-import { Input } from '@/shared/components/ui/input';
-import { Textarea } from '@/shared/components/ui/textarea';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/Dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/components/ui/form';
-import { DEFAULT_FOOD_ICONS, ICON_COMPONENT_MAP } from '@/shared/constants/food-icons';
 import { CustomIcon } from '@/shared/entities/setting';
 import { Category } from '@/shared/entities/inventory';
 import { databaseService } from '@/shared/services/DatabaseService';
 import { toast } from 'sonner';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { renderSvgIcon } from '@/shared/constants/food-icons';
+import IconForm from './components/IconForm';
+import { IconFormData } from './types/interface';
 
 export default function IconsPage() {
   const t = useTranslations();
@@ -31,59 +26,30 @@ export default function IconsPage() {
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingIcon, setEditingIcon] = useState<CustomIcon | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  const FormSchema = z.object({
-    name: z.string().min(1, t('icons.msg.nameRequired')),
-    category: z.string().min(1, t('icons.msg.categoryRequired')),
-    svgContent: z.string().min(1, t('icons.msg.svgContentRequired')),
-  });
-  
-  type FormData = z.infer<typeof FormSchema>;
-  
-  const form = useForm<FormData>({
-      resolver: zodResolver(FormSchema),
-      defaultValues: {
-        name: '',
-        category: '',
-        svgContent: ''
-      },
-      mode: 'onSubmit'
-  });
   // Load custom icons and categories from database
   useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
-    try {
-      setIsLoading(true);
-      // Load both icons and categories concurrently
-      const [icons, dbCategories] = await Promise.all([
-        databaseService.getCustomIcons(),
-        databaseService.getCategories(locale)
-      ]);
-      if (icons.length === 0) {
-        DEFAULT_FOOD_ICONS.forEach(icon => {
-          databaseService.addCustomIcon(icon);
-        });
-        databaseService.getCustomIcons().then(icons => {
-          setCustomIcons(icons);
-        });
-      } else {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        const [icons, dbCategories] = await Promise.all([
+          databaseService.getCustomIcons(),
+          databaseService.getCategories(locale)
+        ]);
+        
         setCustomIcons(icons);
+        setCategories(dbCategories);
+      } catch (error) {
+        console.error('Failed to load data:', error);
+        toast.error(t('errors.serverError'));
+      } finally {
+        setIsLoading(false);
       }
-      
-      setCategories(dbCategories);
-      form.setValue('category', dbCategories[0].id);
-    } catch (error) {
-      console.error('Failed to load data:', error);
-      toast.error(t('errors.serverError'));
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
+
+    loadData();
+  }, [locale, t]);
 
   const loadIcons = async () => {
     try {
@@ -98,22 +64,12 @@ export default function IconsPage() {
   // Open modal for adding new icon
   const handleAddIcon = () => {
     setEditingIcon(null);
-    form.reset({
-      name: '',
-      svgContent: '',
-      category: categories.length > 0 ? categories[0].id : ''
-    });
     setIsModalOpen(true);
   };
 
   // Open modal for editing icon
   const handleEdit = (icon: CustomIcon) => {
     setEditingIcon(icon);
-    form.reset({
-      name: icon.name,
-      svgContent: icon.svgContent as string,
-      category: icon.category
-    });
     setIsModalOpen(true);
   };
 
@@ -121,89 +77,29 @@ export default function IconsPage() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingIcon(null);
-    form.reset({
-      name: '',
-      svgContent: '',
-      category: ''
-    });
-  };
-
-  // Validate SVG content
-  const validateSVG = (svgContent: string): boolean => {
-    try {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(svgContent, 'image/svg+xml');
-      const parseError = doc.querySelector('parsererror');
-      return !parseError && doc.documentElement.tagName.toLowerCase() === 'svg';
-    } catch {
-      return false;
-    }
-  };
-
-  // Handle file upload
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (file.type !== 'image/svg+xml') {
-      toast.error(t('icons.selectSvgFile'));
-      return;
-    }
-
-    if (file.size > 1024 * 1024) { // 1MB limit
-      toast.error(t('icons.msg.svgTooLarge'));
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const svgContent = e.target?.result as string;
-      if (validateSVG(svgContent)) {
-        form.setValue('name', file.name.replace(/\.[^/.]+$/, ''));
-        form.setValue('svgContent', svgContent);
-      } else {
-        toast.error(t('icons.msg.invalidSvgFormat'));
-      }
-    };
-    reader.readAsText(file);
   };
 
   // Handle form submission
-  const handleSubmit = async (data: FormData) => {
-    if (!validateSVG(data.svgContent)) {
-      toast.error(t('icons.msg.invalidSvg'));
-      return;
-    }
-
+  const handleFormSubmit = async (data: IconFormData) => {
     try {
-      setIsSaving(true);
-
       if (editingIcon) {
-        await databaseService.updateCustomIcon(editingIcon.id, {
-          name: data.name,
-          svgContent: data.svgContent,
-          category: data.category,
-        });
+        await databaseService.updateCustomIcon(editingIcon.id, data);
         toast.success(t('message.updateSuccess'));
       } else {
         await databaseService.addCustomIcon({
           id: '',
-          name: data.name,
-          svgContent: data.svgContent,
-          category: data.category,
+          ...data,
           builtIn: false,
           isActive: true
         });
         toast.success(t('message.addSuccess'));
       }
-
-      await loadIcons(); // Refresh the list
+      
+      await loadIcons();
       handleCloseModal();
     } catch (error) {
       console.error('Failed to save icon:', error);
       toast.error(t('errors.serverError'));
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -269,42 +165,6 @@ export default function IconsPage() {
     : customIcons.filter(icon => icon.category === selectedCategory);
 
   const categoryOptions = [{id: 'all', displayName: 'all'}, ...categories];
-
-  // Render SVG icon
-  const renderSvgIcon = (svg: string, builtIn: boolean) => {
-    if (builtIn) {
-      const IconComponent = ICON_COMPONENT_MAP[svg] as React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
-      return (
-        <div className="w-12 h-12 flex items-center justify-center">
-          <IconComponent className="w-full h-full" />
-        </div>
-      );
-    }
-    return (
-      <div className="w-12 h-12 flex items-center justify-center overflow-hidden">
-        <div 
-          className="w-full h-full flex items-center justify-center svg-container"
-          dangerouslySetInnerHTML={{ 
-            __html: svg.replace(/width="[^"]*"/, 'width="100%"').replace(/height="[^"]*"/, 'height="100%"')
-          }} 
-        />
-      </div>
-    );
-  };
-
-  // Render SVG preview
-  const renderSvgPreview = (svg: string) => {
-    return (
-      <div className="w-16 h-16 flex items-center justify-center border rounded-lg bg-gray-50 overflow-hidden">
-        <div 
-          className="w-full h-full flex items-center justify-center svg-container"
-          dangerouslySetInnerHTML={{ 
-            __html: svg.replace(/width="[^"]*"/, 'width="100%"').replace(/height="[^"]*"/, 'height="100%"')
-          }} 
-        />
-      </div>
-    );
-  };
 
   if (isLoading) {
     return (
@@ -482,123 +342,18 @@ export default function IconsPage() {
         <DialogContent className="max-w-2xl p-6">
           <DialogHeader>
             <DialogTitle>
-              {t('icons.editIcon')}
+              {editingIcon ? t('icons.editIcon') : t('icons.addIcon')}
             </DialogTitle>
           </DialogHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('icons.iconLabel')}</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder={t('icons.enterIconName')}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('icons.iconCategory')}</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder={t('icons.selectCategory')} />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {categories.map(category => (
-                          <SelectItem key={category.id} value={category.id}>
-                            {(category.displayName || category.name).charAt(0).toUpperCase() + (category.displayName || category.name).slice(1)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="svgContent"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('icons.svgContent')}</FormLabel>
-                    <FormControl>
-                      <div className="space-y-2">
-                        <Textarea
-                          placeholder={t('icons.pasteSvgHere')}
-                          className="h-32 text-sm font-mono resize-none"
-                          {...field}
-                        />
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-500">{t('common.or')}</span>
-                          <input
-                            id="svg-upload"
-                            type="file"
-                            accept=".svg"
-                            onChange={handleFileUpload}
-                            className="hidden"
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => document.getElementById('svg-upload')?.click()}
-                          >
-                            <Upload className="w-3 h-3 mr-1" />
-                            {t('common.uploadFile')}
-                          </Button>
-                        </div>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {form.watch('svgContent') && (
-                <div>
-                  <Label>{t('icons.preview')}</Label>
-                  <div className="mt-2 p-4 border rounded-lg flex items-center justify-center bg-gray-50">
-                    {renderSvgPreview(form.watch('svgContent'))}
-                  </div>
-                </div>
-              )}
-
-              <div className="flex justify-end gap-2 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleCloseModal}
-                  disabled={isSaving}
-                >
-                  {t('common.cancel')}
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isSaving}
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  {isSaving
-                    ? t('common.saving')
-                    : t('common.save')
-                  }
-                </Button>
-              </div>
-            </form>
-          </Form>
+          
+          <IconForm
+            editingId={editingIcon?.id}
+            isEditing={!!editingIcon}
+            onSubmit={handleFormSubmit}
+            onCancel={handleCloseModal}
+            showCard={false}
+            categories={categories}
+          />
         </DialogContent>
       </Dialog>
     </div>

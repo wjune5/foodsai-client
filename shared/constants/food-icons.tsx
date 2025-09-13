@@ -299,13 +299,25 @@ const convertToIconData = (customIcon: CustomIcon): IconData => {
 // Export FOOD_ICONS as an alias for DEFAULT_FOOD_ICONS
 export const FOOD_ICONS = DEFAULT_FOOD_ICONS;
 
-// Helper function to render SVG icon
-export const renderSvgIcon = (svgContent: string, className: string = "w-6 h-6") => {
+// Render SVG icon
+export const renderSvgIcon = (svg: string, builtIn: boolean) => {
+  if (builtIn) {
+    const IconComponent = ICON_COMPONENT_MAP[svg] as React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+    return (
+      <div className="w-12 h-12 flex items-center justify-center">
+        <IconComponent className="w-full h-full" />
+      </div>
+    );
+  }
   return (
-    <div 
-      className={className}
-      dangerouslySetInnerHTML={{ __html: svgContent }}
-    />
+    <div className="w-12 h-12 flex items-center justify-center overflow-hidden">
+      <div 
+        className="w-full h-full flex items-center justify-center svg-container"
+        dangerouslySetInnerHTML={{ 
+          __html: svg.replace(/width="[^"]*"/, 'width="100%"').replace(/height="[^"]*"/, 'height="100%"')
+        }} 
+      />
+    </div>
   );
 };
 

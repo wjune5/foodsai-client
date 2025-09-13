@@ -402,7 +402,28 @@
       "startUsingApp": "Start Using App"
     },
     "categories": {
-      
+      "title": "Categories",
+      "overviewTitle": "Categories Overview",
+      "overviewDescription": "View all your current categories and their settings",
+      "noCategories": "No categories created yet",
+      "createFirstCategory": "Create First Category",
+      "sortOrder": "Sort Order",
+      "dragToReorder": "Drag category cards to reorder",
+      "addCategory": "Add Category",
+      "setupTitle": "Setting Up Categories",
+      "setupDescription": "Follow these steps to create and organize your food categories",
+      "step1": {
+        "title": "Create Your First Category",
+        "description": "Start by creating a basic category like 'Fruits', 'Vegetables', or 'Dairy'. This will help you organize your food items.",
+        "action": "Go to Categories"
+      }
+    },
+    "icons": {
+      "title": "Default Icons",
+      "description": "",
+      "customTitle": "Custom Icons",
+      "customizeIcons": "Customize your icon",
+      "browseIcons": "Browse market"
     }
   }
 }

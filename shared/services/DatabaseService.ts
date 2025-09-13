@@ -1,6 +1,6 @@
 import { guestDB } from '../utils/guest_db';
 import { DEFAULT_SETTINGS, GuestUser, UserInfo, UserSettings } from '../entities/user';
-import { Category, Inventory, Recipe, ConsumptionHistory, CategoryVo } from '../entities/inventory';
+import { Category, Inventory, Recipe, ConsumptionHistory, CategoryVo, InventoryImage } from '../entities/inventory';
 import { CustomIcon } from '../entities/setting';
 import { categories as defaultCategories } from '@/shared/constants/constants';
 
@@ -245,7 +245,7 @@ export class DatabaseService {
     await guestDB.deleteImage(imageId);
   }
 
-  async getAllImages(): Promise<any[]> {
+  async getAllImages(): Promise<InventoryImage[]> {
     return await guestDB.getAllImages();
   }
 

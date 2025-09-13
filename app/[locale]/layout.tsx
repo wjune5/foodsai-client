@@ -1,16 +1,14 @@
 import { Inter, Poppins } from "next/font/google";
 import "../globals.css";
-import Navigation from "@/shared/components/Navigation";
 import { AuthProvider } from "@/shared/context/AuthContext";
 import {Locale, hasLocale, NextIntlClientProvider} from 'next-intl';
 import {getTranslations, setRequestLocale} from 'next-intl/server';
 import { notFound } from "next/navigation";
 import { routing } from "@/shared/i18n/routing";
 import { ReactNode } from "react";
-import { SidebarProvider } from "@/shared/components/ui/sidebar";
-import { AppSidebar } from "@/shared/components/AppSidebar";
 import { Toaster } from "sonner";
 import OnboardingGuard from "@/shared/components/OnboardingGuard";
+import LayoutContent from "@/app/[locale]/LayoutContent";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -59,15 +57,9 @@ export default async function LocaleLayout({children, params}: Props) {
         <NextIntlClientProvider>
           <AuthProvider>
             <OnboardingGuard>
-              <SidebarProvider defaultOpen={false}>
-                <AppSidebar />
-                <div className="w-full">
-                  <Navigation />
-                  <div className="pt-16">
-                    {children}
-                  </div>
-                </div>
-              </SidebarProvider>
+              <LayoutContent>
+                {children}
+              </LayoutContent>
             </OnboardingGuard>
           </AuthProvider>
           <Toaster richColors position="top-right" duration={1000} />
