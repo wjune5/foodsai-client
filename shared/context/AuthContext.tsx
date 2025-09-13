@@ -20,6 +20,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isGuestMode: boolean;
   guestModeState: GuestModeState;
+  hasCompletedOnboarding: boolean;
+  onboardingLoading: boolean;
   login: (
     strategyId: string,
     data: Record<string, unknown>
@@ -34,6 +36,8 @@ interface AuthContextType {
   exitGuestMode: () => Promise<void>;
   migrateToAuthenticatedUser: (authenticatedUser: UserInfo) => Promise<void>;
   updateUserFromGuestService: () => void;
+  completeOnboarding: () => Promise<void>;
+  checkOnboardingStatus: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -41,6 +45,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
+  const [onboardingLoading, setOnboardingLoading] = useState(true);
   const [guestModeState, setGuestModeState] = useState<GuestModeState>({
     isGuestMode: false,
     guestUser: null,
@@ -49,18 +55,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // initialize user info from local storage
   useEffect(() => {
-    const userInfo = getUserInfo();
-    if (userInfo) {
-      setUser(userInfo);
-      setLoading(false);
-    } else {
-      // if the original method does not get the user info, try to use the auth tool
-      const { user: authUser } = getAuthInfo();
-      if (authUser) {
-        setUser(authUser);
+    const initializeAuth = async () => {
+      const userInfo = getUserInfo();
+      if (userInfo) {
+        setUser(userInfo);
+        setLoading(false);
+      } else {
+        // if the original method does not get the user info, try to use the auth tool
+        const { user: authUser } = getAuthInfo();
+        if (authUser) {
+          setUser(authUser);
+        }
+        setLoading(false);
       }
-      setLoading(false);
-    }
+
+      // Check onboarding status
+      await checkOnboardingStatus();
+    };
+
+    initializeAuth();
 
     // set up periodic refresh user info (every 30 minutes)
     const refreshInterval = setInterval(async () => {
@@ -184,12 +197,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(updatedUser as UserInfo);
   };
 
+  // Onboarding methods
+  const checkOnboardingStatus = async (): Promise<boolean> => {
+    try {
+      setOnboardingLoading(true);
+      const hasCompleted = await databaseService.hasCompletedOnboarding();
+      setHasCompletedOnboarding(hasCompleted);
+      return hasCompleted;
+    } catch (error) {
+      console.error('Failed to check onboarding status:', error);
+      setHasCompletedOnboarding(false);
+      return false;
+    } finally {
+      setOnboardingLoading(false);
+    }
+  };
+
+  const completeOnboarding = async (): Promise<void> => {
+    try {
+      await databaseService.markOnboardingCompleted();
+      setHasCompletedOnboarding(true);
+    } catch (error) {
+      console.error('Failed to complete onboarding:', error);
+      throw error;
+    }
+  };
+
   const value = {
     user,
     loading,
     isAuthenticated: isAuthenticated(),
     isGuestMode: guestModeState.isGuestMode,
     guestModeState,
+    hasCompletedOnboarding,
+    onboardingLoading,
     login,
     completeAuth,
     logout,
@@ -198,6 +239,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     exitGuestMode,
     migrateToAuthenticatedUser,
     updateUserFromGuestService,
+    completeOnboarding,
+    checkOnboardingStatus,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

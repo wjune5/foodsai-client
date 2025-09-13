@@ -2,13 +2,7 @@
 
 import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
-
-interface CategoryFormData {
-  name: string;
-  displayName: string;
-  color: string;
-  icon?: string;
-}
+import { CategoryFormData } from '../type/interface';
 
 interface CategoryFormProps {
   initialData?: Partial<CategoryFormData>;

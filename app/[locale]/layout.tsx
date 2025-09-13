@@ -10,6 +10,7 @@ import { ReactNode } from "react";
 import { SidebarProvider } from "@/shared/components/ui/sidebar";
 import { AppSidebar } from "@/shared/components/AppSidebar";
 import { Toaster } from "sonner";
+import OnboardingGuard from "@/shared/components/OnboardingGuard";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -57,15 +58,17 @@ export default async function LocaleLayout({children, params}: Props) {
       >
         <NextIntlClientProvider>
           <AuthProvider>
-            <SidebarProvider defaultOpen={false}>
-              <AppSidebar />
-              <div className="w-full">
-                <Navigation />
-                <div className="pt-16">
-                  {children}
+            <OnboardingGuard>
+              <SidebarProvider defaultOpen={false}>
+                <AppSidebar />
+                <div className="w-full">
+                  <Navigation />
+                  <div className="pt-16">
+                    {children}
+                  </div>
                 </div>
-              </div>
-            </SidebarProvider>
+              </SidebarProvider>
+            </OnboardingGuard>
           </AuthProvider>
           <Toaster richColors position="top-right" duration={1000} />
         </NextIntlClientProvider>

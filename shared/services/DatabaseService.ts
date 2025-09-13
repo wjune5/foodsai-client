@@ -387,6 +387,45 @@ export class DatabaseService {
     await this.clearDBData();
     return await this.initializeGuestMode();
   }
+
+  // Onboarding methods
+  async hasCompletedOnboarding(): Promise<boolean> {
+    try {
+      if (this.isGuestModeActive()) {
+        // For guest mode, check local storage
+        const completed = localStorage.getItem('onboarding_completed');
+        return completed === 'true';
+      } else {
+        // TODO For authenticated users, this would typically check server state
+        return false;
+      }
+    } catch (error) {
+      console.error('Failed to check onboarding status:', error);
+      return false;
+    }
+  }
+
+  async markOnboardingCompleted(): Promise<void> {
+    try {
+      localStorage.setItem('onboarding_completed', 'true');
+      // TODO For authenticated users, you might want to sync this to the server
+      // await this.syncOnboardingStatusToServer();
+    } catch (error) {
+      console.error('Failed to mark onboarding as completed:', error);
+      throw error;
+    }
+  }
+
+  async resetOnboardingStatus(): Promise<void> {
+    try {
+      localStorage.removeItem('onboarding_completed');
+      // TODO For authenticated users, you might want to sync this to the server
+      // await this.syncOnboardingStatusToServer();
+    } catch (error) {
+      console.error('Failed to reset onboarding status:', error);
+      throw error;
+    }
+  }
 }
 
 // Export singleton instance
