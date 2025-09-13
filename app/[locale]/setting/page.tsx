@@ -2,16 +2,19 @@
 
 import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/shared/context/AuthContext';
 import { guestDB } from '@/shared/utils/guest_db';
-import { Trash2, Download, Upload, Database, Settings, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Trash2, Download, Upload, Database, Settings, AlertTriangle, CheckCircle, Palette } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/shared/components/Dialog';
 import LanguageSwitcher from '@/shared/components/LanguageSwitcher';
 import { toast } from 'sonner';
 import Navigation from '@/shared/components/Navigation';
+import { Button } from '@/shared/components/ui/button';
 
 export default function SettingsPage() {
   const t = useTranslations();
+  const router = useRouter();
   const { isGuestMode, isAuthenticated, exitGuestMode } = useAuth();
   const [isClearing, setIsClearing] = useState(false);
   const [dbSize, setDbSize] = useState<number | null>(null);
@@ -118,7 +121,32 @@ export default function SettingsPage() {
               <LanguageSwitcher />
             </div>
           </div>
-
+          {/* Test Section */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <Palette className="w-5 h-5 text-pink-500" />
+              Test Components
+            </h2>
+            
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-gray-50 rounded-lg">
+                <div className="flex-1">
+                  <p className="font-medium text-gray-800">Button Examples</p>
+                  <p className="text-gray-600 text-sm">
+                    Test and preview all button variants and themes
+                  </p>
+                </div>
+                <Button 
+                  variant="cute" 
+                  size="sm"
+                  onClick={() => router.push('/en/setting/ButtonExamples')}
+                >
+                  <Palette className="w-4 h-4 mr-2" />
+                  View Button Examples
+                </Button>
+              </div>
+            </div>
+          </div>
           {/* Database Management */}
           {isGuestMode && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">

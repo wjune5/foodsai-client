@@ -216,20 +216,22 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
                     {/* Category Picker */}
                     <div className="flex flex-wrap gap-2">
-                        <button
-                            className={`px-4 py-2 rounded-full border-pink-400 text-sm font-medium transition ${categoryFilter === 'all' ? 'bg-pink-500 text-white' : 'bg-white text-gray-700 hover:bg-pink-100'}`}
+                        <Button
+                            variant={categoryFilter === 'all' ? 'cute' : 'cuteOutline'}
+                            size="sm"
                             onClick={() => setCategoryFilter('all')}
                         >
                             {t('inventory.categories.all')}
-                        </button>
+                        </Button>
                         {categories.map(cat => (
-                            <button
+                            <Button
                                 key={cat.id}
-                                className={`px-4 py-2 rounded-full border-pink-400 text-sm font-medium transition ${categoryFilter === cat.id ? 'bg-pink-500 text-white' : 'bg-white text-gray-700 hover:bg-pink-100'}`}
+                                variant={categoryFilter === cat.id ? 'cute' : 'cuteOutline'}
+                                size="sm"
                                 onClick={() => setCategoryFilter(cat.id || '')}
                             >
                                 {cat.displayName}
-                            </button>
+                            </Button>
                         ))}
                     </div>
                 </div>
@@ -245,13 +247,14 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                         </h3>
                                         {/* Search Icon & Input */}
                                         <div className="relative flex items-center">
-                                            <button
-                                                className="p-2 rounded-full hover:bg-pink-100 transition"
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
                                                 onClick={() => setIsSearchOpen(v => !v)}
                                                 aria-label="Search"
                                             >
                                                 <Search className="w-5 h-5 text-pink-500" />
-                                            </button>
+                                            </Button>
                                             <Input
                                                 type="text"
                                                 placeholder={t('common.search')}
@@ -271,9 +274,13 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                                 showCheckIcon={true}
                                                 icon={CheckCircle}
                                             />
-                                            <button onClick={() => router.push(localize(`/inventory/add?category=${categoryFilter}`))} className="btn-cute flex items-center">
+                                            <Button 
+                                                variant="cute" 
+                                                size="icon"
+                                                onClick={() => router.push(localize(`/inventory/add?category=${categoryFilter}`))}
+                                            >
                                                 <LucidePlus className="w-4 h-4" />
-                                            </button>
+                                            </Button>
                                         </div>
                                     )}
                                 </div>
@@ -284,9 +291,10 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                                     <h3 className="text-xl font-semibold text-gray-700 mb-2">{t('inventory.noItems')}</h3>
                                     <p className="text-gray-500 mb-6">{t('inventory.tryAdjustingFilters')}</p>
                                     <Button
+                                        variant="cute"
                                         size="xl"
                                         onClick={() => router.push(localize(`/inventory/add?category=${categoryFilter}`))}
-                                        className="btn-cute flex-col items-center"
+                                        className="flex-col items-center"
                                     >
                                         <span className="flex justify-center w-full">
                                             <LucidePlus className="w-6 h-6" />
@@ -361,9 +369,11 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                 </div>
             </main>
             {/* Floating Chat Button */}
-            {!isChatOpen && <button
+            {!isChatOpen && <Button
                 type="button"
-                className="fixed bottom-18 right-[-20px] btn-cute shadow-2xl z-50"
+                variant="cute"
+                size="cuteLg"
+                className="fixed bottom-18 right-[-20px] shadow-2xl z-50"
                 onClick={() => {
                     setIsChatOpen(true);
                     setTimeout(() => {
@@ -374,7 +384,7 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                 }}
             >
                 <MessageCircle className="w-5 h-5 mr-2" />
-            </button>}
+            </Button>}
 
             <Toaster />
 
@@ -396,13 +406,14 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
                     </DialogHeader>
                     <div className="grid gap-3 py-4">
                         {languages.map((language) => (
-                            <button
+                            <Button
                                 key={language.code}
+                                variant="outline"
                                 onClick={() => handleLanguageSelect(language.code)}
                                 className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:border-pink-300 hover:bg-pink-50 transition-colors"
                             >
                                 <span className="font-medium text-gray-900">{language.name}</span>
-                            </button>
+                            </Button>
                         ))}
                     </div>
                 </DialogContent>

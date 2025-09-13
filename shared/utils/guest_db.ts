@@ -3,6 +3,21 @@ import { Category, Inventory, InventoryImage, Recipe, ConsumptionHistory } from 
 import { CustomIcon } from '../entities/setting';
 import { GuestUser, UserSettings } from '../entities/user';
 
+// UUID generation utility with fallback
+function generateUUID(): string {
+  // Try to use crypto.randomUUID() if available
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  
+  // Fallback implementation
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 // Define the database class
 export class GuestDatabase extends Dexie {
   users!: Table<GuestUser>;
@@ -60,7 +75,7 @@ export class GuestDatabase extends Dexie {
   async createUser(userData: Omit<GuestUser, 'id' | 'createTime' | 'updateTime'>): Promise<GuestUser> {
     const user: GuestUser = {
       ...userData,
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       createTime: new Date(),
       updateTime: new Date()
     };
@@ -100,7 +115,7 @@ export class GuestDatabase extends Dexie {
 
   async addCategory(category: Omit<Category, 'isDefault' | 'icon'>): Promise<Category> {
     if (!category.id) {
-      category.id = crypto.randomUUID()
+      category.id = generateUUID()
     }
     await this.categories.add(category);
     return category;
@@ -120,7 +135,7 @@ export class GuestDatabase extends Dexie {
   async addConsumptionHistory(history: Omit<ConsumptionHistory, 'id' | 'createTime' | 'updateTime'>): Promise<ConsumptionHistory> {
     const consumptionHistory: ConsumptionHistory = {
       ...history,
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       createTime: new Date(),
       updateTime: new Date()
     };
@@ -159,7 +174,7 @@ export class GuestDatabase extends Dexie {
   async addInventoryItem(item: Omit<Inventory, 'id' | 'createTime' | 'updateTime'>): Promise<Inventory> {
     const inventoryItem: Inventory = {
       ...item,
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       createTime: new Date(),
       updateTime: new Date()
     };
@@ -208,7 +223,7 @@ export class GuestDatabase extends Dexie {
   async addRecipe(recipe: Omit<Recipe, 'id' | 'createTime' | 'updateTime'>): Promise<Recipe> {
     const newRecipe: Recipe = {
       ...recipe,
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       createTime: new Date(),
       updateTime: new Date()
     };
@@ -331,7 +346,7 @@ export class GuestDatabase extends Dexie {
       reader.onload = async () => {
         try {
           const base64Data = reader.result as string;
-          const imageId = crypto.randomUUID();
+          const imageId = generateUUID();
           
           const guestImage: InventoryImage = {
             id: imageId,
@@ -373,7 +388,7 @@ export class GuestDatabase extends Dexie {
   // Custom icon operations
   async addCustomIcon(icon: CustomIcon): Promise<CustomIcon> {
     if (!icon.id) {
-      icon.id = crypto.randomUUID();
+      icon.id = generateUUID();
     }
     const id = await this.customIcons.add(icon as CustomIcon);
     
