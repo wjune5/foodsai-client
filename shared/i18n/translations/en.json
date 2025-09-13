@@ -390,8 +390,19 @@
     },
     "category": "Category",
     "totalIcons": "Total Icons",
-    "filteredIcons": "Filtered Icons", 
+    "filteredIcons": "Filtered Icons",
     "categoriesUsed": "Categories Used",
     "noIconsInCategory": "No icons in this category"
+  },
+  "guide": {
+    "title": "Setup Guide",
+    "subtitle": "Learn how to set up categories and icons to organize your food inventory effectively",
+    "steps": {
+      "previousStep": "Previous: Categories",
+      "startUsingApp": "Start Using App"
+    },
+    "categories": {
+      
+    }
   }
-} 
+}

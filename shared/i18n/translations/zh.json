@@ -395,5 +395,22 @@
     "filteredIcons": "筛选后图标数",
     "categoriesUsed": "使用的类别数",
     "noIconsInCategory": "此类别中没有图标"
+  },
+  "guide": {
+    "title": "设置指南",
+    "subtitle": "学习如何设置分类和图标来有效组织您的食品库存",
+    "steps": {
+      "step1": {
+        "title": "设置分类",
+        "subtitle": "组织您的食品项目"
+      },
+      "step2": {
+        "title": "自定义图标",
+        "subtitle": "使其视觉上吸引人"
+      },
+      "nextStep": "下一步：自定义图标",
+      "previousStep": "上一步：分类",
+      "startUsingApp": "开始使用应用"
+    }
   }
-} 
+}
