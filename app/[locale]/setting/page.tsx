@@ -7,7 +7,7 @@ import { guestDB } from '@/shared/utils/guest_db';
 import { Trash2, Download, Upload, Database, Settings, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/shared/components/Dialog';
 import LanguageSwitcher from '@/shared/components/LanguageSwitcher';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import Navigation from '@/shared/components/Navigation';
 
 export default function SettingsPage() {

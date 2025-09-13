@@ -380,7 +380,11 @@ const HomePageContainer: FC = memo(function HomePageContainer() {
 
             {/* Language Selection Dialog */}
             <Dialog open={showLanguageDialog} onOpenChange={setShowLanguageDialog}>
-                <DialogContent className="sm:max-w-md px-8 py-8" showCloseButton={false}>
+                <DialogContent 
+                    className="sm:max-w-md px-8 py-8" 
+                    showCloseButton={false}
+                    onInteractOutside={(e) => e.preventDefault()}
+                >
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2 text-center">
                             <Globe className="h-6 w-6 text-pink-500" />

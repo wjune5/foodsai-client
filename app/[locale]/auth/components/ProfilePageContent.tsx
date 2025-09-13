@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/shared/context/AuthContext';
 import { User, Mail, Calendar, Edit, Save, Camera, LogOut, UserCircle } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { Input } from '@/shared/components/ui/input';
 import { Button } from '@/shared/components/ui/button';

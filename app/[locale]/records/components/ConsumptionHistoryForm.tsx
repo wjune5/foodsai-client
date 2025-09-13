@@ -31,7 +31,7 @@ import {
 import { useTranslations } from 'next-intl';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
 interface ConsumptionHistoryFormProps {
   initialData?: ConsumptionHistory;
